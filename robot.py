@@ -23,3 +23,5 @@ class Robot(ABC):
     def transitionModel(self, action):
         pass
 
+    @abstractmethod
+    def stateEstimator(self, observation):
