@@ -81,3 +81,20 @@ class ForagingMap:
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)
+
+
+    def setSubMap(self, center_x, center_y, submap):
+        # Loop over entries in submap list
+        submap_object_list = submap[0]
+        submap_property_list = submap[1]
+        for i in range(len(submap_object_list)):
+            map_x = center_x + submap_property_list[i]["x"]
+            map_y = center_y + submap_property_list[i]["y"]
+            # Set value of food layer, specifically for each visible grid cell
+            if submap_object_list[i] == MapLayer.FOOD:
+                self.map[MapLayer.FOOD, map_x, map_y] = submap_property_list[i]["val"]
+            # Update position of robot in map
+            elif submap_object_list[i] == MapLayer.ROBOT:
+                self.map[MapLayer.ROBOT, center_x, center_y] = submap_property_list[i]["id"] + 1 # Set new robot position
+                self.map[MapLayer.ROBOT, map_x, map_y] = 0 # Remove old robot position
+

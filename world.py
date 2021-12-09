@@ -28,16 +28,20 @@ class World:
                 # self.true_perception_model.append(observationType1)
                 # self.true_transition_model.append(transitionType1)
 
-    def updateRobotStatesAndLocalMaps(self):
+    def simulationStep(self):
         for i in range(self.num_robots):
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
-            (observation, perceived_submap) = self.true_observation_model[i](self.true_robot_states[i], submap)
-            self.robot[i].local_map = perceived_submap
-            self.robot[i].stateEstimator(observation)
+            updateRobotObservation(i)
+            executeRobotAction(i)
 
-    def executeRobotActions(self):
-        for i in range(self.num_robots):
-            self.robot[i].chooseAction()
-            action = self.robot[i].next_action
-            new_states = self.true_transition_model[i](self.true_robot_states[i], action)
-            self.true_robot_states[i] = new_states
+    def updateRobotObservation(self, i):
+        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
+        observation = self.true_observation_model[i](self.true_robot_states[i], submap)
+        self.robot[i].stateEstimator(observation)
+
+    def executeRobotAction(self, i):
+        self.robot[i].chooseAction()
+        action = self.robot[i].next_action
+        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
+        (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action)
+        self.true_robot_states[i] = new_states
+        self.map.setSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, new_submap)
