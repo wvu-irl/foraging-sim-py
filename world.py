@@ -30,7 +30,7 @@ class World:
 
     def updateRobotStatesAndLocalMaps(self):
         for i in range(self.num_robots):
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range)
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
             (observation, perceived_submap) = self.true_observation_model[i](self.true_robot_states[i], submap)
             self.robot[i].local_map = perceived_submap
             self.robot[i].stateEstimator(observation)

@@ -1,16 +1,27 @@
 import numpy as np
+from enum import Enum, unique
+
+@unique
+class MapLayer(Enum):
+    NUM_LAYERS = 4
+
+    FOOD = 0
+    HOME = 1
+    OBSTACLE = 2
+    ROBOT = 3
 
 class ForagingMap:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer):
-        self.food = np.array(food_layer, dtype=np.int)
-        self.home = np.array(home_layer, dtype=np.int)
-        self.obstacle = np.array(obstacle_layer, dtype=np.int)
-        self.robot = np.array(robot_layer, dtype=np.int)
-        if self.food.size() != self.home.size() and self.food.size() != self.obstacle.size() and self.food.size() != self.robot:
-            raise RuntimeError("ForagaingMap: food, home, obstacle, and robot layers are not the same size\nfood:{0}, home:{1}, obstacle:{2}, robot:{3}".format(self.food.size(), self.home.size(), self.obstacle.size(), self.robot.size()))
-        self.map_size = self.food.size()
+        if food_layer.shape != home_layer.shape and food_layer.shape != obstacle_layer.shape and food_layer.shape != robot_layer.shape:
+            raise RuntimeError("ForagaingMap: food, home, obstacle, and robot layers are not the same shape\nfood:{0}, home:{1}, obstacle:{2}, robot:{3}".format(food_layer.shape, home_layer.shape, obstacle_layer.shape, robot_layer.shape))
+        self.map_shape = food_layer.shape
+        self.map = np.array((MapLayer.NUM_LAYERS, self.map_shape), dtype=np.int)
+        self.map[MapLayer.FOOD] = food_layer
+        self.map[MapLayer.HOME] = home_layer
+        self.map[MapLayer.OBSTACLE] = obstacle_layer
+        self.map[MapLayer.ROBOT] robot_layer
 
-    def getSubMap(self, query_x, query_y, distance):
+    def getSubMap(self, query_x, query_y, distance, true_states):
         # Check that boundaries of queried submap do not extend outside map boundary
         # Coerce them into range if they do
         if query_x - distance < 0:
@@ -18,8 +29,8 @@ class ForagingMap:
         else:
             x_min = query_x - distance
 
-        if query_x + distance + 1 > self.map_size[0]:
-            x_max = self.map_size[0]
+        if query_x + distance + 1 > self.map_shape[0]:
+            x_max = self.map_shape[0]
         else:
             x_max = query_x + distance + 1
 
@@ -28,16 +39,45 @@ class ForagingMap:
         else:
             y_min = query_y - distance
 
-        if query_y + distance + 1 > self.map_size[1]:
-            y_max = self.map_size[1]
+        if query_y + distance + 1 > self.map_shape[1]:
+            y_max = self.map_shape[1]
         else:
             y_max = query_y + distance + 1
 
-        # Retrieve submap for each layer
-        food_submap = self.food[x_min:x_max, y_min:y_max]
-        home_submap = self.home[x_min:x_max, y_min:y_max]
-        obstacle_submap = self.obstacle[x_min:x_max, y_min:y_max]
-        robot_submap = self.robot[x_min:x_max, y_min:y_max]
+        # Retrieve submap
+        submap = self.map[:, x_min:x_max, y_min:y_max]
 
-        # Return tuple of submaps
-        return (food_submap, home_submap, obstacle_submap, robot_submap)
+        # Iterate over submap and populate lists of neighboring objects
+        submap_object_list = []
+        submap_property_list = []
+        submap_shape = submap.shape
+        submap_center = ((submap_shape[0] - 1)/2, (submap_shape[1] - 1)/2)
+        for x in range(submap_shape[0]):
+            for y in range(submap_shape[1]):
+                # Find relative position of grid cell
+                rel_x = x - submap_center[0]
+                rel_y = y - submap_center[1]
+                
+                # Check food layer
+                if submap[MapLayer.FOOD, x, y] == 1: # Contains food
+                    submap_object_list.append(MapLayer.FOOD)
+                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+
+                # Check home layer
+                if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
+                    submap_object_list.append(MapLayer.HOME)
+                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+
+                # Check obstacle layer
+                if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
+                    submap_object_list.append(MapLayer.OBSTACLE)
+                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+
+                # Check robot layer
+                if submap[MapLayer.ROBOT, x, y] != 0: # Contains another robot
+                    robot_id = submap[MapLayer.ROBOT, x, y] - 1
+                    submap_object_list.append(MapLayer.ROBOT)
+                    submap_property_list.append({"x" : rel_x, "y" : rel_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "battery" : true_states[robot_id].battery, "personality" : true_states[robot_id].personality}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
+
+        # Return object type and property lists
+        return (submap_object_list, submap_property_list)
