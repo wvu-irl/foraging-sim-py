@@ -1,11 +1,12 @@
 from submap_utils import *
 
-def deterministicTransitionModel(states, submap, action):
+def deterministicTransitionModel(states, submap, action, constants):
     new_states = states # new_states, to be returned at end, initialized as current states
     new_submap_object_list = []
     new_submap_property_list = []
     current_x = states.x
     current_y = states.y
+    map_shape = constants{"map_shape"}
     if action == 0: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
     elif action == 1: # Move E
@@ -51,18 +52,40 @@ def deterministicTransitionModel(states, submap, action):
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
+    # If robot battery is dead, robot cannot move
+    if states.battery <= 1e-3:
+        delta_x = 0
+        delta_y = 0
+
     # Update x and y states
     new_x = current_x + delta_x
     new_y = current_y + delta_y
-    new_states.x = new_x
-    new_states.y = new_y # TODO: add checks for moving off edge of map or into obstacles or other robots, and dead battery
+
+    # Check of new_x and new_y are within map boundaries
+    if new_x >= map_shape[0]:
+        new_x = map_shape[0] - 1
+        new_y = current_y
+    elif new_x < 0:
+        new_x = 0
+        new_y = current_y
+    if new_y >= map_shape[1]:
+        new_x = current_x
+        new_y = map_shape[1] - 1
+    elif new_y < 0:
+        new_x = current_x
+        new_y = 0
+    
+    # Check if robot is attempting to move into an obstacle or another robot
+    if (not isObstacleAtPos(delta_x, delta_y, submap)) and (not isRobotAtPos(delta_x, delta_y, submap)):
+        new_states.x = new_x
+        new_states.y = new_y
     # If robot has moved, mark old position in map to be removed
-    if new_x != current_x and new_y != current_y:
+    if new_states.x != current_x or new_states.y != current_y:
         new_submap_object_list.append(MapLayer.ROBOT)
         new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.id})
 
     # If a grab action was taken, perform the grab update
-    if 9 <= action <= 16: # range of grab actions 
+    if 9 <= action <= 16 and states.battery > 1e-3: # range of grab actions and battery is not dead
         if isFoodAtPos(food_delta_x, food_delta_y, submap):
             new_states.has_food = True
             new_submap_object_list.append(MapLayer.FOOD)
