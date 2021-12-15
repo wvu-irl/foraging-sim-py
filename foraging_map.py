@@ -55,29 +55,29 @@ class ForagingMap:
         for x in range(submap_shape[0]):
             for y in range(submap_shape[1]):
                 # Find relative position of grid cell
-                rel_x = x - submap_center[0]
-                rel_y = y - submap_center[1]
+                delta_x = x - submap_center[0]
+                delta_y = y - submap_center[1]
                 
                 # Check food layer
                 if submap[MapLayer.FOOD, x, y] == 1: # Contains food
                     submap_object_list.append(MapLayer.FOOD)
-                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check home layer
                 if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
                     submap_object_list.append(MapLayer.HOME)
-                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check obstacle layer
                 if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
                     submap_object_list.append(MapLayer.OBSTACLE)
-                    submap_property_list.append({"x" : rel_x, "y" : rel_y})
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check robot layer
                 if submap[MapLayer.ROBOT, x, y] != 0: # Contains another robot
                     robot_id = submap[MapLayer.ROBOT, x, y] - 1
                     submap_object_list.append(MapLayer.ROBOT)
-                    submap_property_list.append({"x" : rel_x, "y" : rel_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "battery" : true_states[robot_id].battery, "personality" : true_states[robot_id].personality}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "battery" : true_states[robot_id].battery, "personality" : true_states[robot_id].personality}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)
@@ -88,8 +88,8 @@ class ForagingMap:
         submap_object_list = submap[0]
         submap_property_list = submap[1]
         for i in range(len(submap_object_list)):
-            map_x = center_x + submap_property_list[i]["x"]
-            map_y = center_y + submap_property_list[i]["y"]
+            map_x = center_x + submap_property_list[i]["delta_x"]
+            map_y = center_y + submap_property_list[i]["delta_y"]
             # Set value of food layer, specifically for each visible grid cell
             if submap_object_list[i] == MapLayer.FOOD:
                 self.map[MapLayer.FOOD, map_x, map_y] = submap_property_list[i]["val"]

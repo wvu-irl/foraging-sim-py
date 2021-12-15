@@ -5,3 +5,4 @@ class States:
     self.has_food = False
     self.battery = 0.0
     self.personality = 0
+    self.id = 0
