@@ -59,7 +59,7 @@ class ForagingMap:
                 delta_y = y - submap_center[1]
                 
                 # Check food layer
-                if submap[MapLayer.FOOD, x, y] == 1: # Contains food
+                if submap[MapLayer.FOOD, x, y] > 0: # Contains food
                     submap_object_list.append(MapLayer.FOOD)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
@@ -90,7 +90,7 @@ class ForagingMap:
         for i in range(len(submap_object_list)):
             map_x = center_x + submap_property_list[i]["delta_x"]
             map_y = center_y + submap_property_list[i]["delta_y"]
-            # Set value of food layer, specifically for each visible grid cell
+            # Set value of food layer, specifically for each entry in submap
             if submap_object_list[i] == MapLayer.FOOD:
                 self.map[MapLayer.FOOD, map_x, map_y] = submap_property_list[i]["val"]
             # Update position of robot in map

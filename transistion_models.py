@@ -1,4 +1,5 @@
 from submap_utils import *
+from actions import *
 
 def deterministicTransitionModel(states, submap, action, constants):
     new_states = states # new_states, to be returned at end, initialized as current states
@@ -6,49 +7,42 @@ def deterministicTransitionModel(states, submap, action, constants):
     new_submap_property_list = []
     current_x = states.x
     current_y = states.y
+    current_heading = states.heading
     map_shape = constants{"map_shape"}
-    if action == 0: # Stay
+    at_home = isAtHome(0, 0, submap)
+    if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-    elif action == 1: # Move E
+    elif action == Actions.MOVE_E: # Move E
         (delta_x, delta_y) = getDeltaFromDirection(Direction.E)
-    elif action == 2: # Move NE
+    elif action == Actions.MOVE_NE: # Move NE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NE)
-    elif action == 3: # Move N
+    elif action == Actions.MOVE_N: # Move N
         (delta_x, delta_y) = getDeltaFromDirection(Direction.N)
-    elif action == 4: # Move NW
+    elif action == Actions.MOVE_NW: # Move NW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NW)
-    elif action == 5: # Move W
+    elif action == Actions.MOVE_W: # Move W
         (delta_x, delta_y) = getDeltaFromDirection(Direction.W)
-    elif action == 6: # Move SW
+    elif action == Actions.MOVE_SW: # Move SW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SW)
-    elif action == 7: # Move S
+    elif action == Actions.MOVE_S: # Move S
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
-    elif action == 8: # Move SE
+    elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
-    elif action == 9: # Grab food E
+    elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.E)
-    elif action == 10: # Grab food NE
+        if states.has_food == False and states.battery > 1e-3: # Cannot grab if already posessing food or if battery is dead
+            if isFoodAtPos(0, 0, submap):
+                new_states.has_food = True
+                new_states.food_heading = getFoodHeading(0, 0, submap)
+                new_submap_object_list.append(MapLayer.FOOD)
+                new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
+    elif action == Actions.DROP: # Drop food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.NE)
-    elif action == 11: # Grab food N
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.N)
-    elif action == 12: # Grab food NW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.NW)
-    elif action == 13: # Grab food W
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.W)
-    elif action == 14: # Grab food SW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.SW)
-    elif action == 15: # Grab food S
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.S)
-    elif action == 16: # Grab food SE
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        (food_delta_x, food_delta_y) = getDeltaFromDirection(Direction.SE)
+        if states.has_food and states.battery > 1e-3: # Cannot drop food if not already posessing it or if battery is dead
+            if at_home: # If at home, increment number of food retrieved, otherwise cannot drop food
+                new_states.num_food_retreived = states.num_food_retreived + 1
+                new_states.has_food = False
+                new_states.food_heading = 0
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
@@ -84,28 +78,16 @@ def deterministicTransitionModel(states, submap, action, constants):
         new_submap_object_list.append(MapLayer.ROBOT)
         new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.id})
 
-    # If a grab action was taken, perform the grab update
-    if 9 <= action <= 16 and states.battery > 1e-3: # range of grab actions and battery is not dead
-        if isFoodAtPos(food_delta_x, food_delta_y, submap):
-            new_states.has_food = True
-            new_submap_object_list.append(MapLayer.FOOD)
-            new_submap_property_list.append({"delta_x" : food_delta_x, "delta_y" : food_delta_y, "val" : 0})
-
-    # Check if on a home grid
-    if isAtHome(submap):
-        # If at home and has_food, food gets dropped
-        if states.has_food:
-            new_states.has_food = False
-
-        # If at home, battery receives charge
+    # If at home, battery receives charge
+    if at_home:
         new_states.battery = 100.0 # TODO: have ability to switch out more sophisticated battery charging model
     else:
         # If not at home, battery is depleted based on action taken
-        if action == 0: # Stay, small battery depletion
+        if action == Actions.STAY: # Stay, small battery depletion
             new_states.battery = states.battery - 1.0 # TODO: make it easier to swap out this battery model with others
-        elif 1 <= action <= 8: # Move action, moderate battery depletion
+        elif Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
             new_states.battery = states.battery - 5.0
-        elif 9 <= action <= 16: # Grab action, large battery depletion
+        elif action == Actions.GRAB or action == Actions.DROP: # Grab or drop action, large battery depletion
             new_states.battery = states.battery - 10.0
 
         # Battery cannot be depleted below zero

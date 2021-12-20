@@ -48,6 +48,21 @@ def isFoodAtPos(delta_x, delta_y, submap):
     # If code falls through to here, then there is no food at the query position
     return False
 
+def getFoodHeading(delta_x, delta_y, submap):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    for i in range(len(submap_object_list)):
+        # Check if entry is a food entry
+        if submap_object_list[i] == MapLayer.FOOD:
+            # Check if food delta position matches query
+            if delta_x == submap_property_list[i]{"delta_x"} and delta_y == submap_property_list[i]{"delta_y"}:
+                # If so, return the heading of the food
+                return submap_property_list[i]{"heading"}
+    
+    # If code falls through to here, then there is no food at the query position
+    return 0
+
 def isAtHome(submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]
