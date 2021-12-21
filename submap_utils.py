@@ -2,15 +2,21 @@ from foraging_map import *
 
 @unique
 class Direction(Enum):
-    E = 0
-    NE = 1
-    N = 2
-    NW = 3
-    W = 4
-    SW = 5
-    S = 6
-    SE = 7
-    NONE = 8
+    NONE = 0
+    E = 1
+    NE = 2
+    N = 3
+    NW = 4
+    W = 5
+    SW = 6
+    S = 7
+    SE = 8
+
+@unique
+class Rotation(Enum):
+    NONE = 0
+    CW = 1
+    CCW = 2
 
 def getDeltaFromDirection(direc): # returns (delta_x, delta_y)
     if direc == Direction.E:
@@ -33,6 +39,19 @@ def getDeltaFromDirection(direc): # returns (delta_x, delta_y)
         return (0, 0)
     else:
         raise RuntimeError("getDeltaFromDirection: not a valid direction value: {0}".format(direc))
+
+def getNewHeading(current_heading, rotation):
+    if rotation == Rotation.CW:
+        new_heading = current_heading + 1
+    elif rotation == Rotation.CCW:
+        new_heading = current_heading - 1
+
+    if new_heading < 1:
+        new_heading = 8
+    elif new_heading > 8:
+        new_heading = 1
+
+    return new_heading
 
 def isFoodAtPos(delta_x, delta_y, submap):
     # Loop over entries in submap list

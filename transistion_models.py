@@ -7,7 +7,6 @@ def deterministicTransitionModel(states, submap, action, constants):
     new_submap_property_list = []
     current_x = states.x
     current_y = states.y
-    current_heading = states.heading
     map_shape = constants{"map_shape"}
     at_home = isAtHome(0, 0, submap)
     if action == Actions.STAY: # Stay
@@ -28,6 +27,12 @@ def deterministicTransitionModel(states, submap, action, constants):
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
     elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
+    elif action == Actions.PIVOT_CW: # Pivot CW
+        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        new_states.heading = getNewHeading(states.heading, Rotation.CW)
+    elif action == Actions.PIVOT_CCW: # Pivot CCW
+        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        new_states.heading = getNewHeading(states.heading, Rotation.CCW)
     elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         if states.has_food == False and states.battery > 1e-3: # Cannot grab if already posessing food or if battery is dead
