@@ -1,6 +1,9 @@
 import numpy as np
 from foraging_map import ForagingMap
 from states import *
+from robot import *
+from transition_models import *
+from observation_models import *
 
 class World:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range):
@@ -19,10 +22,12 @@ class World:
         self.true_transition_model = []
         for i in range(self.num_robots):
             if robot_personality_list[i] == 0:
-                # self.robot.append(RobotType0(...))
-                # self.true_robot_states.append(initial_states)
-                # self.true_observation_model.append(observationType0)
-                # self.true_transition_model.append(transitionType0)
+                self.robot.append(SimpleDeterministicRobot({}))
+                initial_states = States
+                #TODO set initial_states, some parts based on map
+                self.true_robot_states.append(initial_states)
+                self.true_observation_model.append(fullyAccurateAndCertainObservationModel)
+                self.true_transition_model.append(deterministicTransitionModel)
             elif robot_personality_list[i] == 1:
                 # self.robot.append(RobotType1(...))
                 # self.true_robot_states.append(initial_states)
