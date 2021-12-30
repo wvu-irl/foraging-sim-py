@@ -99,5 +99,8 @@ def deterministicTransitionModel(states, submap, action, constants):
         if new_states.battery < 0.0:
             new_states.battery = 0.0
 
+    # Update time
+    new_states.t = states.t + 1
+
     # Return new states and new submap
     return (new_states, new_submap)

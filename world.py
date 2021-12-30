@@ -14,25 +14,32 @@ class World:
         # Record perception range
         self.perception_range = perception_range
 
-        # Initialize robots, true perception models, and true transition models
+        # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(robot_personality_list)
-        self.robot = []
-        self.true_robot_states = []
-        self.true_observation_model = []
-        self.true_transition_model = []
-        for i in range(self.num_robots):
-            if robot_personality_list[i] == 0:
-                self.robot.append(SimpleDeterministicRobot({}))
-                initial_states = States
-                #TODO set initial_states, some parts based on map
-                self.true_robot_states.append(initial_states)
-                self.true_observation_model.append(fullyAccurateAndCertainObservationModel)
-                self.true_transition_model.append(deterministicTransitionModel)
-            elif robot_personality_list[i] == 1:
-                # self.robot.append(RobotType1(...))
-                # self.true_robot_states.append(initial_states)
-                # self.true_perception_model.append(observationType1)
-                # self.true_transition_model.append(transitionType1)
+        self.robot = [None] * self.num_robots
+        self.true_robot_states = [None] * self.num_robots
+        self.true_observation_model = [None] * self.num_robots
+        self.true_transition_model = [None] * self.num_robots
+
+        # Find position of robots in map and initialize true states
+        for x in range(self.map_shape[0]):
+            for y in range(self.map_shape[1]):
+                robot_id = self.map.map[MapLayer.FOOD, x, y] - 1
+                if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
+                    robot_states = States()
+                    robot_states.x = x
+                    robot_states.y = y
+                    robot_states.battery = 100.0
+                    robot_states.personality = robot_personality_list[robot_id]
+                    robot_states.id = robot_id
+                    if robot_personality_list[robot_id] == 0:
+                        self.robot[robot_id] = SimpleDeterministicRobot({})
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = deterministicTransitionModel
+                    elif robot_personality_list[robot_id] == 1:
+                        # self.robot[robot_id] = RobotType1(...)
+                        # self.true_perception_model[robot_id] = observationType1
+                        # self.true_transition_model[robot_id] = transitionType1
 
         # Record constants known to the true simulation
         self.true_constants = {"map_shape" : self.map_shape}
