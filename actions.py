@@ -1,7 +1,7 @@
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 @unique
-class Actions(Enum):
+class Actions(IntEnum):
     STAY = 0
     MOVE_E = 1
     MOVE_NE = 2

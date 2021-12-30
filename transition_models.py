@@ -7,7 +7,7 @@ def deterministicTransitionModel(states, submap, action, constants):
     new_submap_property_list = []
     current_x = states.x
     current_y = states.y
-    map_shape = constants{"map_shape"}
+    map_shape = constants["map_shape"]
     at_home = isAtHome(0, 0, submap)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
@@ -81,7 +81,7 @@ def deterministicTransitionModel(states, submap, action, constants):
     # If robot has moved, mark old position in map to be removed
     if new_states.x != current_x or new_states.y != current_y:
         new_submap_object_list.append(MapLayer.ROBOT)
-        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.id})
+        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.robot_id})
 
     # If at home, battery receives charge
     if at_home:

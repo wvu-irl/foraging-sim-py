@@ -1,8 +1,8 @@
 import numpy as np
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 @unique
-class MapLayer(Enum):
+class MapLayer(IntEnum):
     NUM_LAYERS = 4
 
     FOOD = 0
@@ -15,11 +15,12 @@ class ForagingMap:
         if food_layer.shape != home_layer.shape and food_layer.shape != obstacle_layer.shape and food_layer.shape != robot_layer.shape:
             raise RuntimeError("ForagaingMap: food, home, obstacle, and robot layers are not the same shape\nfood:{0}, home:{1}, obstacle:{2}, robot:{3}".format(food_layer.shape, home_layer.shape, obstacle_layer.shape, robot_layer.shape))
         self.map_shape = food_layer.shape
-        self.map = np.array((MapLayer.NUM_LAYERS, self.map_shape), dtype=np.int)
+        map_obj_shape = (MapLayer.NUM_LAYERS,) + self.map_shape
+        self.map = np.zeros(map_obj_shape, dtype=np.int)
         self.map[MapLayer.FOOD] = food_layer
         self.map[MapLayer.HOME] = home_layer
         self.map[MapLayer.OBSTACLE] = obstacle_layer
-        self.map[MapLayer.ROBOT] robot_layer
+        self.map[MapLayer.ROBOT] = robot_layer
 
     def getSubMap(self, query_x, query_y, distance, true_states):
         # Check that boundaries of queried submap do not extend outside map boundary

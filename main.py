@@ -1,6 +1,8 @@
 from world import World
 from PIL import Image
+import matplotlib.pyplot as plt
 import numpy as np
+from map_viz import displayMap
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
@@ -22,12 +24,16 @@ robot_layer = np.array(robot_img)
 # Initialize world
 sim_world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range)
 
+# Initialize plot objects
+map_fig, map_ax = plt.subplots()
+
 # Run simulation for prescribed number of timesteps
 for t in range(num_time_steps):
-    sim_world.simulationStep()
+    #sim_world.simulationStep()
 
     # Display map for current time step
-    # TODO: write map display function
+    displayMap(sim_world.map, map_fig, map_ax)
+    plt.show()
 
 # Save results
 # TODO: write results saving function

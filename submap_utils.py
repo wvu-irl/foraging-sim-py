@@ -1,7 +1,8 @@
 from foraging_map import *
+from enum import IntEnum, unique
 
 @unique
-class Direction(Enum):
+class Direction(IntEnum):
     NONE = 0
     E = 1
     NE = 2
@@ -13,7 +14,7 @@ class Direction(Enum):
     SE = 8
 
 @unique
-class Rotation(Enum):
+class Rotation(IntEnum):
     NONE = 0
     CW = 1
     CCW = 2
@@ -61,7 +62,7 @@ def isFoodAtPos(delta_x, delta_y, submap):
         # Check if entry is a food entry
         if submap_object_list[i] == MapLayer.FOOD:
             # Check if food delta position matches query
-            if delta_x == submap_property_list[i]{"delta_x"} and delta_y == submap_property_list[i]{"delta_y"}:
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 return True
     
     # If code falls through to here, then there is no food at the query position
@@ -75,9 +76,9 @@ def getFoodHeading(delta_x, delta_y, submap):
         # Check if entry is a food entry
         if submap_object_list[i] == MapLayer.FOOD:
             # Check if food delta position matches query
-            if delta_x == submap_property_list[i]{"delta_x"} and delta_y == submap_property_list[i]{"delta_y"}:
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 # If so, return the heading of the food
-                return submap_property_list[i]{"heading"}
+                return submap_property_list[i]["heading"]
     
     # If code falls through to here, then there is no food at the query position
     return 0
@@ -90,7 +91,7 @@ def isAtHome(submap):
         # Check if entry is a home entry
         if submap_object_list[i] == MapLayer.HOME:
             # Check if agent is at home
-            if submap_property_list[i]{"delta_x"} == 0 and submap_property_list[i]{"delta_y"} == 0:
+            if submap_property_list[i]["delta_x"] == 0 and submap_property_list[i]["delta_y"] == 0:
                 return True
     
     # If code falls through to here, then there is no food at the query position
@@ -104,7 +105,7 @@ def isObstacleAtPos(delta_x, delta_y, submap):
         # Check if entry is an obstacle entry
         if submap_object_list[i] == MapLayer.OBSTACLE:
             # Check if food delta position matches query
-            if delta_x == submap_property_list[i]{"delta_x"} and delta_y == submap_property_list[i]{"delta_y"}:
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 return True
 
 def isRobotAtPos(delta_x, delta_y, submap):
@@ -115,5 +116,5 @@ def isRobotAtPos(delta_x, delta_y, submap):
         # Check if entry is a robot entry
         if submap_object_list[i] == MapLayer.ROBOT:
             # Check if food delta position matches query
-            if delta_x == submap_property_list[i]{"delta_x"} and delta_y == submap_property_list[i]{"delta_y"}:
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 return True

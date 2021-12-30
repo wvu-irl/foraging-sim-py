@@ -7,7 +7,7 @@ class Robot(ABC):
     def __init__(self, initial_values):
         pass
 
-    @abstractmethod
+    @abstractmethod # TODO: Maybe using these as abstract methods is not the right workflow for this project...
     def chooseAction(self):
         pass
 
@@ -17,7 +17,11 @@ class Robot(ABC):
 
 class SimpleDeterministicRobot(Robot):
     def __init__(self, initial_values):
+        self.chooseAction = simpleFSMActionPolicy # TODO: See above. This is circumventing these as abstract methods, anyway.
+        self.stateEstimator = passthroughStateEstimator
+
+    def chooseAction(self):
         pass
 
-    self.chooseAction = simpleFSMActionPolicy
-    self.stateEstimator = passthroughStateEstimator
+    def stateEstimator(self):
+        pass

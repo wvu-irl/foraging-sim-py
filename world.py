@@ -31,12 +31,12 @@ class World:
                     robot_states.y = y
                     robot_states.battery = 100.0
                     robot_states.personality = robot_personality_list[robot_id]
-                    robot_states.id = robot_id
+                    robot_states.robot_id = robot_id
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleDeterministicRobot({})
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = deterministicTransitionModel
-                    elif robot_personality_list[robot_id] == 1:
+                    #elif robot_personality_list[robot_id] == 1:
                         # self.robot[robot_id] = RobotType1(...)
                         # self.true_perception_model[robot_id] = observationType1
                         # self.true_transition_model[robot_id] = transitionType1
