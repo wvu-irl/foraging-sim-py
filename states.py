@@ -8,4 +8,4 @@ class States:
     battery = 0.0
     personality = 0
     robot_id = 0
-    num_food_retreived = 0
+    num_food_retrieved = 0

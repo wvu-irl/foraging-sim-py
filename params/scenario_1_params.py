@@ -6,4 +6,4 @@ robot_personality_list = [0]
 perception_range = 1
 num_time_steps = 100
 # num_monte_carlo_trials = 1000
-# results_file_path = "results/scenario_1_results.npz"
+results_filename = "results/scenario_1_results.npz"

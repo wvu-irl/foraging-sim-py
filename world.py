@@ -32,6 +32,7 @@ class World:
                     robot_states.battery = 100.0
                     robot_states.personality = robot_personality_list[robot_id]
                     robot_states.robot_id = robot_id
+                    self.true_robot_states[robot_id] = robot_states
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleDeterministicRobot({})
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel

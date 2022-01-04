@@ -3,6 +3,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 from map_viz import displayMap
+from save_results import saveResultsFile
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
@@ -26,14 +27,16 @@ sim_world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_per
 
 # Initialize plot objects
 map_fig, map_ax = plt.subplots()
+plt.ion()
+plt.show()
 
 # Run simulation for prescribed number of timesteps
 for t in range(num_time_steps):
     #sim_world.simulationStep()
 
     # Display map for current time step
-    displayMap(sim_world.map, map_fig, map_ax)
-    plt.show()
+    displayMap(sim_world.map, plt, map_fig, map_ax)
+    print("t = {0}".format(t))
 
 # Save results
-# TODO: write results saving function
+saveResultsFile(results_filename, sim_world)

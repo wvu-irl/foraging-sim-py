@@ -1,7 +1,7 @@
 import numpy as np
 from foraging_map import MapLayer
 
-def displayMap(map_obj, fig, ax):
+def displayMap(map_obj, plt, fig, ax):
     img_shape = map_obj.map_shape + (3,)
     img = np.ones(img_shape, dtype=np.uint8) * 255
     for x in range(map_obj.map_shape[0]):
@@ -15,4 +15,6 @@ def displayMap(map_obj, fig, ax):
             elif map_obj.map[MapLayer.HOME, x, y] > 0: # Mark home locations as blue
                 img[x, y, :] = np.array([0, 0, 255], dtype=np.unit8)
 
+    ax.cla()
     ax.imshow(img)
+    plt.pause(0.001)
