@@ -1,5 +1,6 @@
 import numpy as np
 from enum import IntEnum, unique
+import sys
 
 @unique
 class MapLayer(IntEnum):
@@ -98,4 +99,12 @@ class ForagingMap:
             elif submap_object_list[i] == MapLayer.ROBOT:
                 self.map[MapLayer.ROBOT, center_x, center_y] = submap_property_list[i]["id"] + 1 # Set new robot position
                 self.map[MapLayer.ROBOT, map_x, map_y] = 0 # Remove old robot position
+    
+    def findHomePosition(self, robot_id):
+        for x in range(self.map_shape[0]):
+            for y in range(self.map_shape[1]):
+                if self.map[MapLayer.HOME, x, y] - 1 == robot_id:
+                    return (x, y)
 
+        # If code falls through to here, no home location for given robot id
+        return (sys.maxsize, sys.maxsize)

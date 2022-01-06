@@ -14,6 +14,15 @@ class World:
         # Record perception range
         self.perception_range = perception_range
 
+        # Record home location TODO: change this to allow for different homes based on different robot IDs or not
+        self.home_pos = self.map.findHomePosition(0)
+        
+        # Record constants known to the true simulation
+        self.true_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos}
+
+        # Record constants known to the robots (possibly different than the true simulation)
+        self.robot_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos}
+
         # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(robot_personality_list)
         self.robot = [None] * self.num_robots
@@ -34,7 +43,7 @@ class World:
                     robot_states.robot_id = robot_id
                     self.true_robot_states[robot_id] = robot_states
                     if robot_personality_list[robot_id] == 0:
-                        self.robot[robot_id] = SimpleDeterministicRobot({})
+                        self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants)
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = deterministicTransitionModel
                     #elif robot_personality_list[robot_id] == 1:
@@ -42,16 +51,10 @@ class World:
                         # self.true_perception_model[robot_id] = observationType1
                         # self.true_transition_model[robot_id] = transitionType1
 
-        # Record constants known to the true simulation
-        self.true_constants = {"map_shape" : self.map_shape}
-
-        # Record constants known to the robots (possibly different than the true simulation)
-        self.robot_constants = {"map_shape" : self.map_shape}
-
     def simulationStep(self):
         for i in range(self.num_robots):
-            updateRobotObservation(i)
-            executeRobotAction(i)
+            self.updateRobotObservation(i)
+            self.executeRobotAction(i)
 
     def updateRobotObservation(self, i):
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)

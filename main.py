@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from map_viz import displayMap
 from save_results import saveResultsFile
+import random
+
+# Seed random number generator
+random.seed()
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
@@ -32,7 +36,7 @@ plt.show()
 
 # Run simulation for prescribed number of timesteps
 for t in range(num_time_steps):
-    #sim_world.simulationStep()
+    sim_world.simulationStep()
 
     # Display map for current time step
     displayMap(sim_world.map, plt, map_fig, map_ax)

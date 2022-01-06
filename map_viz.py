@@ -16,5 +16,5 @@ def displayMap(map_obj, plt, fig, ax):
                 img[x, y, :] = np.array([0, 0, 255], dtype=np.unit8)
 
     ax.cla()
-    ax.imshow(img)
+    ax.imshow(np.transpose(img))
     plt.pause(0.001)
