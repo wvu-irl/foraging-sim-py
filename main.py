@@ -4,10 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from map_viz import displayMap
 from save_results import saveResultsFile
-import random
 
 # Seed random number generator
-random.seed()
+np.random.seed()
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 

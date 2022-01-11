@@ -1,7 +1,7 @@
 from enum import IntEnum, unique
 from actions import Actions
 from submap_utils import *
-import random
+import numpy as np
 
 @unique
 class FSMState(IntEnum):
@@ -25,8 +25,19 @@ def simpleFSMActionPolicy(self):
             elif isFoodVisible(self.submap): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
-                #chosen_action = random.randint(Actions.MOVE_E, Actions.MOVE_SE)
-                chosen_action = Actions.MOVE_NE
+                if self.states.x > self.home_pos[0] and self.states.y > self.home_pos[1]:
+                    pmf = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000])
+                elif self.states.x < self.home_pos[0] and self.states.y > self.home_pos[1]:
+                    pmf = np.array([0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000])
+                elif self.states.x < self.home_pos[0] and self.states.y < self.home_pos[1]:
+                    pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000])
+                elif self.states.x > self.home_pos[0] and self.states.y < self.home_pos[1]:
+                    pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
+                else:
+                    pmf = np.ones(8) / 8.0
+                elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+                chosen_action = np.random.choice(elements, 1, p=pmf)
+                #chosen_action = Actions.MOVE_NE
                 self.fsm_state = FSMState.SEARCH
                 keep_executing = False
 
