@@ -13,8 +13,9 @@ def displayMap(map_obj, plt, fig, ax):
             elif map_obj.map[MapLayer.FOOD, x, y] > 0: # Mark food locations as green
                 img[x, y, :] = np.array([0, 255, 0], dtype=np.uint8)
             elif map_obj.map[MapLayer.HOME, x, y] > 0: # Mark home locations as blue
-                img[x, y, :] = np.array([0, 0, 255], dtype=np.unit8)
+                img[x, y, :] = np.array([0, 0, 255], dtype=np.uint8)
 
     ax.cla()
-    ax.imshow(np.transpose(img))
+    ax.imshow(np.swapaxes(img, 0, 1), origin='lower')
+    #ax.imshow(img)
     plt.pause(0.001)

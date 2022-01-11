@@ -53,9 +53,9 @@ class ForagingMap:
         submap_object_list = []
         submap_property_list = []
         submap_shape = submap.shape
-        submap_center = ((submap_shape[0] - 1)/2, (submap_shape[1] - 1)/2)
-        for x in range(submap_shape[0]):
-            for y in range(submap_shape[1]):
+        submap_center = ((submap_shape[1] - 1)/2, (submap_shape[2] - 1)/2)
+        for x in range(submap_shape[1]):
+            for y in range(submap_shape[2]):
                 # Find relative position of grid cell
                 delta_x = x - submap_center[0]
                 delta_y = y - submap_center[1]
@@ -63,7 +63,7 @@ class ForagingMap:
                 # Check food layer
                 if submap[MapLayer.FOOD, x, y] > 0: # Contains food
                     submap_object_list.append(MapLayer.FOOD)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : submap[MapLayer.FOOD, x, y]})
 
                 # Check home layer
                 if submap[MapLayer.HOME, x, y] == 1: # Is a home cell

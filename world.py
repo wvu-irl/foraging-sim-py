@@ -33,7 +33,7 @@ class World:
         # Find position of robots in map and initialize true states
         for x in range(self.map_shape[0]):
             for y in range(self.map_shape[1]):
-                robot_id = self.map.map[MapLayer.FOOD, x, y] - 1
+                robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
                     robot_states = States()
                     robot_states.x = x
@@ -62,8 +62,7 @@ class World:
         self.robot[i].stateEstimator(observation)
 
     def executeRobotAction(self, i):
-        self.robot[i].chooseAction()
-        action = self.robot[i].next_action
+        action = self.robot[i].chooseAction()
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
         (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
         self.true_robot_states[i] = new_states

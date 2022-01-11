@@ -8,7 +8,7 @@ def deterministicTransitionModel(states, submap, action, constants):
     current_x = states.x
     current_y = states.y
     map_shape = constants["map_shape"]
-    at_home = isAtHome(0, 0, submap)
+    at_home = isAtHome(submap)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
     elif action == Actions.MOVE_E: # Move E
@@ -45,7 +45,7 @@ def deterministicTransitionModel(states, submap, action, constants):
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         if states.has_food and states.battery > 1e-3: # Cannot drop food if not already posessing it or if battery is dead
             if at_home: # If at home, increment number of food retrieved, otherwise cannot drop food
-                new_states.num_food_retreived = states.num_food_retreived + 1
+                new_states.num_food_retrieved = states.num_food_retrieved + 1
                 new_states.has_food = False
                 new_states.food_heading = 0
     else:
@@ -89,11 +89,11 @@ def deterministicTransitionModel(states, submap, action, constants):
     else:
         # If not at home, battery is depleted based on action taken
         if action == Actions.STAY: # Stay, small battery depletion
-            new_states.battery = states.battery - 1.0 # TODO: make it easier to swap out this battery model with others
+            new_states.battery = states.battery - 0.1 # TODO: make it easier to swap out this battery model with others
         elif Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
-            new_states.battery = states.battery - 5.0
+            new_states.battery = states.battery - 0.5
         elif action == Actions.GRAB or action == Actions.DROP: # Grab or drop action, large battery depletion
-            new_states.battery = states.battery - 10.0
+            new_states.battery = states.battery - 1.0
 
         # Battery cannot be depleted below zero
         if new_states.battery < 0.0:
@@ -103,4 +103,5 @@ def deterministicTransitionModel(states, submap, action, constants):
     new_states.t = states.t + 1
 
     # Return new states and new submap
+    new_submap = (new_submap_object_list, new_submap_property_list)
     return (new_states, new_submap)

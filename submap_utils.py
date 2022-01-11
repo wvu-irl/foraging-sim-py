@@ -92,6 +92,8 @@ def findNearestFood(submap):
         if submap_object_list[i] == MapLayer.FOOD:
             # Check if food distance is closer than the previously closest found food
             distance = max(abs(submap_property_list[i]["delta_x"]), submap_property_list[i]["delta_y"])
+            print("food distance: {0}".format(distance))
+            print("food delta_x, delta_y: [{0},{1}]".format(submap_property_list[i]["delta_x"],submap_property_list[i]["delta_y"]))
             if distance < nearest_distance:
                 nearest_distance = distance
                 nearest_delta_x = submap_property_list[i]["delta_x"]
