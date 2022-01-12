@@ -36,7 +36,8 @@ def simpleFSMActionPolicy(self):
                 else:
                     pmf = np.ones(8) / 8.0
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-                chosen_action = np.random.choice(elements, 1, p=pmf)
+                rng = np.random.default_rng()
+                chosen_action = rng.choice(elements, 1, p=pmf)
                 #chosen_action = Actions.MOVE_NE
                 self.fsm_state = FSMState.SEARCH
                 keep_executing = False

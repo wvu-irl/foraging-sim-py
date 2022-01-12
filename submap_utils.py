@@ -55,6 +55,15 @@ def getNewHeading(current_heading, rotation):
 
     return new_heading
 
+def getHeadingDiff(heading1, heading2):
+    diff = heading1 - heading2
+    if diff > 4:
+        diff -= 8
+    elif diff < -4:
+        diff += 8
+
+    return diff
+
 def isFoodAtPos(delta_x, delta_y, submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]
