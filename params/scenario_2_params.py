@@ -1,4 +1,4 @@
-food_img_path = "maps/100_100_food_map.png"
+food_img_path = "maps/100_100_food_different_headings_map.png"
 home_img_path = "maps/100_100_home_map.png"
 obstacle_img_path = "maps/100_100_obstacle_map.png"
 robot_img_path = "maps/100_100_robot_map.png"

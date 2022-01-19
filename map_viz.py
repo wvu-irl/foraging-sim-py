@@ -10,8 +10,14 @@ def displayMap(map_obj, plt, fig, ax):
                 img[x, y, :] = np.array([255, 0, 0], dtype=np.uint8)
             elif map_obj.map[MapLayer.OBSTACLE, x, y] > 0: # Mark obstacle locations as black
                 img[x, y, :] = np.array([0, 0, 0], dtype=np.uint8)
-            elif map_obj.map[MapLayer.FOOD, x, y] > 0: # Mark food locations as green
+            elif map_obj.map[MapLayer.FOOD, x, y] == 1: # Mark food with heading 1 as bright green
                 img[x, y, :] = np.array([0, 255, 0], dtype=np.uint8)
+            elif map_obj.map[MapLayer.FOOD, x, y] == 3: # Mark food with heading 3 as medium-bright green
+                img[x, y, :] = np.array([0, 155, 0], dtype=np.uint8)
+            elif map_obj.map[MapLayer.FOOD, x, y] == 5: # Mark food with heading 5 as medium-dark green
+                img[x, y, :] = np.array([0, 100, 0], dtype=np.uint8)
+            elif map_obj.map[MapLayer.FOOD, x, y] == 7: # Mark food with heading 7 as dark green
+                img[x, y, :] = np.array([0, 55, 0], dtype=np.uint8)
             elif map_obj.map[MapLayer.HOME, x, y] > 0: # Mark home locations as blue
                 img[x, y, :] = np.array([0, 0, 255], dtype=np.uint8)
 

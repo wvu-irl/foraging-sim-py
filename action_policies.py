@@ -2,6 +2,7 @@ from enum import IntEnum, unique
 from actions import Actions
 from submap_utils import *
 import numpy as np
+from debug_print import debugPrint
 
 @unique
 class FSMState(IntEnum):
@@ -17,7 +18,7 @@ def simpleFSMActionPolicy(self):
     keep_executing = True
     while keep_executing:
         if self.fsm_state == FSMState.SEARCH:
-            print("fsm_state: SEARCH")
+            debugPrint("fsm_state: SEARCH")
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
@@ -44,9 +45,9 @@ def simpleFSMActionPolicy(self):
                 keep_executing = False
 
         elif self.fsm_state == FSMState.APPROACH:
-            print("fsm_state: APPROACH")
+            debugPrint("fsm_state: APPROACH")
             if self.fsm_nearest_food_found == False:
-                print("find nearest food")
+                debugPrint("find nearest food")
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap)
                 self.nearest_food_x = nearest_delta_x + self.states.x
                 self.nearest_food_y = nearest_delta_y + self.states.y
@@ -54,19 +55,19 @@ def simpleFSMActionPolicy(self):
                 self.fsm_state = FSMState.APPROACH
             else:
                 if self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
-                    print("grab")
+                    debugPrint("grab")
                     chosen_action = Actions.GRAB
                     self.fsm_nearest_food_found = False
                     self.fsm_state = FSMState.GO_HOME
                     keep_executing = False
                 else:
-                    print("move towards nearest food")
+                    debugPrint("move towards nearest food")
                     chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
         elif self.fsm_state == FSMState.GO_HOME:
-            print("fsm_state: GO_HOME")
+            debugPrint("fsm_state: GO_HOME")
             self.fsm_nearest_food_found = False
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
                 if self.states.has_food:
@@ -74,7 +75,9 @@ def simpleFSMActionPolicy(self):
                     self.fsm_state = FSMState.SEARCH
                     keep_executing = False
                 else:
+                    chosen_action = Actions.STAY
                     self.fsm_state = FSMState.SEARCH
+                    keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
                 self.fsm_state = FSMState.GO_HOME
@@ -90,13 +93,13 @@ def uncertainGrabFSMActionPolicy(self):
     keep_executing = True
     while keep_executing:
         if self.fsm_state == FSMState.SEARCH:
-            print("fsm_state: SEARCH")
+            debugPrint("fsm_state: SEARCH")
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
             elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape): # If at edge of map, go home
                 self.fsm_state = FSMState.GO_HOME
-            elif isFoodVisible(self.submap): # If food is visible, approach
+            elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
                 if self.states.x > self.home_pos[0] and self.states.y > self.home_pos[1]:
@@ -117,9 +120,10 @@ def uncertainGrabFSMActionPolicy(self):
                 keep_executing = False
 
         elif self.fsm_state == FSMState.APPROACH:
-            print("fsm_state: APPROACH")
+            debugPrint("fsm_state: APPROACH")
             if self.fsm_nearest_food_found == False:
-                print("find nearest food")
+                debugPrint("find nearest food")
+                # TODO: need to handle if this returns no non-excluded food. Otherwise robot goes towards x,y infinity
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
                 self.nearest_food_x = nearest_delta_x + self.states.x
                 self.nearest_food_y = nearest_delta_y + self.states.y
@@ -127,19 +131,19 @@ def uncertainGrabFSMActionPolicy(self):
                 self.fsm_state = FSMState.APPROACH
             else:
                 if self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
-                    print("grab")
+                    debugPrint("grab")
                     chosen_action = Actions.GRAB
                     self.fsm_nearest_food_found = False
                     self.fsm_state = FSMState.CONFIRM_COLLECT
                     keep_executing = False
                 else:
-                    print("move towards nearest food")
+                    debugPrint("move towards nearest food")
                     chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
         elif self.fsm_state == FSMState.GO_HOME:
-            print("fsm_state: GO_HOME")
+            debugPrint("fsm_state: GO_HOME")
             self.fsm_nearest_food_found = False
             self.fsm_failed_grab_attempts = 0
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
@@ -148,20 +152,22 @@ def uncertainGrabFSMActionPolicy(self):
                     self.fsm_state = FSMState.SEARCH
                     keep_executing = False
                 else:
+                    chosen_action = Actions.STAY
                     self.fsm_state = FSMState.SEARCH
+                    keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
                 self.fsm_state = FSMState.GO_HOME
                 keep_executing = False
 
         elif self.fsm_state == FSMState.CONFIRM_COLLECT:
-            print("fsm_state: CONFIRM_COLLECT")
+            debugPrint("fsm_state: CONFIRM_COLLECT")
             self.fsm_nearest_food_found = False
             if self.states.has_food:
-                print("food picked up, going home")
+                debugPrint("food picked up, going home")
                 self.fsm_state = FSMState.GO_HOME
             else:
-                print("food pickup failed")
+                debugPrint("food pickup failed")
                 self.fsm_failed_grab_attempts += 1
                 if self.fsm_failed_grab_attempts >= 2:
                     # TODO mark robot x,y as failed food location, need to use this to exclude in approach

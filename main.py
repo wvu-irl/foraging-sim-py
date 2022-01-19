@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from map_viz import displayMap
 from save_results import saveResultsFile
+import config
+
+config.enable_debug_prints = False
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
