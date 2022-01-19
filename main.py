@@ -8,7 +8,7 @@ from save_results import saveResultsFile
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
 # Load simulation parameters
-from params.scenario_1_params import *
+from params.scenario_2_params import *
 
 # Load map initialization image files
 food_img = Image.open(food_img_path)

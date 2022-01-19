@@ -89,7 +89,7 @@ def isFoodVisible(submap):
     # If code falls through to here, then there is no food in the submap
     return False
 
-def findNearestFood(submap):
+def findNearestFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot_y = sys.maxsize):
     # Loop over entries in submap list
     submap_object_list = submap[0]
     submap_property_list = submap[1]
@@ -99,11 +99,17 @@ def findNearestFood(submap):
     for i in range(len(submap_object_list)):
         # Check if entry is a food entry
         if submap_object_list[i] == MapLayer.FOOD:
-            # Check if food distance is closer than the previously closest found food
+            # Check if food distance is closer than the previously closest found food and if location is not on the exclude list
             distance = max(abs(submap_property_list[i]["delta_x"]), submap_property_list[i]["delta_y"])
+            # Exclude locations marked as excluded food
+            exclude = False
+            for j in range(len(exclude_locations)):
+                if submap_property_list[i]["delta_x"] == (exclude_locations[j]["x"] - robot_x) and submap_property_list[i]["delta_y"] == (exclude_locations[j]["y"] - robot_y):
+                    print("EXCLUDE FAILED FOOD")
+                    exclude = True
             print("food distance: {0}".format(distance))
             print("food delta_x, delta_y: [{0},{1}]".format(submap_property_list[i]["delta_x"],submap_property_list[i]["delta_y"]))
-            if distance < nearest_distance:
+            if distance < nearest_distance and not exclude:
                 nearest_distance = distance
                 nearest_delta_x = submap_property_list[i]["delta_x"]
                 nearest_delta_y = submap_property_list[i]["delta_y"]

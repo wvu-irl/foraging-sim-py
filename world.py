@@ -46,10 +46,10 @@ class World:
                         self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants)
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = deterministicTransitionModel
-                    #elif robot_personality_list[robot_id] == 1:
-                        # self.robot[robot_id] = RobotType1(...)
-                        # self.true_perception_model[robot_id] = observationType1
-                        # self.true_transition_model[robot_id] = transitionType1
+                    elif robot_personality_list[robot_id] == 1:
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
 
     def simulationStep(self):
         for i in range(self.num_robots):

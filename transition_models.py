@@ -144,10 +144,10 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         if states.has_food == False and states.battery > 1e-3: # Cannot grab if already posessing food or if battery is dead
             if isFoodAtPos(0, 0, submap):
-                grab_success_pmf = np.array([0.0, 0.0, 0.0, 0.05, 0.9, 0.05, 0.0, 0.0, 0.0])
+                grab_success_possible_probs = np.array([0.0, 0.0, 0.05, 0.5, 0.9, 0.5, 0.05, 0.0, 0.0]) # Grab success probability associated with each robot-food heading diff [-4, -3, -2, -1, 0, 1, 2, 3, 4] 
                 food_heading = getFoodHeading(0, 0, submap)
                 robot_food_heading_diff = getHeadingDiff(states.heading, food_heading)
-                grab_success_prob = grab_success_pmf[robot_food_heading_diff]
+                grab_success_prob = grab_success_possible_probs[robot_food_heading_diff + 4]
                 rng = np.random.default_rng()
                 if rng.random() < grab_success_prob:
                     new_states.has_food = True
