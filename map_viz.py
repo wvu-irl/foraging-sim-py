@@ -23,5 +23,4 @@ def displayMap(map_obj, plt, fig, ax):
 
     ax.cla()
     ax.imshow(np.swapaxes(img, 0, 1), origin='lower')
-    #ax.imshow(img)
     plt.pause(0.001)

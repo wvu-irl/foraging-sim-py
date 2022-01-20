@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from world import World
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -7,11 +8,17 @@ from save_results import saveResultsFile
 import config
 
 config.enable_debug_prints = False
+enable_plots = True
+save_plots = True
 
 # TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
 
 # Load simulation parameters
 from params.scenario_2_params import *
+
+# Check that number of threads is less than number of Monte Carlo trials
+if num_threads > num_monte_carlo_trials:
+    raise RuntimeError("number of threads: {0} is greater than number of Monte Carlo trials {1}".format(num_threads, num_monte_carlo_trials))
 
 # Load map initialization image files
 food_img = Image.open(food_img_path)
@@ -25,21 +32,45 @@ home_layer = np.array(home_img)
 obstacle_layer = np.array(obstacle_img)
 robot_layer = np.array(robot_img)
 
-# Initialize world
-sim_world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range)
+def runWrapper(obj): 
+    # Initialize plot objects, if only one trial
+    if enable_plots and num_monte_carlo_trials == 1:
+        map_fig, map_ax = plt.subplots()
+        plt.ion()
+        plt.show()
 
-# Initialize plot objects
-map_fig, map_ax = plt.subplots()
-plt.ion()
-plt.show()
+    # Run each trial
+    for t in range(num_time_steps):
+        obj.simulationStep()
 
-# Run simulation for prescribed number of timesteps
-for t in range(num_time_steps):
-    sim_world.simulationStep()
+        # Display map for current time step, if only one trial
+        if enable_plots and num_monte_carlo_trials == 1:
+            displayMap(obj.map, plt, map_fig, map_ax)
+            if save_plots:
+                map_fig.savefig("figures/fig%02d.png" % t)
+            print("t = {0}".format(t))
 
-    # Display map for current time step
-    displayMap(sim_world.map, plt, map_fig, map_ax)
-    print("t = {0}".format(t))
+    return obj
 
-# Save results
-saveResultsFile(results_filename, sim_world)
+def poolHandler():
+    # Initialize worlds
+    print("Initializing worlds...")
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps) for i in range(num_monte_carlo_trials)]
+    
+    # Run pool of Monte Carlo trials
+    print("Beginning Monte Carlo trials...")
+    if num_threads > 1:
+        # Initialize multiprocessing pool and map objects' run methods to begin simulation
+        p = Pool(num_threads)
+        sim_worlds = p.map(runWrapper, sim_worlds)
+    else:
+        # Run each trial sequentially, for debugging purposes, with no multiprocessing
+        for i in range(num_monte_carlo_trials):
+            runWrapper(sim_worlds[i])
+    print("Simulations complete.")
+
+    # Save results
+    saveResultsFile(results_filename, sim_worlds)
+
+if __name__=='__main__':
+    poolHandler()

@@ -6,13 +6,16 @@ from transition_models import *
 from observation_models import *
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps):
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
         self.map_shape = self.map.map_shape
 
         # Record perception range
         self.perception_range = perception_range
+
+        # Record number of timesteps
+        self.num_time_steps = num_time_steps
 
         # Record home location TODO: change this to allow for different homes based on different robot IDs or not
         self.home_pos = self.map.findHomePosition(0)
@@ -51,11 +54,6 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
 
-    def simulationStep(self):
-        for i in range(self.num_robots):
-            self.updateRobotObservation(i)
-            self.executeRobotAction(i)
-
     def updateRobotObservation(self, i):
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
         observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants)
@@ -67,3 +65,8 @@ class World:
         (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
         self.true_robot_states[i] = new_states
         self.map.setSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, new_submap)
+
+    def simulationStep(self):
+        for i in range(self.num_robots):
+            self.updateRobotObservation(i)
+            self.executeRobotAction(i)
