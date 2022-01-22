@@ -104,17 +104,33 @@ def findNearestFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot
     nearest_distance = sys.maxsize
     nearest_delta_x = sys.maxsize
     nearest_delta_y = sys.maxsize
+    other_robot_delta_x = []
+    other_robot_delta_y = []
+    
+    for i in range(len(submap_object_list)):
+        # Check iif entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # Record its location
+            other_robot_delta_x.append(submap_property_list[i]["delta_x"])
+            other_robot_delta_y.append(submap_property_list[i]["delta_y"])
+
     for i in range(len(submap_object_list)):
         # Check if entry is a food entry
         if submap_object_list[i] == MapLayer.FOOD:
             # Check if food distance is closer than the previously closest found food and if location is not on the exclude list
             distance = max(abs(submap_property_list[i]["delta_x"]), submap_property_list[i]["delta_y"])
-            # Exclude locations marked as excluded food
+            # Exclude locations marked as excluded food or occupied by other robot
             exclude = False
             for j in range(len(exclude_locations)):
                 if submap_property_list[i]["delta_x"] == (exclude_locations[j]["x"] - robot_x) and submap_property_list[i]["delta_y"] == (exclude_locations[j]["y"] - robot_y):
                     debugPrint("findNearestFood: EXCLUDE FAILED FOOD")
                     exclude = True
+
+            for k in range(len(other_robot_delta_x)):
+                if submap_property_list[i]["delta_x"] == other_robot_delta_x[k] and submap_property_list[i]["delta_y"] == other_robot_delta_y[k]:
+                    debugPrint("findNearestFood: EXCLUDE FOOD OCCUPIED BY OTHER ROBOT")
+                    exclude = True
+            
             debugPrint("food distance: {0}".format(distance))
             debugPrint("food delta_x, delta_y: [{0},{1}]".format(submap_property_list[i]["delta_x"],submap_property_list[i]["delta_y"]))
             if distance < nearest_distance and not exclude:

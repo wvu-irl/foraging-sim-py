@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from action_policies import *
 from state_estimators import *
+from states import *
 
 class Robot(ABC):
     @abstractmethod
@@ -17,6 +18,7 @@ class Robot(ABC):
 
 class SimpleDeterministicRobot(Robot):
     def __init__(self, initial_values, constants):
+        self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.fsm_state = FSMState.SEARCH
@@ -30,6 +32,7 @@ class SimpleDeterministicRobot(Robot):
 
 class SimpleRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
+        self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.fsm_state = FSMState.SEARCH

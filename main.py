@@ -7,14 +7,12 @@ from map_viz import displayMap
 from save_results import saveResultsFile
 import config
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 enable_plots = True
 save_plots = True
 
-# TODO: modify to run multiple copies of sim in parallel for Monte Carlo trials
-
 # Load simulation parameters
-from params.scenario_2_params import *
+from params.scenario_3_params import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
@@ -45,7 +43,7 @@ def runWrapper(obj):
 
         # Display map for current time step, if only one trial
         if enable_plots and num_monte_carlo_trials == 1:
-            displayMap(obj.map, plt, map_fig, map_ax)
+            displayMap(obj, plt, map_fig, map_ax)
             if save_plots:
                 map_fig.savefig("figures/fig%02d.png" % t)
             print("t = {0}".format(t))
