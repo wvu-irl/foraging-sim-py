@@ -7,9 +7,9 @@ from map_viz import displayMap
 from save_results import saveResultsFile
 import config
 
-config.enable_debug_prints = True
+config.enable_debug_prints = False
 enable_plots = True
-save_plots = True
+save_plots = False
 
 # Load simulation parameters
 from params.scenario_3_params import *

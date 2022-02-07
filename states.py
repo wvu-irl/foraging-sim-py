@@ -1,4 +1,4 @@
-class States:
+class FullStates:
     def __init__(self): 
         self.x = 0
         self.y = 0
@@ -10,3 +10,12 @@ class States:
         self.personality = 0
         self.robot_id = 0
         self.num_food_retrieved = 0
+
+class States:
+    def __init(self):
+        self.x = 0
+        self.y = 0
+        self.has_food = False
+        self.battery = 0.0
+        self.personality = 0
+        self.robot_id = 0 

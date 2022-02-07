@@ -41,7 +41,7 @@ class World:
             for y in range(self.map_shape[1]):
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
-                    robot_states = States()
+                    robot_states = FullStates()
                     robot_states.x = x
                     robot_states.y = y
                     robot_states.battery = 100.0
