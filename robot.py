@@ -45,3 +45,19 @@ class SimpleRandomGrabRobot(Robot):
 
     def stateEstimator(self, observation):
         passthroughStateEstimator(self, observation)
+
+class SimpleLocalInteractionRandomGrabRobot(Robot):
+    def __init__(self, initial_values, constants):
+        self.states = States()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.fsm_state = FSMState.SEARCH
+        self.fsm_nearest_food_found = False
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_food_locations = []
+
+    def chooseAction(self):
+        return uncertainGrabLocalInteractionFSMActionPolicy(self)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)

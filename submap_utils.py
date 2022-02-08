@@ -118,7 +118,7 @@ def findNearestFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot
         # Check if entry is a food entry
         if submap_object_list[i] == MapLayer.FOOD:
             # Check if food distance is closer than the previously closest found food and if location is not on the exclude list
-            distance = max(abs(submap_property_list[i]["delta_x"]), submap_property_list[i]["delta_y"])
+            distance = max(abs(submap_property_list[i]["delta_x"]), abs(submap_property_list[i]["delta_y"])) # Chebyshev distance
             # Exclude locations marked as excluded food or occupied by other robot
             exclude = False
             for j in range(len(exclude_locations)):
@@ -180,6 +180,20 @@ def isObstacleAtPos(delta_x, delta_y, submap):
             if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 return True
 
+def isRobotVisible(submap, personality = -1):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    for i in range(len(submap_object_list)):
+        # Check if entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
+            if submap_property_list[i]["personality"] == personality or personality == -1:
+                return True
+
+    # If code falls through to here, then there is no robot visible
+    return False
+
 def isRobotAtPos(delta_x, delta_y, submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]
@@ -190,6 +204,33 @@ def isRobotAtPos(delta_x, delta_y, submap):
             # Check if food delta position matches query
             if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
                 return True
+
+    # If code falls through to here, then there is no robot at the query position
+    return False
+
+def findNearestRobot(submap, personality = -1):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    nearest_distance = sys.maxsize
+    nearest_delta_x = sys.maxsize
+    nearest_delta_y = sys.maxsize
+    nearest_has_food = False
+
+    for i in range(len(submap_object_list)):
+        # Check if entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
+            if submap_property_list[i]["personality"] == personality or personality == -1:
+                # Check if robot distance is closer than the previously closest found robot
+                distance = max(abs(submap_property_list[i]["delta_x"]), abs(submap_property_list[i]["delta_y"])) # Chebyshev distance
+                if distance < nearest_distance:
+                    nearest_distance = distance
+                    nearest_delta_x = submap_property_list[i]["delta_x"]
+                    nearest_delta_y = submap_property_list[i]["delta_y"]
+                    nearest_has_food = submap_property_list[i]["has_food"]
+
+    return (nearest_delta_x, nearest_delta_y, nearest_has_food)
 
 def atEdgeOfMap(x, y, map_shape):
     x_at_edge = (x == map_shape[0] - 1) or (x == 0)
