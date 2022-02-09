@@ -12,7 +12,7 @@ enable_plots = True
 save_plots = False
 
 # Load simulation parameters
-from params.scenario_4_params import *
+from params.scenario_3_params import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:

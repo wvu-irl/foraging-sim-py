@@ -40,7 +40,6 @@ def simpleFSMActionPolicy(self):
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
-                #chosen_action = Actions.MOVE_NE
                 self.fsm_state = FSMState.SEARCH
                 keep_executing = False
 
@@ -115,7 +114,6 @@ def uncertainGrabFSMActionPolicy(self):
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
-                #chosen_action = Actions.MOVE_NE
                 self.fsm_state = FSMState.SEARCH
                 keep_executing = False
 
@@ -170,7 +168,6 @@ def uncertainGrabFSMActionPolicy(self):
                 debugPrint("food pickup failed")
                 self.fsm_failed_grab_attempts += 1
                 if self.fsm_failed_grab_attempts >= 2:
-                    # TODO mark robot x,y as failed food location, need to use this to exclude in approach
                     self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SEARCH
@@ -205,9 +202,9 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                         # If the other robot is farther away from home and has food, record so
                         use_local_influence = True
                 if use_local_influence:
+                    print("Use local influence")
                     # Use influence from this robot to choose move action
-                    # Find quadrant
-                    if other_robot_delta_x >= 0 and other_robot_delta_y > 0:
+                    if other_robot_delta_x >= 0 and other_robot_delta_y > 0: # First quadrant
                         diag_distance = other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
@@ -217,7 +214,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                             bias_direction = Direction.N
                         elif min_distance_index == 2:
                             bias_direction = Direction.NE
-                    elif other_robot_delta_x < 0 and other_robot_delta_y >= 0:
+                    elif other_robot_delta_x < 0 and other_robot_delta_y >= 0: # Second quadrant
                         diag_distance = -other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
@@ -227,7 +224,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                             bias_direction = Direction.N
                         elif min_distance_index == 2:
                             bias_direction = Direction.NW
-                    elif other_robot_delta_x <= 0 and other_robot_delta_y < 0:
+                    elif other_robot_delta_x <= 0 and other_robot_delta_y < 0: # Third quadrant
                         diag_distance = other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
@@ -237,7 +234,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                             bias_direction = Direction.S
                         elif min_distance_index == 2:
                             bias_direction = Direction.SW
-                    elif other_robot_delta_x > 0 and other_robot_delta_y <= 0:
+                    elif other_robot_delta_x > 0 and other_robot_delta_y <= 0: # Fourth quadrant
                         diag_distance = -other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
@@ -263,7 +260,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                          pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000])
                     elif bias_direction == Direction.S:
                          pmf = np.array([0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0])
-                    elif bias_direction == Direction.S:
+                    elif bias_direction == Direction.SE:
                          pmf = np.array([1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0])
 
                 else:
@@ -281,7 +278,6 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
-                #chosen_action = Actions.MOVE_NE
                 self.fsm_state = FSMState.SEARCH
                 keep_executing = False
 
@@ -336,7 +332,6 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                 debugPrint("food pickup failed")
                 self.fsm_failed_grab_attempts += 1
                 if self.fsm_failed_grab_attempts >= 2:
-                    # TODO mark robot x,y as failed food location, need to use this to exclude in approach
                     self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SEARCH
