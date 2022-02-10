@@ -43,6 +43,29 @@ def getDeltaFromDirection(direc): # returns (delta_x, delta_y)
     else:
         raise RuntimeError("getDeltaFromDirection: not a valid direction value: {0}".format(direc))
 
+def getDirectionFromDelta(delta_x, delta_y): # returns Direction
+    delta = (delta_x, delta_y)
+    if delta == (1, 0):
+        return Direction.E
+    elif delta == (1, 1):
+        return Direction.NE
+    elif delta == (0, 1):
+        return Direction.N
+    elif delta == (-1, 1):
+        return Direction.NW
+    elif delta == (-1, 0):
+        return Direction.W
+    elif delta == (-1, -1):
+        return Direction.SW
+    elif delta == (0, -1):
+        return Direction.S
+    elif delta == (1, -1):
+        return Direction.SE
+    elif delta == (0, 0):
+        return Direction.NONE
+    else:
+        raise RuntimeError("getDirectionFromDelta: not a valid [delta_x, delta_y]: [{0}, {1}]".format(delta_x, delta_y))
+
 def getNewHeading(current_heading, rotation):
     if rotation == Rotation.CW:
         new_heading = current_heading + 1
@@ -231,6 +254,23 @@ def findNearestRobot(submap, personality = -1):
                     nearest_has_food = submap_property_list[i]["has_food"]
 
     return (nearest_delta_x, nearest_delta_y, nearest_has_food)
+
+def findBlockedMoves(submap):
+    blocked_moves = []
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    for i in range(len(submap_object_list)):
+        # Check if entry is a robot or obstacle entry
+        if submap_object_list[i] == MapLayer.ROBOT or submap_object_list[i] == MapLayer.OBSTACLE:
+            # Check if distance is 1, meaning only 1 move away, potentially blocking a move
+            distance = max(abs(submap_property_list[i]["delta_x"]), abs(submap_property_list[i]["delta_y"])) # Chebyshev distance
+            if distance == 1:
+                # If so, add this direction to the blocked moves list
+                blocked_moves.append(getDirectionFromDelta(submap_property_list[i]["delta_x"], submap_property_list[i]["delta_y"]))
+    
+    return blocked_moves
+
 
 def atEdgeOfMap(x, y, map_shape):
     x_at_edge = (x == map_shape[0] - 1) or (x == 0)

@@ -37,6 +37,8 @@ def simpleFSMActionPolicy(self):
                     pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
                 else:
                     pmf = np.ones(8) / 8.0
+                blocked_moves = findBlockedMoves(self.submap)
+                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -62,6 +64,7 @@ def simpleFSMActionPolicy(self):
                 else:
                     debugPrint("move towards nearest food")
                     chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
+                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
@@ -79,6 +82,7 @@ def simpleFSMActionPolicy(self):
                     keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
                 self.fsm_state = FSMState.GO_HOME
                 keep_executing = False
 
@@ -111,6 +115,8 @@ def uncertainGrabFSMActionPolicy(self):
                     pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
                 else:
                     pmf = np.ones(8) / 8.0
+                blocked_moves = findBlockedMoves(self.submap)
+                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -137,6 +143,7 @@ def uncertainGrabFSMActionPolicy(self):
                 else:
                     debugPrint("move towards nearest food")
                     chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
+                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
@@ -155,6 +162,7 @@ def uncertainGrabFSMActionPolicy(self):
                     keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
                 self.fsm_state = FSMState.GO_HOME
                 keep_executing = False
 
@@ -275,6 +283,8 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                         pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
                     else:
                         pmf = np.ones(8) / 8.0
+                blocked_moves = findBlockedMoves(self.submap)
+                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -301,6 +311,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                 else:
                     debugPrint("move towards nearest food")
                     chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
+                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
@@ -319,6 +330,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                     keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
                 self.fsm_state = FSMState.GO_HOME
                 keep_executing = False
 
@@ -358,3 +370,52 @@ def moveToGoal(goal_x, goal_y, x, y):
         return Actions.MOVE_SE
     else:
         return Actions.STAY
+
+def actionToDirection(action):
+    if action == Actions.MOVE_E:
+        return Direction.E
+    elif action == Actions.MOVE_NE:
+        return Direction.NE
+    elif action == Actions.MOVE_N:
+        return Direction.N
+    elif action == Actions.MOVE_NW:
+        return Direction.NW
+    elif action == Actions.MOVE_W:
+        return Direction.W
+    elif action == Actions.MOVE_SW:
+        return Direction.SW
+    elif action == Actions.MOVE_S:
+        return Direction.S
+    elif action == Actions.MOVE_SE:
+        return Direction.SE
+    else:
+        return Direction.STAY
+
+def removeBlockedMovesFromPMF(pmf, blocked_moves):
+    new_pmf = pmf
+    num_moves = len(pmf)
+    excluded_indices = np.array([])
+    for i in range(len(blocked_moves)):
+        index = blocked_moves[i] - 1
+        move_prob = pmf[index]
+        new_pmf[index] = 0.0
+        np.append(excluded_indices, index)
+        num_excluded = excluded_indices.shape[0]
+        for j in range(num_moves):
+            if j not in excluded_indices:
+                new_pmf[j] += move_prob / float(num_moves - num_excluded)
+
+    new_pmf_sum = np.sum(new_pmf)
+    new_pmf /= new_pmf_sum
+    return new_pmf
+
+def obstacleAvoidance(chosen_action, submap):
+    move_dir = actionToDirection(chosen_action)
+    blocked_moves = findBlockedMoves(submap)
+    if move_dir in blocked_moves:
+        pmf = np.ones(8) / 8.0
+        pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+        elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+        rng = np.random.default_rng()
+        chosen_action = rng.choice(elements, 1, p=pmf)
+    return chosen_action
