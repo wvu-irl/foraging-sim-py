@@ -13,10 +13,10 @@ enable_plots = False
 save_plots = False
 
 # Load simulation parameters
-if sys.argv[1] == "local":
-    from params.scenario_5_params_1000mc import *
-elif sys.argv[1] == "nonlocal":
-    from params.scenario_4_params_1000mc import *
+if sys.argv[1] == "nonlocal":
+    from params.no_local_interactions_1000mc import *
+elif sys.argv[1] == "local":
+    from params.local_interactions_1000mc import *
 else:
     raise RuntimeError("local vs nonlocal cmdline arg not correct")
 

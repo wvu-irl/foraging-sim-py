@@ -229,7 +229,6 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                         # If the other robot is farther away from home and has food, record so
                         use_local_influence = True
                 if use_local_influence:
-                    print("Use local influence")
                     # Use influence from this robot to choose move action
                     if other_robot_delta_x >= 0 and other_robot_delta_y > 0: # First quadrant
                         diag_distance = other_robot_delta_x - other_robot_delta_y

@@ -7,4 +7,4 @@ perception_range = 5
 num_time_steps = 1000
 num_monte_carlo_trials = 1000
 num_threads = 80
-results_filename = "results/scenario_5_monte_carlo_results.npz"
+results_filename = "results/no_local_interactions_monte_carlo_results.npz"

@@ -83,7 +83,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                     elif robot_personality_list[robot_id] == 6:
-                        self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
