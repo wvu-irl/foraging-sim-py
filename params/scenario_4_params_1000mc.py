@@ -1,0 +1,10 @@
+food_img_path = "maps/100_100_food_different_headings_map.png"
+home_img_path = "maps/100_100_home_map.png"
+obstacle_img_path = "maps/100_100_obstacle_map.png"
+robot_img_path = "maps/100_100_robot_map_18_bots.png"
+robot_personality_list = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3]
+perception_range = 5
+num_time_steps = 1000
+num_monte_carlo_trials = 1000
+num_threads = 80
+results_filename = "results/scenario_4_monte_carlo_results.npz"

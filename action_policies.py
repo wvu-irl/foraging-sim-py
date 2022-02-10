@@ -11,6 +11,25 @@ class FSMState(IntEnum):
     GO_HOME = 2
     CONFIRM_COLLECT = 3
 
+class MovePMFs:
+    uniform = np.ones(8) / 8.0
+    wide_E = np.array([1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0])
+    wide_NE = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000])
+    wide_N = np.array([0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000])
+    wide_NW = np.array([0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000])
+    wide_W = np.array([0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000])
+    wide_SW = np.array([0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000])
+    wide_S = np.array([0.000, 0.000, 0.0000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0])
+    wide_SE = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
+    narrow_E = np.array([2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0])
+    narrow_NE = np.array([1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000])
+    narrow_N = np.array([0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000])
+    narrow_NW = np.array([0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000])
+    narrow_W = np.array([0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000])
+    narrow_SW = np.array([0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000])
+    narrow_S = np.array([0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0])
+    narrow_SE = np.array([1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0])
+
 def simpleFSMActionPolicy(self):
     # Constants
     battery_go_home_threshold = 30.0
@@ -27,18 +46,13 @@ def simpleFSMActionPolicy(self):
             elif isFoodVisible(self.submap): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
-                if self.states.x > self.home_pos[0] and self.states.y > self.home_pos[1]:
-                    pmf = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000])
-                elif self.states.x < self.home_pos[0] and self.states.y > self.home_pos[1]:
-                    pmf = np.array([0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000])
-                elif self.states.x < self.home_pos[0] and self.states.y < self.home_pos[1]:
-                    pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000])
-                elif self.states.x > self.home_pos[0] and self.states.y < self.home_pos[1]:
-                    pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
-                else:
-                    pmf = np.ones(8) / 8.0
+                if not self.fsm_search_dir_chosen:
+                    self.fsm_search_dir_chosen = True
+                    pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
+                    rng = np.random.default_rng()
+                    self.fsm_search_pmf = rng.choice(pmf_elements)
                 blocked_moves = findBlockedMoves(self.submap)
-                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+                pmf = removeBlockedMovesFromPMF(self.fsm_search_pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -47,6 +61,7 @@ def simpleFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
+            self.fsm_search_dir_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap)
@@ -70,6 +85,7 @@ def simpleFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
+            self.fsm_search_dir_chosen = False
             self.fsm_nearest_food_found = False
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
                 if self.states.has_food:
@@ -105,18 +121,13 @@ def uncertainGrabFSMActionPolicy(self):
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
-                if self.states.x > self.home_pos[0] and self.states.y > self.home_pos[1]:
-                    pmf = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000])
-                elif self.states.x < self.home_pos[0] and self.states.y > self.home_pos[1]:
-                    pmf = np.array([0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000])
-                elif self.states.x < self.home_pos[0] and self.states.y < self.home_pos[1]:
-                    pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000])
-                elif self.states.x > self.home_pos[0] and self.states.y < self.home_pos[1]:
-                    pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
-                else:
-                    pmf = np.ones(8) / 8.0
+                if not self.fsm_search_dir_chosen:
+                    self.fsm_search_dir_chosen = True
+                    pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
+                    rng = np.random.default_rng()
+                    self.fsm_search_pmf = rng.choice(pmf_elements)
                 blocked_moves = findBlockedMoves(self.submap)
-                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+                pmf = removeBlockedMovesFromPMF(self.fsm_search_pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -125,6 +136,7 @@ def uncertainGrabFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
+            self.fsm_search_dir_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
                 # TODO: need to handle if this returns no non-excluded food. Otherwise robot goes towards x,y infinity
@@ -149,6 +161,7 @@ def uncertainGrabFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
+            self.fsm_search_dir_chosen = False
             self.fsm_nearest_food_found = False
             self.fsm_failed_grab_attempts = 0
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
@@ -168,6 +181,7 @@ def uncertainGrabFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.CONFIRM_COLLECT:
             debugPrint("fsm_state: CONFIRM_COLLECT")
+            self.fsm_search_dir_chosen = False
             self.fsm_nearest_food_found = False
             if self.states.has_food:
                 debugPrint("food picked up, going home")
@@ -200,6 +214,11 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
+                if not self.fsm_search_dir_chosen:
+                    self.fsm_search_dir_chosen = True
+                    pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
+                    rng = np.random.default_rng()
+                    self.fsm_search_pmf = rng.choice(pmf_elements)
                 use_local_influence = False
                 if isRobotVisible(self.submap, self.states.personality):
                     # If robot of the same personality is visible, check if it is further away from home current location
@@ -217,74 +236,44 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
                         if min_distance_index == 0:
-                            bias_direction = Direction.E
+                            self.fsm_search_pmf = MovePMFs.narrow_E
                         elif min_distance_index == 1:
-                            bias_direction = Direction.N
+                            self.fsm_search_pmf = MovePMFs.narrow_N
                         elif min_distance_index == 2:
-                            bias_direction = Direction.NE
+                            self.fsm_search_pmf = MovePMFs.narrow_NE
                     elif other_robot_delta_x < 0 and other_robot_delta_y >= 0: # Second quadrant
                         diag_distance = -other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
                         if min_distance_index == 0:
-                            bias_direction = Direction.W
+                            self.fsm_search_pmf = MovePMFs.narrow_W
                         elif min_distance_index == 1:
-                            bias_direction = Direction.N
+                            self.fsm_search_pmf = MovePMFs.narrow_N
                         elif min_distance_index == 2:
-                            bias_direction = Direction.NW
+                            self.fsm_search_pmf = MovePMFs.narrow_NW
                     elif other_robot_delta_x <= 0 and other_robot_delta_y < 0: # Third quadrant
                         diag_distance = other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
                         if min_distance_index == 0:
-                            bias_direction = Direction.W
+                            self.fsm_search_pmf = MovePMFs.narrow_W
                         elif min_distance_index == 1:
-                            bias_direction = Direction.S
+                            self.fsm_search_pmf = MovePMFs.narrow_S
                         elif min_distance_index == 2:
-                            bias_direction = Direction.SW
+                            self.fsm_search_pmf = MovePMFs.narrow_SW
                     elif other_robot_delta_x > 0 and other_robot_delta_y <= 0: # Fourth quadrant
                         diag_distance = -other_robot_delta_x - other_robot_delta_y
                         distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
                         min_distance_index = distances.index(min(distances))
                         if min_distance_index == 0:
-                            bias_direction = Direction.E
+                            self.fsm_search_pmf = MovePMFs.narrow_E
                         elif min_distance_index == 1:
-                            bias_direction = Direction.S
+                            self.fsm_search_pmf = MovePMFs.narrow_S
                         elif min_distance_index == 2:
-                            bias_direction = Direction.SE
+                            self.fsm_search_pmf = MovePMFs.narrow_SE
 
-                    # Choose move action based on bias direction
-                    if bias_direction == Direction.E:
-                         pmf = np.array([2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0])
-                    elif bias_direction == Direction.NE:
-                         pmf = np.array([1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000])
-                    elif bias_direction == Direction.N:
-                         pmf = np.array([0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000, 0.000])
-                    elif bias_direction == Direction.NW:
-                         pmf = np.array([0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000, 0.000])
-                    elif bias_direction == Direction.W:
-                         pmf = np.array([0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000, 0.000])
-                    elif bias_direction == Direction.SW:
-                         pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0, 0.000])
-                    elif bias_direction == Direction.S:
-                         pmf = np.array([0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0, 1.0/4.0])
-                    elif bias_direction == Direction.SE:
-                         pmf = np.array([1.0/4.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/4.0, 2.0/4.0])
-
-                else:
-                    # Choose move action based on quadrant
-                    if self.states.x > self.home_pos[0] and self.states.y > self.home_pos[1]:
-                        pmf = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000])
-                    elif self.states.x < self.home_pos[0] and self.states.y > self.home_pos[1]:
-                        pmf = np.array([0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000, 0.000, 0.000])
-                    elif self.states.x < self.home_pos[0] and self.states.y < self.home_pos[1]:
-                        pmf = np.array([0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0, 1.0/3.0, 0.000])
-                    elif self.states.x > self.home_pos[0] and self.states.y < self.home_pos[1]:
-                        pmf = np.array([1.0/3.0, 0.000, 0.000, 0.000, 0.000, 0.000, 1.0/3.0, 1.0/3.0])
-                    else:
-                        pmf = np.ones(8) / 8.0
                 blocked_moves = findBlockedMoves(self.submap)
-                pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+                pmf = removeBlockedMovesFromPMF(self.fsm_search_pmf, blocked_moves)
                 elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
                 rng = np.random.default_rng()
                 chosen_action = rng.choice(elements, 1, p=pmf)
@@ -293,6 +282,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
+            self.fsm_search_dir_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
                 # TODO: need to handle if this returns no non-excluded food. Otherwise robot goes towards x,y infinity
@@ -317,6 +307,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
+            self.fsm_search_dir_chosen = False
             self.fsm_nearest_food_found = False
             self.fsm_failed_grab_attempts = 0
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
@@ -336,6 +327,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.CONFIRM_COLLECT:
             debugPrint("fsm_state: CONFIRM_COLLECT")
+            self.fsm_search_dir_chosen = False
             self.fsm_nearest_food_found = False
             if self.states.has_food:
                 debugPrint("food picked up, going home")

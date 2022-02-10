@@ -70,6 +70,24 @@ class World:
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                    elif robot_personality_list[robot_id] == 4:
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                    elif robot_personality_list[robot_id] == 5:
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                    elif robot_personality_list[robot_id] == 6:
+                        self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
 
     def updateRobotObservation(self, i):
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)

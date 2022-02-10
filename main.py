@@ -6,13 +6,19 @@ import numpy as np
 from map_viz import displayMap
 from save_results import saveResultsFile
 import config
+import sys
 
 config.enable_debug_prints = False
-enable_plots = True
+enable_plots = False
 save_plots = False
 
 # Load simulation parameters
-from params.scenario_4_params import *
+if sys.argv[1] == "local":
+    from params.scenario_5_params_1000mc import *
+elif sys.argv[1] == "nonlocal":
+    from params.scenario_4_params_1000mc import *
+else:
+    raise RuntimeError("local vs nonlocal cmdline arg not correct")
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
