@@ -9,16 +9,17 @@ import config
 import sys
 
 config.enable_debug_prints = False
-enable_plots = False
-save_plots = False
+enable_plots = True
+save_plots = True
 
 # Load simulation parameters
-if sys.argv[1] == "nonlocal":
-    from params.no_local_interactions_1000mc import *
-elif sys.argv[1] == "local":
-    from params.local_interactions_1000mc import *
-else:
-    raise RuntimeError("local vs nonlocal cmdline arg not correct")
+#if sys.argv[1] == "nonlocal":
+#    from params.no_local_interactions_1000mc import *
+#elif sys.argv[1] == "local":
+#    from params.local_interactions_1000mc import *
+#else:
+#    raise RuntimeError("local vs nonlocal cmdline arg not correct")
+from params.scenario_5_params import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
