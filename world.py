@@ -4,6 +4,7 @@ from states import *
 from robot import *
 from transition_models import *
 from observation_models import *
+from reward_functions import *
 
 class World:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps):
@@ -35,6 +36,8 @@ class World:
         self.true_robot_states = [None] * self.num_robots
         self.true_observation_model = [None] * self.num_robots
         self.true_transition_model = [None] * self.num_robots
+        self.true_reward_function = [None] * self.num_robots
+        self.true_total_reward = np.zeros(self.num_robots)
 
         # Find position of robots in map and initialize true states
         for x in range(self.map_shape[0]):
@@ -52,42 +55,49 @@ class World:
                         self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants)
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = deterministicTransitionModel
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 1:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 2:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 3:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 4:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 5:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
                     elif robot_personality_list[robot_id] == 6:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_reward_function[robot_id] = mdpRewardFunction
 
     def updateRobotObservation(self, i):
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
@@ -98,6 +108,7 @@ class World:
         action = self.robot[i].chooseAction()
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
         (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
+        self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states)
         self.true_robot_states[i] = new_states
         self.map.setSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, new_submap)
 

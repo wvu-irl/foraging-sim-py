@@ -178,20 +178,6 @@ def getFoodHeading(delta_x, delta_y, submap):
     # If code falls through to here, then there is no food at the query position
     return 0
 
-def isAtHome(submap):
-    # Loop over entries in submap list
-    submap_object_list = submap[0]
-    submap_property_list = submap[1]
-    for i in range(len(submap_object_list)):
-        # Check if entry is a home entry
-        if submap_object_list[i] == MapLayer.HOME:
-            # Check if agent is at home
-            if submap_property_list[i]["delta_x"] == 0 and submap_property_list[i]["delta_y"] == 0:
-                return True
-    
-    # If code falls through to here, then there is no food at the query position
-    return False
-
 def isObstacleAtPos(delta_x, delta_y, submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]

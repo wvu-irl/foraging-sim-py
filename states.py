@@ -9,7 +9,10 @@ class FullStates:
         self.battery = 0.0
         self.personality = 0
         self.robot_id = 0
+        self.at_home = False
         self.num_food_retrieved = 0
+        self.num_times_home_visited = 0
+        self.total_distance_traversed = 0
 
 class States:
     def __init(self):
@@ -19,3 +22,7 @@ class States:
         self.battery = 0.0
         self.personality = 0
         self.robot_id = 0 
+        self.at_home = False
+        self.num_food_retrieved = 0
+        self.num_times_home_visited = 0
+        self.total_distance_traversed = 0

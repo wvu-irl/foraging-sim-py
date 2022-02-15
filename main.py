@@ -9,8 +9,8 @@ import config
 import sys
 
 config.enable_debug_prints = False
-enable_plots = True
-save_plots = True
+enable_plots = False
+save_plots = False
 
 # Load simulation parameters
 #if sys.argv[1] == "nonlocal":

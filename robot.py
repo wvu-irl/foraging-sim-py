@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from action_policies import *
 from state_estimators import *
+from reward_functions import *
 from states import *
 
 class Robot(ABC):
@@ -14,6 +15,10 @@ class Robot(ABC):
 
     @abstractmethod
     def stateEstimator(self, observation):
+        pass
+
+    @abstractmethod
+    def rewardFunction(self, state, action, state_prime):
         pass
 
 class SimpleDeterministicRobot(Robot):
@@ -31,6 +36,9 @@ class SimpleDeterministicRobot(Robot):
 
     def stateEstimator(self, observation):
         passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
 
 class SimpleRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
@@ -50,6 +58,9 @@ class SimpleRandomGrabRobot(Robot):
     def stateEstimator(self, observation):
         passthroughStateEstimator(self, observation)
 
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+
 class SimpleLocalInteractionRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
         self.states = States()
@@ -67,3 +78,6 @@ class SimpleLocalInteractionRandomGrabRobot(Robot):
 
     def stateEstimator(self, observation):
         passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
