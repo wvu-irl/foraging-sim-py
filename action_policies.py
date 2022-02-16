@@ -139,12 +139,14 @@ def uncertainGrabFSMActionPolicy(self):
             self.fsm_search_dir_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
-                # TODO: need to handle if this returns no non-excluded food. Otherwise robot goes towards x,y infinity
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
-                self.nearest_food_x = nearest_delta_x + self.states.x
-                self.nearest_food_y = nearest_delta_y + self.states.y
-                self.fsm_nearest_food_found = True
-                self.fsm_state = FSMState.APPROACH
+                if nearest_delta_x == sys.maxsize or nearest_delta_y == sys.maxsize:
+                    self.fsm_state = FSMState.SEARCH
+                else:
+                    self.nearest_food_x = nearest_delta_x + self.states.x
+                    self.nearest_food_y = nearest_delta_y + self.states.y
+                    self.fsm_nearest_food_found = True
+                    self.fsm_state = FSMState.APPROACH
             else:
                 if self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
                     debugPrint("grab")
@@ -284,12 +286,14 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
             self.fsm_search_dir_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
-                # TODO: need to handle if this returns no non-excluded food. Otherwise robot goes towards x,y infinity
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
-                self.nearest_food_x = nearest_delta_x + self.states.x
-                self.nearest_food_y = nearest_delta_y + self.states.y
-                self.fsm_nearest_food_found = True
-                self.fsm_state = FSMState.APPROACH
+                if nearest_delta_x == sys.maxsize or nearest_delta_y == sys.maxsize:
+                    self.fsm_state = FSMState.SEARCH
+                else:
+                    self.nearest_food_x = nearest_delta_x + self.states.x
+                    self.nearest_food_y = nearest_delta_y + self.states.y
+                    self.fsm_nearest_food_found = True
+                    self.fsm_state = FSMState.APPROACH
             else:
                 if self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
                     debugPrint("grab")
