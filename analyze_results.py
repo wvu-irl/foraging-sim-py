@@ -12,6 +12,8 @@ total_reward_data = data["total_reward"]
 num_trials = food_data.shape[0]
 num_robots = food_data.shape[1]
 
+print("num_trials: {0}, num_robots: {1}\n".format(num_trials, num_robots))
+
 total_food_retrieved = np.zeros(num_trials, dtype=np.int)
 num_times_home_visited = np.zeros(num_trials, dtype=np.int)
 total_distance_traversed = np.zeros(num_trials, dtype=np.int)

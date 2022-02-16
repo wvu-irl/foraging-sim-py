@@ -1,9 +1,10 @@
 from submap_utils import *
 from actions import *
 import numpy as np
+import copy
 
 def deterministicTransitionModel(states, submap, action, constants):
-    new_states = states # new_states, to be returned at end, initialized as current states
+    new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     new_submap_object_list = []
     new_submap_property_list = []
     current_x = states.x
@@ -111,7 +112,7 @@ def deterministicTransitionModel(states, submap, action, constants):
 
 
 def directionalFoodTransitionModel1(states, submap, action, constants):
-    new_states = states # new_states, to be returned at end, initialized as current states
+    new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     new_submap_object_list = []
     new_submap_property_list = []
     current_x = states.x
@@ -201,9 +202,7 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
 
     # Update at_home and num_times_home_visited for new states
     new_states.at_home = isAtHome(new_states.x, new_states.y, home_pos)
-    print("new at home: {0}, old at home: {1}".format(new_states.at_home, states.at_home))
     if new_states.at_home == True and states.at_home == False:
-        print("***************IT HAPPENED*************************")
         new_states.num_times_home_visited = states.num_times_home_visited + 1
 
     # If at home, battery receives charge

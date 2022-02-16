@@ -9,7 +9,7 @@ import config
 import sys
 
 config.enable_debug_prints = False
-enable_plots = False
+enable_plots = True
 save_plots = False
 
 # Load simulation parameters
