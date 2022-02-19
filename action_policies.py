@@ -141,7 +141,13 @@ def uncertainGrabFSMActionPolicy(self):
                 debugPrint("find nearest food")
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
                 if nearest_delta_x == sys.maxsize or nearest_delta_y == sys.maxsize:
-                    self.fsm_state = FSMState.SEARCH
+                    blocked_moves = findBlockedMoves(self.submap)
+                    pmf = removeBlockedMovesFromPMF(MovePMFs.uniform, blocked_moves)
+                    elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+                    rng = np.random.default_rng()
+                    chosen_action = rng.choice(elements, 1, p=pmf)
+                    self.fsm_state = FSMState.APPROACH
+                    keep_executing = False
                 else:
                     self.nearest_food_x = nearest_delta_x + self.states.x
                     self.nearest_food_y = nearest_delta_y + self.states.y
@@ -288,7 +294,13 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                 debugPrint("find nearest food")
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
                 if nearest_delta_x == sys.maxsize or nearest_delta_y == sys.maxsize:
-                    self.fsm_state = FSMState.SEARCH
+                    blocked_moves = findBlockedMoves(self.submap)
+                    pmf = removeBlockedMovesFromPMF(MovePMFs.uniform, blocked_moves)
+                    elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+                    rng = np.random.default_rng()
+                    chosen_action = rng.choice(elements, 1, p=pmf)
+                    self.fsm_state = FSMState.APPROACH
+                    keep_executing = False
                 else:
                     self.nearest_food_x = nearest_delta_x + self.states.x
                     self.nearest_food_y = nearest_delta_y + self.states.y

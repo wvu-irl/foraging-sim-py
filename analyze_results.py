@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import sys
 
 filename = sys.argv[1] 
@@ -64,3 +65,17 @@ print("reward_mean: {0}".format(reward_mean))
 print("reward_max: {0}".format(reward_max))
 print("reward_min: {0}".format(reward_min))
 print("reward_stddev: {0}".format(reward_stddev))
+
+
+food_cdf_x, food_cdf_counts = np.unique(total_food_retrieved, return_counts=True)
+food_cdf_y = np.cumsum(food_cdf_counts)
+food_cdf_y = np.divide(food_cdf_y, food_cdf_y[-1])
+food_cdf_x = np.insert(food_cdf_x, 0, food_cdf_x[0])
+food_cdf_y = np.insert(food_cdf_y, 0, 0.0)
+
+food_fig, food_ax = plt.subplots()
+food_ax.plot(food_cdf_x, food_cdf_y, drawstyle="steps-post")
+food_ax.grid()
+food_ax.set_xlabel("Total food retrieved")
+food_ax.set_ylabel("Probability")
+plt.show()

@@ -19,7 +19,7 @@ save_plots = False
 #    from params.local_interactions_1000mc import *
 #else:
 #    raise RuntimeError("local vs nonlocal cmdline arg not correct")
-from params.scenario_5_params import *
+from params.scenario_6_params import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
@@ -39,7 +39,7 @@ robot_layer = np.array(robot_img)
 
 def runWrapper(obj): 
     # Initialize plot objects, if only one trial
-    if enable_plots and num_monte_carlo_trials == 1:
+    if enable_plots and num_threads == 1:
         map_fig, map_ax = plt.subplots()
         plt.ion()
         plt.show()
@@ -49,9 +49,9 @@ def runWrapper(obj):
         obj.simulationStep()
 
         # Display map for current time step, if only one trial
-        if enable_plots and num_monte_carlo_trials == 1:
+        if enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
-            if save_plots:
+            if save_plots == 1:
                 map_fig.savefig("figures/fig%02d.png" % t)
             print("t = {0}".format(t))
 
