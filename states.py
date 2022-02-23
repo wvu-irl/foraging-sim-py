@@ -2,27 +2,19 @@ class FullStates:
     def __init__(self): 
         self.x = 0
         self.y = 0
+        self.has_food = False
+        self.battery = 0
+        self.food_state = 0 # Binary encoding of food in map, 2^num_food
+        
+        # Extra states
         self.heading = 0
         self.t = 0
-        self.has_food = False
         self.food_heading = 0
-        self.battery = 0.0
-        self.personality = 0
-        self.robot_id = 0
-        self.at_home = False
-        self.num_food_retrieved = 0
-        self.num_times_home_visited = 0
-        self.total_distance_traversed = 0
 
 class States:
     def __init(self):
         self.x = 0
         self.y = 0
         self.has_food = False
-        self.battery = 0.0
-        self.personality = 0
-        self.robot_id = 0 
-        self.at_home = False
-        self.num_food_retrieved = 0
-        self.num_times_home_visited = 0
-        self.total_distance_traversed = 0
+        self.battery = 0
+        self.food_state = 0 # Binary encoding of food in map, 2^num_food

@@ -1,10 +1,12 @@
 import numpy as np
+import copy
 from foraging_map import ForagingMap
 from states import *
 from robot import *
 from transition_models import *
 from observation_models import *
 from reward_functions import *
+from results_metrics import ResultsMetrics
 
 class World:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps):
@@ -38,6 +40,7 @@ class World:
         self.true_transition_model = [None] * self.num_robots
         self.true_reward_function = [None] * self.num_robots
         self.true_total_reward = np.zeros(self.num_robots)
+        self.results_metrics = [None] * self.num_robots
 
         # Find position of robots in map and initialize true states
         for x in range(self.map_shape[0]):
@@ -47,10 +50,9 @@ class World:
                     robot_states = FullStates()
                     robot_states.x = x
                     robot_states.y = y
-                    robot_states.battery = 100.0
-                    robot_states.personality = robot_personality_list[robot_id]
-                    robot_states.robot_id = robot_id
+                    robot_states.battery = 10
                     self.true_robot_states[robot_id] = robot_states
+                    self.results_metrics = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants)
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -98,6 +100,8 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                    robot[robot_id].personality = robot_personality_list[robot_id]
+                    robot[robot_id].robot_id = robot_id
 
     def updateRobotObservation(self, i):
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
@@ -109,6 +113,7 @@ class World:
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
         (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states)
+        self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants)
         self.true_robot_states[i] = new_states
         self.map.setSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, new_submap)
 
@@ -116,3 +121,27 @@ class World:
         for i in range(self.num_robots):
             self.updateRobotObservation(i)
             self.executeRobotAction(i)
+
+    def updateResultsMetrics(self, results_in, state, state_prime, constants):
+        results_out = copy.deepcopy(results_in)
+        home_pos = constants["home_pos"]
+        if states.x == home_pos[0] and states.y == home_pos[1]:
+            states_at_home = True
+        else:
+            states_at_home = False
+
+        if states_prime.x == home_pos[0] and states_prime.y == home_pos[1]:
+            states_prime_at_home = True
+        else:
+            states_prime_at_home = False
+
+        if states_prime_at_home == True and states_at_home == False:
+            results_out.num_times_home_visited = results_in.num_times_home_visited + 1
+
+        if states_prime_at_home == True and states_prime.has_food == False and states.has_food == False:
+            results_out.num_food_retrieved = results_in.num_food_retrieved + 1
+
+        if states_prime.x != states.x or states_prime.y != states.y:
+            results_out.total_distance_traversed = results_in.total_distance_traversed + 1
+
+        return results_out

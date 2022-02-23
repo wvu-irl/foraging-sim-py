@@ -7,7 +7,8 @@ from states import *
 class Robot(ABC):
     @abstractmethod
     def __init__(self, initial_values, constants):
-        pass
+        self.personality = 0
+        self.robot_id = 0
 
     @abstractmethod # TODO: Maybe using these as abstract methods is not the right workflow for this project...
     def chooseAction(self):
@@ -23,6 +24,7 @@ class Robot(ABC):
 
 class SimpleDeterministicRobot(Robot):
     def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
@@ -42,6 +44,7 @@ class SimpleDeterministicRobot(Robot):
 
 class SimpleRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
@@ -63,6 +66,7 @@ class SimpleRandomGrabRobot(Robot):
 
 class SimpleLocalInteractionRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
