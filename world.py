@@ -25,12 +25,15 @@ class World:
 
         # Record home location TODO: change this to allow for different homes based on different robot IDs or not
         self.home_pos = self.map.findHomePosition(0)
+
+        # Record the food positions and headings lists
+        self.food_pos, self.food_heading = self.map.findFoodInfo()
         
         # Record constants known to the true simulation
-        self.true_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos}
+        self.true_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos, "food_pos" : self.food_pos, "food_heading" : self.food_heading}
 
         # Record constants known to the robots (possibly different than the true simulation)
-        self.robot_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos}
+        self.robot_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos, "food_pos" : self.food_pos}
 
         # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(robot_personality_list)

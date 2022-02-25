@@ -108,3 +108,13 @@ class ForagingMap:
 
         # If code falls through to here, no home location for given robot id
         return (sys.maxsize, sys.maxsize)
+
+    def findFoodInfo(self):
+        food_pos = []
+        food_heading = []
+        for x in range(self.map_shape[0]):
+            for y in range(self.map_shape[1]):
+                if self.map[MapLayer.FOOD, x, y] > 0:
+                    food_pos.append([x, y])
+                    food_heading.append(self.map[MapLayer.FOOD, x, y])
+        return food_pos, food_heading
