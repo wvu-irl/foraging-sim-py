@@ -21,4 +21,10 @@ class States:
 
 def enumerateState(state, state_max_vals):
     state_index = 0
-    # TODO: resume here
+    state_index += state.x
+    state_index += state.y * state_max_vals["max_x"]
+    state_index += int(state.has_food == True) * state_max_vals["max_x"] * state_max_vals["max_y"]
+    state_index += state.battery * state_max_vals["max_x"] * state_max_vals["max_y"] * 2
+    state_index += state.food_state * state_max_vals["max_x"] * state_max_vals["max_y"] * 2 * state_max_vals["max_battery"]
+
+    return state_index
