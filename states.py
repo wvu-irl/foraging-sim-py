@@ -18,3 +18,7 @@ class States:
         self.has_food = False
         self.battery = 0
         self.food_state = 0 # Binary encoding of food in map, 2^num_food
+
+def enumerateState(state, state_max_vals):
+    state_index = 0
+    # TODO: resume here

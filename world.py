@@ -28,12 +28,16 @@ class World:
 
         # Record the food positions and headings lists
         self.food_pos, self.food_heading = self.map.findFoodInfo()
+        self.num_food = len(self.food_pos)
+
+        # Set max battery
+        self.max_battery = 10
         
         # Record constants known to the true simulation
-        self.true_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos, "food_pos" : self.food_pos, "food_heading" : self.food_heading}
+        self.true_constants = {"map_shape" : self.map_shape, "max_battery" : self.max_battery, "home_pos" : self.home_pos, "num_food" : self.num_food, "food_pos" : self.food_pos, "food_heading" : self.food_heading}
 
         # Record constants known to the robots (possibly different than the true simulation)
-        self.robot_constants = {"map_shape" : self.map_shape, "home_pos" : self.home_pos, "food_pos" : self.food_pos}
+        self.robot_constants = {"map_shape" : self.map_shape, "max_battery" : self.max_battery, "home_pos" : self.home_pos, "num_food" : self.num_food, "food_pos" : self.food_pos}
 
         # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(robot_personality_list)
@@ -43,6 +47,7 @@ class World:
         self.true_transition_model = [None] * self.num_robots
         self.true_reward_function = [None] * self.num_robots
         self.true_total_reward = np.zeros(self.num_robots)
+        self.use_submap = [False] * self.num_robots
         self.results_metrics = [None] * self.num_robots
 
         # Find position of robots in map and initialize true states
@@ -53,7 +58,8 @@ class World:
                     robot_states = FullStates()
                     robot_states.x = x
                     robot_states.y = y
-                    robot_states.battery = 10
+                    robot_states.battery = self.max_battery
+                    robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
                     self.results_metrics = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
@@ -61,6 +67,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = deterministicTransitionModel
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 1:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 1
@@ -68,6 +75,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 2:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 3
@@ -75,6 +83,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 3:
                         self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 5
@@ -82,6 +91,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 4:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 1
@@ -89,6 +99,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 5:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 3
@@ -96,6 +107,7 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 6:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants)
                         self.true_robot_states[robot_id].heading = 5
@@ -103,6 +115,28 @@ class World:
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = directionalFoodTransitionModel1
                         self.true_reward_function[robot_id] = mdpRewardFunction
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 7:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants)
+                        self.robot[robot_id].states.heading = 1
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 8:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants)
+                        self.robot[robot_id].states.heading = 3
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 9:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants)
+                        self.robot[robot_id].states.heading = 5
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
                     robot[robot_id].personality = robot_personality_list[robot_id]
                     robot[robot_id].robot_id = robot_id
 
@@ -113,12 +147,15 @@ class World:
 
     def executeRobotAction(self, i):
         action = self.robot[i].chooseAction()
-        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
-        (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
+        if self.use_submap[i]:
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
+            (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants)
+            self.map.setSubMap(new_states.x, new_states.y, new_submap)
+        else:
+            new_states = self.true_transition_model[i](self.true_robot_states[i], action self.true_constants)
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states)
         self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants)
         self.true_robot_states[i] = new_states
-        self.map.setSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, new_submap)
 
     def simulationStep(self):
         for i in range(self.num_robots):

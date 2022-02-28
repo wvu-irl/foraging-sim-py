@@ -85,3 +85,23 @@ class SimpleLocalInteractionRandomGrabRobot(Robot):
 
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
+
+class SingleMDPRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = States()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        policy_filepath = initial_values["policy_filepath"]
+        self.policy = np.load(policy_filepath)
+        self.state_max_vals = {"max_x" : self.map_shape[0], "max_y" : self.map_shape[1], "max_battery" : constants["max_battery"], "num_food" : constants["num_food"]}
+
+    def chooseAction(self):
+        state_index = enumerateState(self.states, self.state_max_vals)
+        return self.policy(state_index)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
