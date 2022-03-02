@@ -411,6 +411,101 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
     # Return new states
     return new_states
 
+def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants):
+    grab_success_prob = 0.9 # Grab success probability assumed to be fixed
+    map_shape = constants["map_shape"]
+    home_pos = constants["home_pos"]
+    num_food = constants["num_food"]
+    food_pos = constants["food_pos"]
+    food_map = getFoodMapFromBinary(states.food_state, num_food, map_shape)
+    if action == Actions.STAY:
+        if state.x == state_prime.x and state.y == state_prime.y and state.has_food == state_prime.has_food \\
+                and state.battery == state_prime.battery and state.food_state == state_prime.food_state:
+            prob = 1.0
+        else:
+            prob = 0.0
+    elif Actions.MOVE_E <= action <= Actions.MOVE_SE:
+        if state.battery == 0: # If robot battery is dead, robot cannot move
+            delta_x = 0
+            delta_y = 0
+        elif action == Actions.MOVE_E: # Move E
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.E)
+        elif action == Actions.MOVE_NE: # Move NE
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.NE)
+        elif action == Actions.MOVE_N: # Move N
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.N)
+        elif action == Actions.MOVE_NW: # Move NW
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.NW)
+        elif action == Actions.MOVE_W: # Move W
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.W)
+        elif action == Actions.MOVE_SW: # Move SW
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.SW)
+        elif action == Actions.MOVE_S: # Move S
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
+        elif action == Actions.MOVE_SE: # Move SE
+            (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
+
+        current_x = state.x
+        current_y = state.y
+
+        # Update x and y states
+        new_x = current_x + delta_x
+        new_y = current_y + delta_y
+
+        # Check of new_x and new_y are within map boundaries
+        if new_x >= map_shape[0]:
+            new_x = map_shape[0] - 1
+            new_y = current_y
+        elif new_x < 0:
+            new_x = 0
+            new_y = current_y
+        if new_y >= map_shape[1]:
+            new_x = current_x
+            new_y = map_shape[1] - 1
+        elif new_y < 0:
+            new_x = current_x
+            new_y = 0
+
+        new_battery = state.battery - 1
+        if new_battery < 0:
+            new_battery = 0
+
+        if isAtHome(state_prime.x, state_prime.y, home_pos):
+            new_battery = 10
+
+        if new_x == state_prime.x and new_y == state_prime.y and new_battery == state_prime.battery \\
+                and state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
+            prob = 1.0
+        else:
+            prob = 0.0
+    elif action == Actions.GRAB:
+        prob = 0.0
+        if state.has_food == False and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y: # Cannot grab if already posessing food or if battery is dead
+            if food_map[state.x, state.y] == 1:
+                # Find which food index is the food at the current location, if there is one
+                food_index = -1
+                for i in range(num_food):
+                    if food_pos[i][0] == state.x and food_pos[i][1] == state.y:
+                        food_index = i
+                        break
+                # Check if food was found at the current location
+                if food_index > -1:
+                    food_map[state.x, state.y] = 0 # Remove food from robot's location on map
+                    new_food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    if state_prime.has_food == True and new_food_state == state_prime.food_state:
+                        prob = grab_success_prob
+                    elif state_prime.has_food == False and food_state == state_prime.food_state:
+                        prob = 1.0 - grab_success_prob
+    elif action == Actions.DROP:
+        prob = 0.0
+        if state.has_food and states.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state: # Cannot drop food if not already posessing it or if battery is dead
+            if isAtHome(state.x, state.y, home_pos) and state_prime.has_food == False:
+                prob = 1.0
+    else:
+        raise RuntimeError("action is not valid: {0}".format(action))
+
+    return prob
+
 
 def isAtHome(x, y, home_pos):
     if x == home_pos[0] and y == home_pos[1]:

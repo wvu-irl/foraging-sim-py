@@ -19,12 +19,20 @@ class States:
         self.battery = 0
         self.food_state = 0 # Binary encoding of food in map, 2^num_food
 
-def enumerateState(state, state_max_vals):
-    state_index = 0
-    state_index += state.x
-    state_index += state.y * state_max_vals["max_x"]
-    state_index += int(state.has_food == True) * state_max_vals["max_x"] * state_max_vals["max_y"]
-    state_index += state.battery * state_max_vals["max_x"] * state_max_vals["max_y"] * 2
-    state_index += state.food_state * state_max_vals["max_x"] * state_max_vals["max_y"] * 2 * state_max_vals["max_battery"]
-
+def enumerateState(state, state_dimensions):
+    state_index = np.ravel_multi_index((state.x, state.y, int(state.has_food == True), state.battery, state.food_state), \\
+            (state_dimensions["x_size"], state_dimensions["y_size"], 2, state_dimensions["max_battery"], 2 ** state_dimensions["num_food"]))
     return state_index
+
+def deEnumerateState(state_index, state_dimensions):
+    state = States()
+    (x, y, has_food, battery, food_state) = np.unravel_index(state_index, \\
+            (state_dimensions["x_size"], state_dimensions["y_size"], 2, state_dimensions["max_battery"], 2 ** state_dimensions["num_food"]))
+    state.x = x
+    state.y = y
+    state.has_food = bool(has_food)
+    state.battery = battery
+    state.food_state = food_state
+
+    return state
+ 

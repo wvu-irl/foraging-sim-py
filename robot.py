@@ -94,10 +94,10 @@ class SingleMDPRobot(Robot):
         self.home_pos = constants["home_pos"]
         policy_filepath = initial_values["policy_filepath"]
         self.policy = np.load(policy_filepath)
-        self.state_max_vals = {"max_x" : self.map_shape[0], "max_y" : self.map_shape[1], "max_battery" : constants["max_battery"], "num_food" : constants["num_food"]}
+        self.state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "battery_size" : constants["battery_size"], "num_food" : constants["num_food"]}
 
     def chooseAction(self):
-        state_index = enumerateState(self.states, self.state_max_vals)
+        state_index = enumerateState(self.states, self.state_dimensions)
         return self.policy(state_index)
 
     def stateEstimator(self, observation):
