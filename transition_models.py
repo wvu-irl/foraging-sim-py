@@ -83,7 +83,7 @@ def deterministicTransitionModel(states, submap, action, constants):
     # If robot has moved, mark old position in map to be removed
     if new_states.x != current_x or new_states.y != current_y:
         new_submap_object_list.append(MapLayer.ROBOT)
-        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.robot_id})
+        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
 
     # If at home, battery receives charge
     if at_home:
@@ -191,7 +191,7 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
     # If robot has moved, mark old position in map to be removed and increment distance traversed
     if new_states.x != current_x or new_states.y != current_y:
         new_submap_object_list.append(MapLayer.ROBOT)
-        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : states.robot_id})
+        new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
 
     # If at home, battery receives charge
     if at_home:
@@ -419,7 +419,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
     food_pos = constants["food_pos"]
     food_map = getFoodMapFromBinary(states.food_state, num_food, map_shape)
     if action == Actions.STAY:
-        if state.x == state_prime.x and state.y == state_prime.y and state.has_food == state_prime.has_food \\
+        if state.x == state_prime.x and state.y == state_prime.y and state.has_food == state_prime.has_food \
                 and state.battery == state_prime.battery and state.food_state == state_prime.food_state:
             prob = 1.0
         else:
@@ -473,7 +473,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
         if isAtHome(state_prime.x, state_prime.y, home_pos):
             new_battery = 10
 
-        if new_x == state_prime.x and new_y == state_prime.y and new_battery == state_prime.battery \\
+        if new_x == state_prime.x and new_y == state_prime.y and new_battery == state_prime.battery \
                 and state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
             prob = 1.0
         else:

@@ -8,7 +8,7 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 enable_plots = True
 save_plots = False
 
@@ -19,7 +19,7 @@ save_plots = False
 #    from params.local_interactions_1000mc import *
 #else:
 #    raise RuntimeError("local vs nonlocal cmdline arg not correct")
-from params.scenario_6_params import *
+from params.scenario_1_params import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:

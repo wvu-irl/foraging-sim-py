@@ -1,7 +1,7 @@
-food_img_path = "maps/100_100_food_map.png"
-home_img_path = "maps/100_100_home_map.png"
-obstacle_img_path = "maps/100_100_obstacle_map.png"
-robot_img_path = "maps/100_100_robot_map.png"
+food_img_path = "maps/10_10_food_map.png"
+home_img_path = "maps/10_10_home_map.png"
+obstacle_img_path = "maps/10_10_obstacle_map.png"
+robot_img_path = "maps/10_10_robot_map.png"
 robot_personality_list = [1]
 perception_range = 1
 num_time_steps = 1000

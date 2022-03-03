@@ -7,8 +7,7 @@ from states import *
 class Robot(ABC):
     @abstractmethod
     def __init__(self, initial_values, constants):
-        self.personality = 0
-        self.robot_id = 0
+        self.constants = constants
 
     @abstractmethod # TODO: Maybe using these as abstract methods is not the right workflow for this project...
     def chooseAction(self):

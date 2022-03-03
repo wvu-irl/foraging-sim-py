@@ -32,7 +32,7 @@ class MovePMFs:
 
 def simpleFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 30.0
+    battery_go_home_threshold = 4
 
     keep_executing = True
     while keep_executing:
@@ -107,7 +107,7 @@ def simpleFSMActionPolicy(self):
 
 def uncertainGrabFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 30.0
+    battery_go_home_threshold = 4
 
     keep_executing = True
     while keep_executing:
@@ -208,7 +208,7 @@ def uncertainGrabFSMActionPolicy(self):
 
 def uncertainGrabLocalInteractionFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 30.0
+    battery_go_home_threshold = 4
 
     keep_executing = True
     while keep_executing:
@@ -228,9 +228,9 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
                     rng = np.random.default_rng()
                     self.fsm_search_pmf = rng.choice(pmf_elements)
                 use_local_influence = False
-                if isRobotVisible(self.submap, self.states.personality):
+                if isRobotVisible(self.submap, self.constants["personality"]):
                     # If robot of the same personality is visible, check if it is further away from home current location
-                    (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.states.personality)
+                    (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"])
                     distance_to_home = max(abs(self.states.x - self.home_pos[0]), abs(self.states.y - self.home_pos[1])) # Chebyshev distance
                     other_robot_distance_to_home = max(abs(self.states.x + other_robot_delta_x - self.home_pos[0]), abs(self.states.y + other_robot_delta_y - self.home_pos[1]))
                     if other_robot_distance_to_home > distance_to_home and other_robot_has_food:
