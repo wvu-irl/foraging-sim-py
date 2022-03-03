@@ -8,7 +8,7 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = True
+config.enable_debug_prints = False
 enable_plots = True
 save_plots = False
 
@@ -60,7 +60,7 @@ def runWrapper(obj):
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, num_time_steps) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")

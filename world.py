@@ -9,7 +9,7 @@ from reward_functions import *
 from results_metrics import ResultsMetrics
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, num_time_steps):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, num_time_steps):
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
         self.map_shape = self.map.map_shape
@@ -23,7 +23,7 @@ class World:
         # Record number of timesteps
         self.num_time_steps = num_time_steps
 
-        # Record home location TODO: change this to allow for different homes based on different robot IDs or not
+        # Record home location
         self.home_pos = self.map.findHomePosition(0)
 
         # Record the food positions and headings lists
@@ -31,7 +31,7 @@ class World:
         self.num_food = len(self.food_pos)
 
         # Set max battery
-        self.max_battery = 10
+        self.battery_size = battery_size
 
         # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(robot_personality_list)
@@ -54,12 +54,12 @@ class World:
                     robot_states = FullStates()
                     robot_states.x = x
                     robot_states.y = y
-                    robot_states.battery = self.max_battery
+                    robot_states.battery = self.battery_size - 1
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
-                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "max_battery" : self.max_battery, "home_pos" : self.home_pos, \
+                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
                             "num_food" : self.num_food, "food_pos" : self.food_pos, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
-                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "max_battery" : self.max_battery, "home_pos" : self.home_pos, \
+                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
                             "num_food" : self.num_food, "food_pos" : self.food_pos, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:

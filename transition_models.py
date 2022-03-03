@@ -87,7 +87,7 @@ def deterministicTransitionModel(states, submap, action, constants):
 
     # If at home, battery receives charge
     if at_home:
-        new_states.battery = 10 # TODO: have ability to switch out more sophisticated battery charging model
+        new_states.battery = constants["battery_size"] - 1
     else:
         # If not at home, battery is depleted based on action taken
         if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
@@ -195,7 +195,7 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
 
     # If at home, battery receives charge
     if at_home:
-        new_states.battery = 10 # TODO: have ability to switch out more sophisticated battery charging model
+        new_states.battery = constants["battery_size"] - 1
     else:
         # If not at home, battery is depleted based on action taken
         if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
@@ -298,7 +298,7 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     
     # If at home, battery receives charge
     if at_home:
-        new_states.battery = 10 # TODO: have ability to switch out more sophisticated battery charging model
+        new_states.battery = constants["battery_size"] - 1
     else:
         # If not at home, battery is depleted based on action taken
         if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
@@ -395,7 +395,7 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
     
     # If at home, battery receives charge
     if at_home:
-        new_states.battery = 10 # TODO: have ability to switch out more sophisticated battery charging model
+        new_states.battery = constants["battery_size"] - 1
     else:
         # If not at home, battery is depleted based on action taken
         if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
@@ -471,7 +471,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
             new_battery = 0
 
         if isAtHome(state_prime.x, state_prime.y, home_pos):
-            new_battery = 10
+            new_battery = constants["battery_size"] - 1
 
         if new_x == state_prime.x and new_y == state_prime.y and new_battery == state_prime.battery \
                 and state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
@@ -498,7 +498,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
                         prob = 1.0 - grab_success_prob
     elif action == Actions.DROP:
         prob = 0.0
-        if state.has_food and states.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state: # Cannot drop food if not already posessing it or if battery is dead
+        if state.has_food and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state: # Cannot drop food if not already posessing it or if battery is dead
             if isAtHome(state.x, state.y, home_pos) and state_prime.has_food == False:
                 prob = 1.0
     else:

@@ -4,6 +4,7 @@ obstacle_img_path = "maps/10_10_obstacle_map.png"
 robot_img_path = "maps/10_10_robot_map.png"
 robot_personality_list = [1]
 perception_range = 1
+battery_size = 10
 num_time_steps = 1000
 num_monte_carlo_trials = 1
 num_threads = 1
