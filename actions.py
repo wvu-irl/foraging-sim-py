@@ -11,7 +11,5 @@ class Actions(IntEnum):
     MOVE_SW = 6
     MOVE_S = 7
     MOVE_SE = 8
-    PIVOT_CCW = 9
-    PIVOT_CW = 10
-    GRAB = 11
-    DROP = 12
+    GRAB = 9
+    DROP = 10

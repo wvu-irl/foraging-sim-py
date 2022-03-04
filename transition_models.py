@@ -30,12 +30,6 @@ def deterministicTransitionModel(states, submap, action, constants):
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
     elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
-    elif action == Actions.PIVOT_CW: # Pivot CW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        new_states.heading = getNewHeading(states.heading, Rotation.CW)
-    elif action == Actions.PIVOT_CCW: # Pivot CCW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        new_states.heading = getNewHeading(states.heading, Rotation.CCW)
     elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
@@ -132,12 +126,6 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
     elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
-    elif action == Actions.PIVOT_CW: # Pivot CW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        new_states.heading = getNewHeading(states.heading, Rotation.CW)
-    elif action == Actions.PIVOT_CCW: # Pivot CCW
-        (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
-        new_states.heading = getNewHeading(states.heading, Rotation.CCW)
     elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
@@ -222,7 +210,7 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
     food_heading = constants["food_heading"]
-    food_map = getFoodMapFromBinary(states.food_state, num_food, map_shape)
+    food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
     at_home = isAtHome(states.x, states.y, home_pos)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
@@ -323,7 +311,7 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
     home_pos = constants["home_pos"]
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
-    food_map = getFoodMapFromBinary(states.food_state, num_food, map_shape)
+    food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
     at_home = isAtHome(states.x, states.y, home_pos)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
@@ -417,7 +405,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
     home_pos = constants["home_pos"]
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
-    food_map = getFoodMapFromBinary(states.food_state, num_food, map_shape)
+    food_map = getFoodMapFromBinary(state.food_state, num_food, food_pos, map_shape)
     if action == Actions.STAY:
         if state.x == state_prime.x and state.y == state_prime.y and state.has_food == state_prime.has_food \
                 and state.battery == state_prime.battery and state.food_state == state_prime.food_state:
@@ -472,7 +460,6 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
 
         if isAtHome(state_prime.x, state_prime.y, home_pos):
             new_battery = constants["battery_size"] - 1
-
         if new_x == state_prime.x and new_y == state_prime.y and new_battery == state_prime.battery \
                 and state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
             prob = 1.0
@@ -492,10 +479,21 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
                 if food_index > -1:
                     food_map[state.x, state.y] = 0 # Remove food from robot's location on map
                     new_food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    print("sp has = {0}".format(state_prime.has_food))
+                    print("new food state: {0}".format(new_food_state))
+                    print("sp food_state: {0}".format(state_prime.food_state))
                     if state_prime.has_food == True and new_food_state == state_prime.food_state:
+                        print("grab succ")
                         prob = grab_success_prob
-                    elif state_prime.has_food == False and food_state == state_prime.food_state:
+                    elif state_prime.has_food == False and state.food_state == state_prime.food_state:
+                        print("grab fail")
                         prob = 1.0 - grab_success_prob
+            else:
+                if state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
+                    prob = 1.0
+            print("prob: {0}\n".format(prob))
+        elif state.has_food == True and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state_prime.has_food == True and state.food_state == state_prime.food_state:
+            prob = 1.0
     elif action == Actions.DROP:
         prob = 0.0
         if state.has_food and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state: # Cannot drop food if not already posessing it or if battery is dead
@@ -514,7 +512,7 @@ def isAtHome(x, y, home_pos):
         return False
 
 
-def getFoodMapFromBinary(food_state, num_food, map_shape):
+def getFoodMapFromBinary(food_state, num_food, food_pos, map_shape):
     food_map = np.zeros(map_shape)
     for i in range(num_food):
         food_present = (food_state >> i) & 1
@@ -524,7 +522,7 @@ def getFoodMapFromBinary(food_state, num_food, map_shape):
 
 def getBinaryFromFoodMap(food_map, num_food, food_pos):
     food_state = 0
-    map_shape = food_pos.shape()
+    map_shape = food_map.shape
     for x in range(map_shape[0]):
         for y in range(map_shape[1]):
             if food_map[x, y] == 1:

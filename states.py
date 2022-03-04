@@ -1,3 +1,5 @@
+import numpy as np
+
 class FullStates:
     def __init__(self): 
         self.x = 0

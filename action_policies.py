@@ -1,6 +1,7 @@
 from enum import IntEnum, unique
 from actions import Actions
 from submap_utils import *
+from transition_models import *
 import numpy as np
 from debug_print import debugPrint
 
@@ -41,7 +42,7 @@ def simpleFSMActionPolicy(self):
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
-            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape): # If at edge of map, go home
+            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
                 self.fsm_state = FSMState.GO_HOME
             elif isFoodVisible(self.submap): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
@@ -116,7 +117,7 @@ def uncertainGrabFSMActionPolicy(self):
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
-            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape): # If at edge of map, go home
+            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
                 self.fsm_state = FSMState.GO_HOME
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
@@ -217,7 +218,7 @@ def uncertainGrabLocalInteractionFSMActionPolicy(self):
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
-            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape): # If at edge of map, go home
+            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
                 self.fsm_state = FSMState.GO_HOME
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH

@@ -1,4 +1,6 @@
+from PIL import Image
 import numpy as np
+#from multiprocessing import Process, Lock
 from states import *
 from actions import *
 from transition_models import *
@@ -6,14 +8,26 @@ from reward_functions import *
 
 from params.scenario_1_params import *
 
+output_filename = "policies/secnario_1_policy.npy"
+
+# Set transition and reward functions
+T = mdpDirectionalFoodTransitionModelProb
+R = mdpRewardFunction
+
+# Set number of parallel threads
+num_parallel_threads = 1
+
 # Load map initialization image files
 food_img = Image.open(food_img_path)
-
-# Convert images to numpy arrays
-food_layer = np.array(food_img)
 home_img = Image.open(home_img_path)
 obstacle_img = Image.open(obstacle_img_path)
 robot_img = Image.open(robot_img_path)
+
+# Convert images to numpy arrays
+food_layer = np.array(food_img)
+home_layer = np.array(home_img)
+obstacle_layer = np.array(obstacle_img)
+robot_layer = np.array(robot_img)
 
 # Initialize map
 map_obj = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
@@ -29,9 +43,91 @@ home_pos = map_obj.findHomePosition(0)
 # Record constants and state dimensions
 constants = {"map_shape" : map_shape, "battery_size" : battery_size, "home_pos" : home_pos,"num_food" : num_food, "food_pos" : food_pos}
 state_dimensions = {"x_size" : map_shape[0], "y_size" : map_shape[1], "has_food_size" : 2, "battery_size" : battery_size, "num_food" : num_food}
+num_states = state_dimensions["x_size"] * state_dimensions["y_size"] * state_dimensions["has_food_size"] * state_dimensions["battery_size"] * (2 ** state_dimensions["num_food"])
+num_actions = Actions.DROP + 1
+print(state_dimensions)
+print("num_states: {0}".format(num_states))
+print("num_actions: {0}".format(num_actions))
+
+#val = 0.0
+#for s in range(num_states):
+#    s_vals = deEnumerateState(s, state_dimensions)
+#    for a in range(num_actions):
+#        for s_prime in range(num_states):
+#            s_prime_vals = deEnumerateState(s_prime, state_dimensions)
+#            indiv_val = T(s_vals, a, s_prime_vals, constants) * R(s_vals, a, s_prime_vals, constants)
+#            print(indiv_val)
+#            val += indiv_val
+#
+#print(val)
+
 
 # Set value iteration parameters
 max_iter = 10000  # Maximum number of iterations
-delta = 1e-400  # Error tolerance
+delta = 0.1  # Error tolerance
+gamma = 0.9 # Discount factor
+
+V = np.zeros(num_states)
+pi = np.ones(num_states, dtype=np.int) * -1
+iterations = np.zeros(num_states, dtype=np.int)
+
+V_new = np.zeros(num_states)  # Initialize values
+for i in range(max_iter):
+    print("\ni: {0}".format(i))
+    max_diff = 0.001
+    for s in range(num_states):
+        #print("s: {0}".format(s))
+        s_vals = deEnumerateState(s, state_dimensions)
+        max_val = float('-inf')
+        for a in range(num_actions):
+            #print("a: {0}".format(a))
+            # Compute state value
+            val = 0.0
+            for s_prime in range(num_states):
+                #print("s_prime: {0}".format(s_prime))
+                s_prime_vals = deEnumerateState(s_prime, state_dimensions)
+                val += T(s_vals, a, s_prime_vals, constants) * (R(s_vals, a, s_prime_vals, constants) + gamma * V[s_prime])
+            
+            # Update best policy
+            #print("val: %.6f" % val)
+            if val == 0.0:
+                print("*****bad action: {0}".format(a))
+            if val >= max_val:
+                pi[s] = a # Store action with highest value
+                max_val = val
+        #print("max_val: %.6f" % max_val)
+        V_new[s] = max_val # Update value with highest value
+
+        # Update max difference
+        max_diff = max(max_diff, abs(V[s] - V_new[s]))
+    print("V_new: {0}".format(V_new))
+    # Update value function
+    V = V_new
+
+    # If diff is smaller than threshold delta for all states, has converged, terminate
+    print("max_diff: %.9f" % (max_diff))
+    if max_diff < delta:
+        break
+
+# Save policy to file
+print("Done!")
+print(pi)
+np.save(output_filename, pi)
 
 
+#def valueIterationSingleState(s, value_lock=None, iteration_lock=None):
+#    while 
+#
+#def poolHandler():
+#    value_lock = Lock()
+#    iteration_lock = Lock()
+#
+#    if num_parallel_threads > 1:
+#        for s in range(num_states):
+#            Process(target=valueIterationSingleState, args=(s, value_lock, iteration_lock)).start()
+#    else:
+#        for s in range(num_states):
+#            valueIterationSingleState(s)
+#
+#if __name__ == '__main__':
+#    poolHandler()

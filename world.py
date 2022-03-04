@@ -55,6 +55,7 @@ class World:
                     robot_states.x = x
                     robot_states.y = y
                     robot_states.battery = self.battery_size - 1
+                    print("battery: {0}".format(robot_states.battery))
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
