@@ -97,10 +97,13 @@ class SingleMDPRobot(Robot):
 
     def chooseAction(self):
         state_index = enumerateState(self.states, self.state_dimensions)
-        return self.policy(state_index)
+        print("state_index: {0}".format(state_index))
+        action = self.policy[state_index]
+        print("action: {0}".format(action))
+        return action
 
     def stateEstimator(self, observation):
-        passthroughStateEstimator(self, observation)
+        passthroughMDPStateEstimator(self, observation)
 
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)

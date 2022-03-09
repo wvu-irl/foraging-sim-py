@@ -120,28 +120,31 @@ class World:
                     elif robot_personality_list[robot_id] == 7:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 1
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 8:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 3
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 9:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 5
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
 
     def updateRobotObservation(self, i):
-        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
-        observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
+        if self.use_submap[i]:
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
+            observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
+        else:
+            observation = self.true_observation_model[i](self.true_robot_states[i], self.true_constants[i])
         self.robot[i].stateEstimator(observation)
 
     def executeRobotAction(self, i):

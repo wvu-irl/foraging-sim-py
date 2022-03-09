@@ -1,3 +1,4 @@
+import copy
 from PIL import Image
 import numpy as np
 #from multiprocessing import Process, Lock
@@ -8,7 +9,7 @@ from reward_functions import *
 
 from params.scenario_1_params import *
 
-output_filename = "policies/secnario_1_policy.npy"
+output_filename = "policies/vi_policy.npy"
 
 # Set transition and reward functions
 T = mdpDirectionalFoodTransitionModelProb
@@ -64,7 +65,7 @@ print("num_actions: {0}".format(num_actions))
 
 # Set value iteration parameters
 max_iter = 10000  # Maximum number of iterations
-delta = 0.1  # Error tolerance
+delta = 1.0  # Error tolerance
 gamma = 0.9 # Discount factor
 
 V = np.zeros(num_states)
@@ -74,7 +75,7 @@ iterations = np.zeros(num_states, dtype=np.int)
 V_new = np.zeros(num_states)  # Initialize values
 for i in range(max_iter):
     print("\ni: {0}".format(i))
-    max_diff = 0.001
+    max_diff = 1e-6
     for s in range(num_states):
         #print("s: {0}".format(s))
         s_vals = deEnumerateState(s, state_dimensions)
@@ -83,15 +84,32 @@ for i in range(max_iter):
             #print("a: {0}".format(a))
             # Compute state value
             val = 0.0
+            #print("+++++++++++++++++++++++")
             for s_prime in range(num_states):
                 #print("s_prime: {0}".format(s_prime))
                 s_prime_vals = deEnumerateState(s_prime, state_dimensions)
-                val += T(s_vals, a, s_prime_vals, constants) * (R(s_vals, a, s_prime_vals, constants) + gamma * V[s_prime])
+                #print("++++++++++++++++++++++++++++++++++++++")
+                T_prob = T(s_vals, a, s_prime_vals, constants)
+                R_val = R(s_vals, a, s_prime_vals, constants)
+                new_val = T_prob * (R_val + gamma * V[s_prime])
+
+                #if R_val >= 100.0:
+                #    print("T_prob: {0}".format(T_prob))
+                #    print("new_val: {0}\n".format(new_val))
+                #elif R_val <= -5000.0 and T_prob > 0.0:
+                #    print("undefined reward allowed")
+                #    print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(s_vals.x, s_vals.y, s_vals.has_food, s_vals.battery, s_vals.food_state))
+                #    print("action: {0}".format(a))
+                #    print("state_prime x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}\n".format(s_prime_vals.x, s_prime_vals.y, s_prime_vals.has_food, s_prime_vals.battery, s_prime_vals.food_state))
+                #print("-------------------------------------")
+                val += new_val
+
+            #print("-----------------------")
             
             # Update best policy
             #print("val: %.6f" % val)
-            if val == 0.0:
-                print("*****bad action: {0}".format(a))
+            #if val == 0.0:
+            #    print("*****bad action: {0}".format(a))
             if val >= max_val:
                 pi[s] = a # Store action with highest value
                 max_val = val
@@ -100,9 +118,12 @@ for i in range(max_iter):
 
         # Update max difference
         max_diff = max(max_diff, abs(V[s] - V_new[s]))
-    print("V_new: {0}".format(V_new))
+    #print("V: {0}".format(V))
+    #print("V_new: {0}".format(V_new))
+    #diff = np.abs(np.subtract(V, V_new))
+    #print("diff: {0}".format(diff))
     # Update value function
-    V = V_new
+    V = np.copy(V_new)
 
     # If diff is smaller than threshold delta for all states, has converged, terminate
     print("max_diff: %.9f" % (max_diff))

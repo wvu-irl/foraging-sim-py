@@ -283,13 +283,18 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     elif new_y < 0:
         new_x = current_x
         new_y = 0
+        
+    new_states.x = new_x
+    new_states.y = new_y
+
+    new_at_home = isAtHome(new_states.x, new_states.y, home_pos)
     
     # If at home, battery receives charge
-    if at_home:
+    if new_at_home:
         new_states.battery = constants["battery_size"] - 1
     else:
         # If not at home, battery is depleted based on action taken
-        if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
+        if new_states.x != current_x or new_states.y != current_y: # Move action, moderate battery depletion
             new_states.battery = states.battery - 1
 
         # Battery cannot be depleted below zero
@@ -454,7 +459,10 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
             new_x = current_x
             new_y = 0
 
-        new_battery = state.battery - 1
+        if new_x != current_x or new_y != current_y:
+            new_battery = state.battery - 1
+        else:
+            new_battery = state.battery
         if new_battery < 0:
             new_battery = 0
 
@@ -467,7 +475,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
             prob = 0.0
     elif action == Actions.GRAB:
         prob = 0.0
-        if state.has_food == False and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y: # Cannot grab if already posessing food or if battery is dead
+        if state.has_food == False and state.battery > 0 and state.battery == state_prime.battery and state.x == state_prime.x and state.y == state_prime.y: # Cannot grab if already posessing food or if battery is dead
             if food_map[state.x, state.y] == 1:
                 # Find which food index is the food at the current location, if there is one
                 food_index = -1
@@ -479,26 +487,37 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
                 if food_index > -1:
                     food_map[state.x, state.y] = 0 # Remove food from robot's location on map
                     new_food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
-                    print("sp has = {0}".format(state_prime.has_food))
-                    print("new food state: {0}".format(new_food_state))
-                    print("sp food_state: {0}".format(state_prime.food_state))
+                    #print("sp has = {0}".format(state_prime.has_food))
+                    #print("new food state: {0}".format(new_food_state))
+                    #print("sp food_state: {0}".format(state_prime.food_state))
                     if state_prime.has_food == True and new_food_state == state_prime.food_state:
-                        print("grab succ")
+                        #print("grab succ")
                         prob = grab_success_prob
                     elif state_prime.has_food == False and state.food_state == state_prime.food_state:
-                        print("grab fail")
+                        #print("grab fail")
                         prob = 1.0 - grab_success_prob
             else:
                 if state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
                     prob = 1.0
-            print("prob: {0}\n".format(prob))
-        elif state.has_food == True and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state_prime.has_food == True and state.food_state == state_prime.food_state:
+        elif state.has_food == True and state.battery > 0 and state.battery == state_prime.battery and state.x == state_prime.x and state.y == state_prime.y and state_prime.has_food == True and state.food_state == state_prime.food_state and state.food_state < (2 ** constants["num_food"] - 1):
+            prob = 1.0
+        elif state.battery == 0 and state_prime.battery == 0 and state.x == state_prime.x and state.y == state_prime.y and state.has_food == state_prime.has_food and state.food_state == state_prime.food_state:
             prob = 1.0
     elif action == Actions.DROP:
         prob = 0.0
-        if state.has_food and state.battery > 0 and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state: # Cannot drop food if not already posessing it or if battery is dead
+        if state.has_food and state.battery > 0 and state.battery == state_prime.battery and state.x == state_prime.x and state.y == state_prime.y and state.food_state == state_prime.food_state and state.food_state < (2 ** constants["num_food"] - 1):
             if isAtHome(state.x, state.y, home_pos) and state_prime.has_food == False:
+                #print("DROP FOOD AT HOME")
                 prob = 1.0
+            elif not isAtHome(state.x, state.y, home_pos) and state_prime.has_food == True:
+                prob = 1.0
+        elif state.battery == 0 and state_prime.battery == 0 and state.x == state_prime.x and state.y == state_prime.y and state.has_food == True and state_prime.has_food == True and state.food_state == state_prime.food_state and state.food_state < (2 ** constants["num_food"] - 1):
+            prob = 1.0
+        elif state.has_food == False and state_prime.has_food == False and state.x == state_prime.x and state.y == state_prime.y and state.battery == state_prime.battery and state.food_state == state_prime.food_state:
+            prob = 1.0
+        #elif state.has_food == True and state_prime.has_food == True and state.x == state_prime.x and state.y == state_prime.y and state.battery == state_prime.battery and state.food_state == state_prime.food_state and state.food_state < (2 ** constants["num_food"] - 1):
+        #    prob = 1.0
+        #print("Drop prob: {0}, s.x: {1}, s.y: {2}, s.has_food: {3}, s.battery: {4}, s.food_state: {5}; sp.x: {6}, sp.y: {7}, sp.has_food: {8}, sp.battery: {9}, sp.food_state: {10}".format(prob, state.x, state.y, state.has_food, state.battery, state.food_state, state_prime.x, state_prime.y, state_prime.has_food, state_prime.battery, state_prime.food_state))
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
