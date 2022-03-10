@@ -10,8 +10,6 @@ class FullStates:
         
         # Extra states
         self.heading = 0
-        self.t = 0
-        self.food_heading = 0
 
 class States:
     def __init(self):
@@ -38,3 +36,20 @@ def deEnumerateState(state_index, state_dimensions):
 
     return state
  
+def enumerateFullState(state, state_dimensions):
+    state_index = np.ravel_multi_index((state.x, state.y, int(state.has_food == True), state.battery, state.food_state, state.heading), \
+            (state_dimensions["x_size"], state_dimensions["y_size"], state_dimensions["has_food_size"], state_dimensions["battery_size"], 2 ** state_dimensions["num_food"], state_dimensions["heading_size"]))
+    return state_index
+
+def deEnumerateFullState(state_index, state_dimensions):
+    state = States()
+    (x, y, has_food, battery, food_state, heading) = np.unravel_index(state_index, \
+            (state_dimensions["x_size"], state_dimensions["y_size"], state_dimensions["has_food_size"], state_dimensions["battery_size"], 2 ** state_dimensions["num_food"], state_dimensions["heading_size"]))
+    state.x = x
+    state.y = y
+    state.has_food = bool(has_food)
+    state.battery = battery
+    state.food_state = food_state
+    state.heading = heading
+
+    return state

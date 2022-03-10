@@ -5,6 +5,7 @@ robot_img_path = "maps/3_3_robot_map.png"
 robot_personality_list = [7]
 perception_range = 1
 battery_size = 4
+heading_size = 8
 num_time_steps = 1000
 num_monte_carlo_trials = 1
 num_threads = 1
