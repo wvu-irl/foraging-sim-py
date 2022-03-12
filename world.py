@@ -128,21 +128,21 @@ class World:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
-                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelProbTrue
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 8:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
-                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelProbTrue
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 9:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
-                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelProbTrue
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
 
@@ -161,20 +161,16 @@ class World:
             (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
             self.map.setSubMap(new_states.x, new_states.y, new_submap)
         else:
-            state_index_outcomes = np.arange(0, self.num_full_states, dtype=np.int)
-            state_outcome_probs = np.zeros(self.num_full_states)
-            for j in range(self.num_full_states):
-                state_prime = deEnumerateFullState(j, self.full_state_dimensions)
-                state_outcome_probs[j] = self.true_transition_model[i](self.true_robot_states[i], action, state_prime, self.true_constants[i])
-            state_outcome_probs_normalized = state_outcome_probs / state_outcome_probs.sum()
-            rng = np.random.default_rng()
-            new_state_index = rng.choice(state_index_outcomes, p=state_outcome_probs_normalized)
-            new_states = deEnumerateFullState(new_state_index, self.full_state_dimensions)
+            state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
+            if len(state_outcomes) > 1:
+                rng = np.random.default_rng()
+                new_states = rng.choice(state_outcomes, p=state_outcome_probs)
+            else:
+                new_states = state_outcomes[0]
             new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
             self.map.map[MapLayer.FOOD, :, :] = new_food_map
             self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
-            self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1
-            
+            self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
 
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states, self.true_constants[i])
         self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants[i])

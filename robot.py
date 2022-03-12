@@ -98,7 +98,7 @@ class SingleMDPRobot(Robot):
     def chooseAction(self):
         state_index = enumerateState(self.states, self.state_dimensions)
         print("state_index: {0}".format(state_index))
-        print(
+        print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(self.states.x, self.states.y, self.states.has_food, self.states.battery, self.states.food_state))
         action = self.policy[state_index]
         print("action: {0}".format(action))
         return action

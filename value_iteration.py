@@ -12,7 +12,7 @@ from params.scenario_1_params import *
 output_filename = "policies/vi_policy.npy"
 
 # Set transition and reward functions
-T = mdpDirectionalFoodTransitionModelProb
+T = mdpDirectionalFoodTransitionModel
 R = mdpRewardFunction
 
 # Set number of parallel threads
@@ -65,7 +65,7 @@ print("num_actions: {0}".format(num_actions))
 
 # Set value iteration parameters
 max_iter = 10000  # Maximum number of iterations
-delta = 1.0  # Error tolerance
+delta = 0.0001  # Error tolerance
 gamma = 0.9 # Discount factor
 
 V = np.zeros(num_states)
@@ -85,22 +85,23 @@ for i in range(max_iter):
             # Compute state value
             val = 0.0
             #print("+++++++++++++++++++++++")
-            for s_prime in range(num_states):
+            s_prime_vals, T_prob = T(s_vals, a, constants)
+            for idx in range(len(s_prime_vals)):
                 #print("s_prime: {0}".format(s_prime))
-                s_prime_vals = deEnumerateState(s_prime, state_dimensions)
                 #print("++++++++++++++++++++++++++++++++++++++")
-                T_prob = T(s_vals, a, s_prime_vals, constants)
-                R_val = R(s_vals, a, s_prime_vals, constants)
-                new_val = T_prob * (R_val + gamma * V[s_prime])
+                s_prime = enumerateState(s_prime_vals[idx], state_dimensions)
+                R_val = R(s_vals, a, s_prime_vals[idx], constants)
+                #print("r_val: {0}, T_prob: {1}".format(R_val, T_prob[idx]))
+                new_val = T_prob[idx] * (R_val + gamma * V[s_prime])
 
                 #if R_val >= 100.0:
                 #    print("T_prob: {0}".format(T_prob))
                 #    print("new_val: {0}\n".format(new_val))
-                #elif R_val <= -5000.0 and T_prob > 0.0:
+                #if np.isnan(R_val) and T_prob[idx] > 0.0:
                 #    print("undefined reward allowed")
                 #    print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(s_vals.x, s_vals.y, s_vals.has_food, s_vals.battery, s_vals.food_state))
                 #    print("action: {0}".format(a))
-                #    print("state_prime x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}\n".format(s_prime_vals.x, s_prime_vals.y, s_prime_vals.has_food, s_prime_vals.battery, s_prime_vals.food_state))
+                #    print("state_prime x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}\n".format(s_prime_vals[idx].x, s_prime_vals[idx].y, s_prime_vals[idx].has_food, s_prime_vals[idx].battery, s_prime_vals[idx].food_state))
                 #print("-------------------------------------")
                 val += new_val
 
@@ -133,6 +134,7 @@ for i in range(max_iter):
 # Save policy to file
 print("Done!")
 print(pi)
+print(V)
 np.save(output_filename, pi)
 
 

@@ -202,7 +202,6 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
 
 
 def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
-    new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     current_x = states.x
     current_y = states.y
     map_shape = constants["map_shape"]
@@ -214,24 +213,36 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     at_home = isAtHome(states.x, states.y, home_pos)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = True
     elif action == Actions.MOVE_E: # Move E
         (delta_x, delta_y) = getDeltaFromDirection(Direction.E)
+        move_action = True
     elif action == Actions.MOVE_NE: # Move NE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NE)
+        move_action = True
     elif action == Actions.MOVE_N: # Move N
         (delta_x, delta_y) = getDeltaFromDirection(Direction.N)
+        move_action = True
     elif action == Actions.MOVE_NW: # Move NW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NW)
+        move_action = True
     elif action == Actions.MOVE_W: # Move W
         (delta_x, delta_y) = getDeltaFromDirection(Direction.W)
+        move_action = True
     elif action == Actions.MOVE_SW: # Move SW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SW)
+        move_action = True
     elif action == Actions.MOVE_S: # Move S
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
+        move_action = True
     elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
+        move_action = True
     elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = False
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
         if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
             if food_map[states.x, states.y] == 1:
                 # Find which food index is the food at the current location, if there is one
@@ -246,70 +257,70 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
                     grab_success_possible_probs = np.array([0.0, 0.0, 0.1, 0.5, 0.9, 0.5, 0.1, 0.0, 0.0]) # Grab success probability associated with each robot-food heading diff [-4, -3, -2, -1, 0, 1, 2, 3, 4] 
                     robot_food_heading_diff = getHeadingDiff(states.heading, food_heading[food_index])
                     grab_success_prob = grab_success_possible_probs[robot_food_heading_diff + 4]
-                    rng = np.random.default_rng()
-                    if rng.random() < grab_success_prob:
-                        new_states.has_food = True
-                        new_states.food_heading = food_heading[food_index]
-                        food_map[states.x, states.y] = 0 # Remove food from robot's location on map
-                        new_states.food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    new_states = [copy.deepcopy(states)] * 2
+                    new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
+                    new_states[0].has_food = True
+                    food_map[states.x, states.y] = 0 # Remove food from robot's location on map
+                    new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
     elif action == Actions.DROP: # Drop food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = False
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
         if states.has_food and states.battery > 0: # Cannot drop food if not already posessing it or if battery is dead
             if at_home: # If at home, drop food
-                new_states.has_food = False
-                new_states.food_heading = 0
+                new_states[0].has_food = False
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
-    # If robot battery is dead, robot cannot move
-    if states.battery == 0:
-        delta_x = 0
-        delta_y = 0
+    if move_action:
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
+        # If robot battery is dead, robot cannot move
+        if states.battery == 0:
+            delta_x = 0
+            delta_y = 0
 
-    # Update x and y states
-    new_x = current_x + delta_x
-    new_y = current_y + delta_y
+        # Update x and y states
+        new_x = current_x + delta_x
+        new_y = current_y + delta_y
 
-    # Check of new_x and new_y are within map boundaries
-    if new_x >= map_shape[0]:
-        new_x = map_shape[0] - 1
-        new_y = current_y
-    elif new_x < 0:
-        new_x = 0
-        new_y = current_y
-    if new_y >= map_shape[1]:
-        new_x = current_x
-        new_y = map_shape[1] - 1
-    elif new_y < 0:
-        new_x = current_x
-        new_y = 0
+        # Check of new_x and new_y are within map boundaries
+        if new_x >= map_shape[0]:
+            new_x = map_shape[0] - 1
+            new_y = current_y
+        elif new_x < 0:
+            new_x = 0
+            new_y = current_y
+        if new_y >= map_shape[1]:
+            new_x = current_x
+            new_y = map_shape[1] - 1
+        elif new_y < 0:
+            new_x = current_x
+            new_y = 0
+            
+        new_states[0].x = new_x
+        new_states[0].y = new_y
+
+        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_pos)
         
-    new_states.x = new_x
-    new_states.y = new_y
+        # If at home, battery receives charge
+        if new_at_home:
+            new_states[0].battery = constants["battery_size"] - 1
+        else:
+            # If not at home, battery is depleted based on action taken
+            if new_states[0].x != current_x or new_states[0].y != current_y: # Move action, moderate battery depletion
+                new_states[0].battery = states.battery - 1
 
-    new_at_home = isAtHome(new_states.x, new_states.y, home_pos)
-    
-    # If at home, battery receives charge
-    if new_at_home:
-        new_states.battery = constants["battery_size"] - 1
-    else:
-        # If not at home, battery is depleted based on action taken
-        if new_states.x != current_x or new_states.y != current_y: # Move action, moderate battery depletion
-            new_states.battery = states.battery - 1
-
-        # Battery cannot be depleted below zero
-        if new_states.battery < 0:
-            new_states.battery = 0
-
-    # Update time
-    new_states.t = states.t + 1
+            # Battery cannot be depleted below zero
+            if new_states[0].battery < 0:
+                new_states[0].battery = 0
 
     # Return new states
-    return new_states
+    return new_states, new_states_prob
 
 
 def mdpDirectionalFoodTransitionModel(states, action, constants):
-    new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     current_x = states.x
     current_y = states.y
     map_shape = constants["map_shape"]
@@ -320,24 +331,36 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
     at_home = isAtHome(states.x, states.y, home_pos)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = True
     elif action == Actions.MOVE_E: # Move E
         (delta_x, delta_y) = getDeltaFromDirection(Direction.E)
+        move_action = True
     elif action == Actions.MOVE_NE: # Move NE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NE)
+        move_action = True
     elif action == Actions.MOVE_N: # Move N
         (delta_x, delta_y) = getDeltaFromDirection(Direction.N)
+        move_action = True
     elif action == Actions.MOVE_NW: # Move NW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NW)
+        move_action = True
     elif action == Actions.MOVE_W: # Move W
         (delta_x, delta_y) = getDeltaFromDirection(Direction.W)
+        move_action = True
     elif action == Actions.MOVE_SW: # Move SW
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SW)
+        move_action = True
     elif action == Actions.MOVE_S: # Move S
         (delta_x, delta_y) = getDeltaFromDirection(Direction.S)
+        move_action = True
     elif action == Actions.MOVE_SE: # Move SE
         (delta_x, delta_y) = getDeltaFromDirection(Direction.SE)
+        move_action = True
     elif action == Actions.GRAB: # Grab food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = False
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
         if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
             if food_map[states.x, states.y] == 1:
                 # Find which food index is the food at the current location, if there is one
@@ -349,60 +372,68 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
                 # Check if food was found at the current location
                 if food_index > -1:
                     # If food is at the current location found, attempt to pick up food
-                    grab_success_prob = 0.9 # Grab success probability assumed to be fixed
-                    rng = np.random.default_rng()
-                    if rng.random() < grab_success_prob:
-                        new_states.has_food = True
-                        food_map[states.x, states.y] = 0 # Remove food from robot's location on map
-                        new_states.food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    grab_success_prob = 0.9
+                    new_states = [copy.deepcopy(states)] * 2
+                    new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
+                    new_states[0].has_food = True
+                    food_map[states.x, states.y] = 0 # Remove food from robot's location on map
+                    new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
     elif action == Actions.DROP: # Drop food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
+        move_action = False
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
         if states.has_food and states.battery > 0: # Cannot drop food if not already posessing it or if battery is dead
             if at_home: # If at home, drop food
-                new_states.has_food = False
+                new_states[0].has_food = False
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
-    # If robot battery is dead, robot cannot move
-    if states.battery == 0:
-        delta_x = 0
-        delta_y = 0
+    if move_action:
+        new_states = [copy.deepcopy(states)]
+        new_states_prob = [1.0]
+        # If robot battery is dead, robot cannot move
+        if states.battery == 0:
+            delta_x = 0
+            delta_y = 0
 
-    # Update x and y states
-    new_x = current_x + delta_x
-    new_y = current_y + delta_y
+        # Update x and y states
+        new_x = current_x + delta_x
+        new_y = current_y + delta_y
 
-    # Check of new_x and new_y are within map boundaries
-    if new_x >= map_shape[0]:
-        new_x = map_shape[0] - 1
-        new_y = current_y
-    elif new_x < 0:
-        new_x = 0
-        new_y = current_y
-    if new_y >= map_shape[1]:
-        new_x = current_x
-        new_y = map_shape[1] - 1
-    elif new_y < 0:
-        new_x = current_x
-        new_y = 0
-    
-    # If at home, battery receives charge
-    if at_home:
-        new_states.battery = constants["battery_size"] - 1
-    else:
-        # If not at home, battery is depleted based on action taken
-        if Actions.MOVE_E <= action <= Actions.MOVE_SE: # Move action, moderate battery depletion
-            new_states.battery = states.battery - 1
+        # Check of new_x and new_y are within map boundaries
+        if new_x >= map_shape[0]:
+            new_x = map_shape[0] - 1
+            new_y = current_y
+        elif new_x < 0:
+            new_x = 0
+            new_y = current_y
+        if new_y >= map_shape[1]:
+            new_x = current_x
+            new_y = map_shape[1] - 1
+        elif new_y < 0:
+            new_x = current_x
+            new_y = 0
+            
+        new_states[0].x = new_x
+        new_states[0].y = new_y
 
-        # Battery cannot be depleted below zero
-        if new_states.battery < 0:
-            new_states.battery = 0
+        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_pos)
+        
+        # If at home, battery receives charge
+        if new_at_home:
+            new_states[0].battery = constants["battery_size"] - 1
+        else:
+            # If not at home, battery is depleted based on action taken
+            if new_states[0].x != current_x or new_states[0].y != current_y: # Move action, moderate battery depletion
+                new_states[0].battery = states.battery - 1
 
-    # Update time
-    new_states.t = states.t + 1
+            # Battery cannot be depleted below zero
+            if new_states[0].battery < 0:
+                new_states[0].battery = 0
 
     # Return new states
-    return new_states
+    return new_states, new_states_prob
 
 def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants):
     grab_success_prob = 0.9 # Grab success probability assumed to be fixed
