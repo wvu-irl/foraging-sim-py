@@ -80,7 +80,15 @@ for i in range(max_iter):
         #print("s: {0}".format(s))
         s_vals = deEnumerateState(s, state_dimensions)
         max_val = float('-inf')
-        for a in range(num_actions):
+        possible_actions = list(range(num_actions))
+        if s_vals.has_food == True:
+            possible_actions.remove(Actions.GRAB)
+        if s_vals.has_food == False:
+            possible_actions.remove(Actions.DROP)
+        if (s_vals.x != home_pos[0] or s_vals.y != home_pos[1]) and s_vals.has_food == True:
+            possible_actions.remove(Actions.DROP)
+        #print(possible_actions)
+        for a in possible_actions:
             #print("a: {0}".format(a))
             # Compute state value
             val = 0.0
@@ -94,10 +102,10 @@ for i in range(max_iter):
                 #print("r_val: {0}, T_prob: {1}".format(R_val, T_prob[idx]))
                 new_val = T_prob[idx] * (R_val + gamma * V[s_prime])
 
-                #if R_val >= 100.0:
+                #if R_val <= -10000.0 and T_prob[idx] > 0.0:
                 #    print("T_prob: {0}".format(T_prob))
-                #    print("new_val: {0}\n".format(new_val))
-                #if np.isnan(R_val) and T_prob[idx] > 0.0:
+                #    print("R_val: {0}".format(R_val))
+                #    #print("new_val: {0}\n".format(new_val))
                 #    print("undefined reward allowed")
                 #    print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(s_vals.x, s_vals.y, s_vals.has_food, s_vals.battery, s_vals.food_state))
                 #    print("action: {0}".format(a))
@@ -134,7 +142,7 @@ for i in range(max_iter):
 # Save policy to file
 print("Done!")
 print(pi)
-print(V)
+#print(V)
 np.save(output_filename, pi)
 
 
