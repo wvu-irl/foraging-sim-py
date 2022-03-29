@@ -7,7 +7,7 @@ from actions import *
 from transition_models import *
 from reward_functions import *
 
-from params.scenario_1_params import *
+from params.single_robot_mdp import *
 
 output_filename = "policies/vi_policy.npy"
 
@@ -37,6 +37,7 @@ map_shape = map_obj.map_shape
 # Record the food positions and headings lists
 food_pos, food_heading = map_obj.findFoodInfo()
 num_food = len(food_pos)
+print("num_food: {0}".format(num_food))
         
 # Record home location
 home_pos = map_obj.findHomePosition(0)
@@ -65,7 +66,8 @@ print("num_actions: {0}".format(num_actions))
 
 # Set value iteration parameters
 max_iter = 10000  # Maximum number of iterations
-delta = 0.0001  # Error tolerance
+#delta = 0.0001  # Error tolerance
+delta = 1.0
 gamma = 0.9 # Discount factor
 
 V = np.zeros(num_states)

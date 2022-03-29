@@ -10,7 +10,7 @@ import sys
 
 config.enable_debug_prints = True
 enable_plots = True
-save_plots = False
+save_plots = True
 
 # Load simulation parameters
 #if sys.argv[1] == "nonlocal":
@@ -19,7 +19,7 @@ save_plots = False
 #    from params.local_interactions_1000mc import *
 #else:
 #    raise RuntimeError("local vs nonlocal cmdline arg not correct")
-from params.scenario_1_params import *
+from params.single_robot_mdp import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:

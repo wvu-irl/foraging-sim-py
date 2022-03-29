@@ -194,7 +194,7 @@ def directionalFoodTransitionModel1(states, submap, action, constants):
             new_states.battery = 0
 
     # Update time
-    new_states.t = states.t + 1
+    #new_states.t = states.t + 1
 
     # Return new states and new submap
     new_submap = (new_submap_object_list, new_submap_property_list)

@@ -13,25 +13,25 @@ def displayMap(obj, plt, fig, ax):
                     robot_color = [50, 50, 50]  # Dark gray
                 elif robot_personality == 0:
                     robot_color = [0, 0, 155]  # Dark Blue
-                elif robot_personality == 1:
+                elif robot_personality in [1, 4, 7]:
                     robot_color = [255, 0, 0]   # Red
-                elif robot_personality == 2:
+                elif robot_personality in [2, 5, 8]:
                     robot_color = [0, 0, 255]   # Blue
-                elif robot_personality == 3:
+                elif robot_personality in [3, 6, 9]:
                     robot_color = [255, 0, 255] # Purple
-                elif robot_personality == 4:
-                    #robot_color = [255, 128, 0] # Orange
-                    robot_color = [255, 0, 0]   # Red
-                elif robot_personality == 5:
-                    #robot_color = [150, 0, 255] # Violet
-                    robot_color = [0, 0, 255]   # Blue
-                elif robot_personality == 6:
-                    #robot_color = [60, 30, 0]   # Brown
-                    robot_color = [255, 0, 255] # Purple
-                elif robot_personality == 7:
-                    robot_color = [86, 0, 45]   # Burgandy
-                elif robot_personality == 8:
-                    robot_color = [255, 200, 0] # Yellow
+                #elif robot_personality == 4:
+                #    #robot_color = [255, 128, 0] # Orange
+                #    robot_color = [255, 0, 0]   # Red
+                #elif robot_personality == 5:
+                #    #robot_color = [150, 0, 255] # Violet
+                #    robot_color = [0, 0, 255]   # Blue
+                #elif robot_personality == 6:
+                #    #robot_color = [60, 30, 0]   # Brown
+                #    robot_color = [255, 0, 255] # Purple
+                #elif robot_personality == 7:
+                #    robot_color = [86, 0, 45]   # Burgandy
+                #elif robot_personality == 8:
+                #    robot_color = [255, 200, 0] # Yellow
                 img[x, y, :] = np.array(robot_color, dtype=np.uint8)
             elif obj.map.map[MapLayer.OBSTACLE, x, y] > 0: # Mark obstacle locations as black
                 img[x, y, :] = np.array([0, 0, 0], dtype=np.uint8)
@@ -47,5 +47,11 @@ def displayMap(obj, plt, fig, ax):
                 img[x, y, :] = np.array([0, 0, 0], dtype=np.uint8)
 
     ax.cla()
-    ax.imshow(np.swapaxes(img, 0, 1), origin='lower')
+    #ax.imshow(np.swapaxes(img, 0, 1), origin='lower')
+    ax.imshow(img, origin='lower')
+    ax.set_xticks(np.arange(0, img_shape[0], 1))
+    ax.set_yticks(np.arange(0, img_shape[1], 1))
+    ax.set_xticks(np.arange(-0.5, img_shape[0], 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, img_shape[1], 1), minor=True) 
+    ax.grid(which='minor', color='k', linestyle='-', linewidth=1)
     plt.pause(0.001)
