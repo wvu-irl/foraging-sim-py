@@ -266,3 +266,21 @@ def atEdgeOfMap(x, y, map_shape):
     else:
         return False
 
+def getFoodMapFromBinary(food_state, num_food, food_pos, map_shape):
+    food_map = np.zeros(map_shape)
+    for i in range(num_food):
+        food_present = (food_state >> i) & 1
+        food_map[food_pos[i][0], food_pos[i][1]] = food_present
+    return food_map
+
+
+def getBinaryFromFoodMap(food_map, num_food, food_pos):
+    food_state = 0
+    map_shape = food_map.shape
+    for x in range(map_shape[0]):
+        for y in range(map_shape[1]):
+            if food_map[x, y] == 1:
+                for i in range(num_food):
+                    if x == food_pos[i][0] and y == food_pos[i][1]:
+                        food_state += (1 << i)
+    return food_state

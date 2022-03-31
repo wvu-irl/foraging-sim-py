@@ -27,10 +27,8 @@ class SimpleDeterministicRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.fsm_state = FSMState.SEARCH
-        self.fsm_search_dir_chosen = False
-        self.fsm_search_pmf = MovePMFs.uniform
-        self.fsm_nearest_food_found = False
+        self.constants = constants
+        self.fsm_state = FSMState.SELECT_TARGET
 
     def chooseAction(self):
         return simpleFSMActionPolicy(self)
@@ -47,10 +45,8 @@ class SimpleRandomGrabRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.fsm_state = FSMState.SEARCH
-        self.fsm_search_dir_chosen = False
-        self.fsm_search_pmf = MovePMFs.uniform
-        self.fsm_nearest_food_found = False
+        self.constants = constants
+        self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
 
@@ -69,10 +65,8 @@ class SimpleLocalInteractionRandomGrabRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.fsm_state = FSMState.SEARCH
-        self.fsm_search_dir_chosen = False
-        self.fsm_search_pmf = MovePMFs.uniform
-        self.fsm_nearest_food_found = False
+        self.constants = constants
+        self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
 
@@ -91,20 +85,18 @@ class SingleMDPRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.constants = constants
         policy_filepath = initial_values["policy_filepath"]
         self.policy = np.load(policy_filepath)
         self.state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" : constants["battery_size"], "num_food" : constants["num_food"]}
 
     def chooseAction(self):
         state_index = enumerateState(self.states, self.state_dimensions)
-        print("state_index: {0}".format(state_index))
-        print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(self.states.x, self.states.y, self.states.has_food, self.states.battery, self.states.food_state))
         action = self.policy[state_index]
-        print("action: {0}".format(action))
         return action
 
     def stateEstimator(self, observation):
-        passthroughMDPStateEstimator(self, observation)
+        passthroughStateEstimator(self, observation)
 
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)

@@ -59,22 +59,23 @@ class ForagingMap:
                 # Find relative position of grid cell
                 delta_x = int(x - submap_center[0])
                 delta_y = int(y - submap_center[1])
-                
-                # Check food layer
-                if submap[MapLayer.FOOD, x, y] > 0: # Contains food
-                    submap_object_list.append(MapLayer.FOOD)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : submap[MapLayer.FOOD, x, y]})
-
-                # Check home layer
-                if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
-                    submap_object_list.append(MapLayer.HOME)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
-
-                # Check obstacle layer
-                if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
-                    submap_object_list.append(MapLayer.OBSTACLE)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
-
+               
+# DEPRACATED: COMMENTED OUT TO MAKE SUBMAP ONLY WORK FOR ROBOT LAYER
+#                # Check food layer
+#                if submap[MapLayer.FOOD, x, y] > 0: # Contains food
+#                    submap_object_list.append(MapLayer.FOOD)
+#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : submap[MapLayer.FOOD, x, y]})
+#
+#                # Check home layer
+#                if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
+#                    submap_object_list.append(MapLayer.HOME)
+#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+#
+#                # Check obstacle layer
+#                if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
+#                    submap_object_list.append(MapLayer.OBSTACLE)
+#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+#
                 # Check robot layer
                 if submap[MapLayer.ROBOT, x, y] != 0 and delta_x != 0 and delta_y != 0: # Contains another robot
                     robot_id = submap[MapLayer.ROBOT, x, y] - 1

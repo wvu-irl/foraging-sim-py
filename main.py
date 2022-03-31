@@ -19,7 +19,7 @@ save_plots = True
 #    from params.local_interactions_1000mc import *
 #else:
 #    raise RuntimeError("local vs nonlocal cmdline arg not correct")
-from params.single_robot_mdp import *
+from params.single_robot_fsm import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:

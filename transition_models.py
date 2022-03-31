@@ -3,7 +3,7 @@ from actions import *
 import numpy as np
 import copy
 
-def deterministicTransitionModel(states, submap, action, constants):
+def deterministicTransitionModel(states, submap, action, constants): # DEPRACATED
     new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     new_submap_object_list = []
     new_submap_property_list = []
@@ -99,7 +99,7 @@ def deterministicTransitionModel(states, submap, action, constants):
     return (new_states, new_submap)
 
 
-def directionalFoodTransitionModel1(states, submap, action, constants):
+def directionalFoodTransitionModel1(states, submap, action, constants): # DEPRACATED
     new_states = copy.deepcopy(states) # new_states, to be returned at end, initialized as current states
     new_submap_object_list = []
     new_submap_property_list = []
@@ -435,7 +435,7 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
     # Return new states
     return new_states, new_states_prob
 
-def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants):
+def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants): # DEPRACATED
     grab_success_prob = 0.9 # Grab success probability assumed to be fixed
     map_shape = constants["map_shape"]
     home_pos = constants["home_pos"]
@@ -546,7 +546,7 @@ def mdpDirectionalFoodTransitionModelProb(state, action, state_prime, constants)
     return prob
 
 
-def mdpDirectionalFoodTransitionModelProbTrue(state, action, state_prime, constants):
+def mdpDirectionalFoodTransitionModelProbTrue(state, action, state_prime, constants): # DEPRACATED
     grab_success_possible_probs = np.array([0.0, 0.0, 0.1, 0.5, 0.9, 0.5, 0.1, 0.0, 0.0]) # Grab success probability associated with each robot-food heading diff [-4, -3, -2, -1, 0, 1, 2, 3, 4] 
     map_shape = constants["map_shape"]
     home_pos = constants["home_pos"]
@@ -666,21 +666,3 @@ def isAtHome(x, y, home_pos):
         return False
 
 
-def getFoodMapFromBinary(food_state, num_food, food_pos, map_shape):
-    food_map = np.zeros(map_shape)
-    for i in range(num_food):
-        food_present = (food_state >> i) & 1
-        food_map[food_pos[i][0], food_pos[i][1]] = food_present
-    return food_map
-
-
-def getBinaryFromFoodMap(food_map, num_food, food_pos):
-    food_state = 0
-    map_shape = food_map.shape
-    for x in range(map_shape[0]):
-        for y in range(map_shape[1]):
-            if food_map[x, y] == 1:
-                for i in range(num_food):
-                    if x == food_pos[i][0] and y == food_pos[i][1]:
-                        food_state += (1 << i)
-    return food_state

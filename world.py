@@ -26,10 +26,16 @@ class World:
         # Record home location
         self.home_pos = self.map.findHomePosition(0)
 
-        # Record the food positions and headings lists
+        # Record the food positions, headings, and clusters lists
         self.food_pos, self.food_heading = self.map.findFoodInfo()
         self.num_food = len(self.food_pos)
-
+        self.food_cluster = [0] * self.num_food
+        for i in range(self.num_food):
+            if self.food_pos[i][1] >= 2: # TODO: need a more flexible way of defining food clusters that extends beyond 2 clusters
+                self.food_cluster[i] = 0
+            else:
+                self.food_cluster[i] = 1
+        
         # Set max battery
         self.battery_size = battery_size
 
@@ -66,9 +72,9 @@ class World:
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "food_cluster" : self.food_cluster, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants[robot_id])
@@ -81,7 +87,7 @@ class World:
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 2:
@@ -89,7 +95,7 @@ class World:
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 3:
@@ -97,7 +103,7 @@ class World:
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 4:
@@ -105,7 +111,7 @@ class World:
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 5:
@@ -113,7 +119,7 @@ class World:
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 6:
@@ -121,56 +127,57 @@ class World:
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = directionalFoodTransitionModel1
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 7:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id]) # TODO: find better way to do this policy filepath
                         self.robot[robot_id].states.heading = 1
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 8:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 3
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 9:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
                         self.robot[robot_id].states.heading = 5
-                        self.true_observation_model[robot_id] = fullyAccurateAndCertainMDPObservationModel
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
 
     def updateRobotObservation(self, i):
-        if self.use_submap[i]:
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
-            observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
-        else:
-            observation = self.true_observation_model[i](self.true_robot_states[i], self.true_constants[i])
+        #if self.use_submap[i]:
+        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
+        observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
+        #else:
+        #    observation = self.true_observation_model[i](self.true_robot_states[i], self.true_constants[i])
         self.robot[i].stateEstimator(observation)
 
     def executeRobotAction(self, i):
         action = self.robot[i].chooseAction()
-        if self.use_submap[i]:
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
-            (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
-            self.map.setSubMap(new_states.x, new_states.y, new_submap)
+        # DEPRACATED
+        #if self.use_submap[i]:
+        #    submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states)
+        #    (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
+        #    self.map.setSubMap(new_states.x, new_states.y, new_submap)
+        #else:
+        state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
+        if len(state_outcomes) > 1:
+            rng = np.random.default_rng()
+            new_states = rng.choice(state_outcomes, p=state_outcome_probs)
         else:
-            state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
-            if len(state_outcomes) > 1:
-                rng = np.random.default_rng()
-                new_states = rng.choice(state_outcomes, p=state_outcome_probs)
-            else:
-                new_states = state_outcomes[0]
-            new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
-            self.map.map[MapLayer.FOOD, :, :] = new_food_map
-            self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
-            self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
+            new_states = state_outcomes[0]
+        new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
+        self.map.map[MapLayer.FOOD, :, :] = new_food_map
+        self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
+        self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
 
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states, self.true_constants[i])
         self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants[i])
