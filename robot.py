@@ -27,7 +27,6 @@ class SimpleDeterministicRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.constants = constants
         self.fsm_state = FSMState.SELECT_TARGET
 
     def chooseAction(self):
@@ -45,7 +44,6 @@ class SimpleRandomGrabRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.constants = constants
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -62,10 +60,9 @@ class SimpleRandomGrabRobot(Robot):
 class randomSelectRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)
-        self.states = States()
+        self.states = SwarmStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.constants = constants
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -82,10 +79,9 @@ class randomSelectRandomGrabRobot(Robot):
 class randomSelectLocalInteractionRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)
-        self.states = States()
+        self.states = SwarmStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.constants = constants
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -105,7 +101,6 @@ class SingleMDPRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
-        self.constants = constants
         policy_filepath = initial_values["policy_filepath"]
         self.policy = np.load(policy_filepath)
         self.state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" : constants["battery_size"], "num_food" : constants["num_food"]}

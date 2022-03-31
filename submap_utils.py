@@ -241,6 +241,20 @@ def findNearestRobot(submap, personality = -1):
 
     return (nearest_delta_x, nearest_delta_y, nearest_has_food)
 
+def listVisibleRobotProperties(submap, personality = -1):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    robot_properties = []
+    for i in range(len(submap_object_list)):
+        # Check if entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
+            if submap_property_list[i]["personality"] == personality or personality == -1:
+                robot_properties.append({"has_food" : submap_property_list[i]["has_food"], "food_cluster" :submap_property_list[i]["food_cluster"]})
+
+    return robot_properties
+
 def findBlockedMoves(submap):
     blocked_moves = []
     # Loop over entries in submap list

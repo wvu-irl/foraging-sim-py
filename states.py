@@ -19,6 +19,27 @@ class States:
         self.battery = 0
         self.food_state = 0 # Binary encoding of food in map, 2^num_food
 
+class SwarmFullStates:
+    def __init__(self): 
+        self.x = 0
+        self.y = 0
+        self.has_food = False
+        self.battery = 0
+        self.food_state = 0 # Binary encoding of food in map, 2^num_food
+        self.food_cluster = -1
+        
+        # Extra states
+        self.heading = 0
+
+class SwarmStates:
+    def __init(self):
+        self.x = 0
+        self.y = 0
+        self.has_food = False
+        self.battery = 0
+        self.food_state = 0 # Binary encoding of food in map, 2^num_food
+        self.food_cluster = -1
+
 def enumerateState(state, state_dimensions):
     state_index = np.ravel_multi_index((state.x, state.y, int(state.has_food == True), state.battery, state.food_state), \
             (state_dimensions["x_size"], state_dimensions["y_size"], state_dimensions["has_food_size"], state_dimensions["battery_size"], 2 ** state_dimensions["num_food"]))

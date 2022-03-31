@@ -209,6 +209,7 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
     food_heading = constants["food_heading"]
+    food_cluster = constants["food_cluster"]
     food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
     at_home = isAtHome(states.x, states.y, home_pos)
     if action == Actions.STAY: # Stay
@@ -260,6 +261,8 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
                     new_states = [copy.deepcopy(states)] * 2
                     new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
                     new_states[0].has_food = True
+                    if isinstance(states, SwarmStates):
+                        new_states[0].food_cluster = food_cluster[food_index]
                     food_map[states.x, states.y] = 0 # Remove food from robot's location on map
                     new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
     elif action == Actions.DROP: # Drop food
@@ -270,6 +273,8 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
         if states.has_food and states.battery > 0: # Cannot drop food if not already posessing it or if battery is dead
             if at_home: # If at home, drop food
                 new_states[0].has_food = False
+                if isinstance(states, SwarmStates):
+                    new_states[0].food_cluster = -1
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 
@@ -376,6 +381,8 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
                     new_states = [copy.deepcopy(states)] * 2
                     new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
                     new_states[0].has_food = True
+                    if isinstance(states, SwarmStates):
+                        new_states[0].food_cluster = food_cluster[food_index]
                     food_map[states.x, states.y] = 0 # Remove food from robot's location on map
                     new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
     elif action == Actions.DROP: # Drop food
@@ -386,6 +393,8 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
         if states.has_food and states.battery > 0: # Cannot drop food if not already posessing it or if battery is dead
             if at_home: # If at home, drop food
                 new_states[0].has_food = False
+                if isinstance(states, SwarmStates):
+                    new_states[0].food_cluster = -1
     else:
         raise RuntimeError("action is not valid: {0}".format(action))
 

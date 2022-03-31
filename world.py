@@ -29,6 +29,7 @@ class World:
         # Record the food positions, headings, and clusters lists
         self.food_pos, self.food_heading = self.map.findFoodInfo()
         self.num_food = len(self.food_pos)
+        self.num_clusters = 2
         self.food_cluster = [0] * self.num_food
         for i in range(self.num_food):
             if self.food_pos[i][1] >= 2: # TODO: need a more flexible way of defining food clusters that extends beyond 2 clusters
@@ -64,7 +65,10 @@ class World:
             for y in range(self.map_shape[1]):
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
-                    robot_states = FullStates()
+                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9]:
+                        robot_states = FullStates()
+                    elif: robot_personality_list[robot_id] in [4, 5, 6]:
+                        robot_states = SwarmFullStates()
                     robot_states.x = x
                     robot_states.y = y
                     robot_states.battery = self.battery_size - 1
@@ -72,9 +76,9 @@ class World:
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "food_cluster" : self.food_cluster, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
