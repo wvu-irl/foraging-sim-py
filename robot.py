@@ -59,7 +59,7 @@ class SimpleRandomGrabRobot(Robot):
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
 
-class SimpleLocalInteractionRandomGrabRobot(Robot):
+class randomSelectRandomGrabRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)
         self.states = States()
@@ -71,7 +71,27 @@ class SimpleLocalInteractionRandomGrabRobot(Robot):
         self.fsm_failed_food_locations = []
 
     def chooseAction(self):
-        return uncertainGrabLocalInteractionFSMActionPolicy(self)
+        return uncertainGrabRandomSelectFSMActionPolicy(self)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+
+class randomSelectLocalInteractionRandomGrabRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = States()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.constants = constants
+        self.fsm_state = FSMState.SELECT_TARGET
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_food_locations = []
+
+    def chooseAction(self):
+        return uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self)
 
     def stateEstimator(self, observation):
         passthroughStateEstimator(self, observation)

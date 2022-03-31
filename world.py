@@ -77,13 +77,13 @@ class World:
                             "num_food" : self.num_food, "food_pos" : self.food_pos, "food_cluster" : self.food_cluster, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
-                        self.robot[robot_id] = SimpleDeterministicRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
-                        self.true_transition_model[robot_id] = deterministicTransitionModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 1:
-                        self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -91,7 +91,7 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 2:
-                        self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -99,7 +99,7 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 3:
-                        self.robot[robot_id] = SimpleLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -107,7 +107,7 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 4:
-                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -115,7 +115,7 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 5:
-                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -123,7 +123,7 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 6:
-                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel

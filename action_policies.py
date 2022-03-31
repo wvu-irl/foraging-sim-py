@@ -188,7 +188,100 @@ def uncertainGrabFSMActionPolicy(self):
     return chosen_action
 
 
-def uncertainGrabLocalInteractionFSMActionPolicy(self):
+def uncertainGrabRandomSelectFSMActionPolicy(self):
+    # Constants
+    battery_go_home_threshold = 4
+    
+    rng = np.random.default_rng()
+    map_shape = self.constants["map_shape"]
+    home_pos = self.constants["home_pos"]
+    num_food = self.constants["num_food"]
+    food_pos = self.constants["food_pos"]
+    keep_executing = True
+    while keep_executing:
+        if self.fsm_state == FSMState.SELECT_TARGET:
+            debugPrint("fsm_state: SELECT_TARGET")
+            self.fsm_failed_grab_attempts = 0
+            food_map = getFoodMapFromBinary(self.states.food_state, num_food, food_pos, map_shape)
+            food_pmf = np.zeros(self.constants["num_food"])
+            for i in range(self.constants["num_food"]):
+                exclude = False
+                if food_map[food_pos[i][0], food_pos[i][1]]:
+                    for j in range(len(self.fsm_failed_food_locations)):
+                        if food_pos[i][0] == self.fsm_failed_food_locations[j]["x"] and food_pos[i][1] == self.fsm_failed_food_locations[j]["y"]:
+                            exclude = True
+                    distance = float(max(abs(self.states.x - food_pos[i][0]), abs(self.states.y - food_pos[i][1])))
+                    if not exclude:
+                        if distance > 0.0:
+                            food_pmf[i] = 1.0/(distance + 1.0)
+                        else:
+                            food_pmf[i] = 1.0
+            food_pmf_sum = np.sum(food_pmf)
+            if food_pmf_sum > 0.0:
+                food_pmf /= food_pmf_sum
+                selected_food_index = rng.choice(list(range(self.constants["num_food"])), p=food_pmf)
+                self.target_food_x = food_pos[selected_food_index][0]
+                self.target_food_y = food_pos[selected_food_index][1]
+                self.fsm_state = FSMState.APPROACH
+            else:
+                chosen_action = Actions.STAY
+                self.fsm_state = FSMState.SELECT_TARGET
+                keep_executing = False
+
+        elif self.fsm_state == FSMState.APPROACH:
+            debugPrint("fsm_state: APPROACH")
+            if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
+                self.fsm_state = FSMState.GO_HOME
+            else: 
+                if self.states.x == self.target_food_x and self.states.y == self.target_food_y:
+                    debugPrint("grab")
+                    chosen_action = Actions.GRAB
+                    self.fsm_nearest_food_found = False
+                    self.fsm_state = FSMState.CONFIRM_COLLECT
+                    keep_executing = False
+                else:
+                    debugPrint("move towards nearest food")
+                    chosen_action = moveToGoal(self.target_food_x, self.target_food_y, self.states.x, self.states.y)
+                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                    self.fsm_state = FSMState.APPROACH
+                    keep_executing = False
+
+        elif self.fsm_state == FSMState.GO_HOME:
+            debugPrint("fsm_state: GO_HOME")
+            self.fsm_failed_grab_attempts = 0
+            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+                if self.states.has_food:
+                    chosen_action = Actions.DROP
+                    self.fsm_state = FSMState.SELECT_TARGET
+                    keep_executing = False
+                else:
+                    chosen_action = Actions.STAY
+                    self.fsm_state = FSMState.SELECT_TARGET
+                    keep_executing = False
+            else:
+                chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                self.fsm_state = FSMState.GO_HOME
+                keep_executing = False
+
+        elif self.fsm_state == FSMState.CONFIRM_COLLECT:
+            debugPrint("fsm_state: CONFIRM_COLLECT")
+            if self.states.has_food:
+                debugPrint("food picked up, going home")
+                self.fsm_state = FSMState.GO_HOME
+            else:
+                debugPrint("food pickup failed")
+                self.fsm_failed_grab_attempts += 1
+                if self.fsm_failed_grab_attempts >= 2:
+                    self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
+                    self.failed_grab_attempts = 0
+                    self.fsm_state = FSMState.SELECT_TARGET
+
+
+    return chosen_action
+
+
+def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self): # TODO: this needs updated
     # Constants
     battery_go_home_threshold = 4
 
