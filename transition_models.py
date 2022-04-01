@@ -1,4 +1,5 @@
 from submap_utils import *
+from states import *
 from actions import *
 import numpy as np
 import copy
@@ -258,13 +259,15 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
                     grab_success_possible_probs = np.array([0.0, 0.0, 0.1, 0.5, 0.9, 0.5, 0.1, 0.0, 0.0]) # Grab success probability associated with each robot-food heading diff [-4, -3, -2, -1, 0, 1, 2, 3, 4] 
                     robot_food_heading_diff = getHeadingDiff(states.heading, food_heading[food_index])
                     grab_success_prob = grab_success_possible_probs[robot_food_heading_diff + 4]
-                    new_states = [copy.deepcopy(states)] * 2
+                    new_states = [copy.deepcopy(states), copy.deepcopy(states)]
                     new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
                     new_states[0].has_food = True
+                    new_states[1].has_food = False
                     if isinstance(states, SwarmStates):
                         new_states[0].food_cluster = food_cluster[food_index]
                     food_map[states.x, states.y] = 0 # Remove food from robot's location on map
                     new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    new_states[1].food_state = states.food_state
     elif action == Actions.DROP: # Drop food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         move_action = False
@@ -378,13 +381,15 @@ def mdpDirectionalFoodTransitionModel(states, action, constants):
                 if food_index > -1:
                     # If food is at the current location found, attempt to pick up food
                     grab_success_prob = 0.9
-                    new_states = [copy.deepcopy(states)] * 2
+                    new_states = [copy.deepcopy(states), copy.deepcopy(states)]
                     new_states_prob = [grab_success_prob, 1.0 - grab_success_prob]
                     new_states[0].has_food = True
+                    new_states[1].has_food = False
                     if isinstance(states, SwarmStates):
                         new_states[0].food_cluster = food_cluster[food_index]
                     food_map[states.x, states.y] = 0 # Remove food from robot's location on map
                     new_states[0].food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
+                    new_states[1].food_state = states.food_state
     elif action == Actions.DROP: # Drop food
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         move_action = False

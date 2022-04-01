@@ -8,18 +8,20 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = True
-enable_plots = True
-save_plots = True
+config.enable_debug_prints = False
+enable_plots = False
+save_plots = False
 
 # Load simulation parameters
-#if sys.argv[1] == "nonlocal":
-#    from params.no_local_interactions_1000mc import *
-#elif sys.argv[1] == "local":
-#    from params.local_interactions_1000mc import *
-#else:
-#    raise RuntimeError("local vs nonlocal cmdline arg not correct")
-from params.single_robot_fsm import *
+if sys.argv[1] == "0":
+    from params._0_single_robot_fsm import *
+elif sys.argv[1] == "1":
+    from params._1_single_robot_mdp_correct_model import *
+elif sys.argv[1] == "2":
+    from params._2_single_robot_mdp_wrong_model import *
+else:
+    raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
+#from params.single_robot_fsm import *
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
@@ -60,7 +62,7 @@ def runWrapper(obj):
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, num_time_steps) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, num_time_steps) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")

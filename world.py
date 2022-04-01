@@ -9,7 +9,7 @@ from reward_functions import *
 from results_metrics import ResultsMetrics
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, num_time_steps):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, num_time_steps):
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
         self.map_shape = self.map.map_shape
@@ -43,12 +43,16 @@ class World:
         # Set max heading state size
         self.heading_size = heading_size
 
+        # Record policy filepaths, if offline policies are to be used
+        self.policy_filepath_list = policy_filepath_list
+        print(self.policy_filepath_list)
+
         # Record the full state dimensions
         self.full_state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" :self.battery_size, "num_food" : self.num_food, "heading_size" : self.heading_size}
         self.num_full_states =  self.full_state_dimensions["x_size"] * self.full_state_dimensions["y_size"] * self.full_state_dimensions["has_food_size"] * self.full_state_dimensions["battery_size"] * (2 ** self.full_state_dimensions["num_food"]) * self.full_state_dimensions["heading_size"]
 
         # Record number of robots and initialize lists of robots, states, and models
-        self.num_robots = len(robot_personality_list)
+        self.num_robots = len(self.robot_personality_list)
         self.robot = [None] * self.num_robots
         self.true_constants = [None] * self.num_robots
         self.robot_constants = [None] * self.num_robots
@@ -67,12 +71,11 @@ class World:
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
                     if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9]:
                         robot_states = FullStates()
-                    elif: robot_personality_list[robot_id] in [4, 5, 6]:
+                    elif robot_personality_list[robot_id] in [4, 5, 6]:
                         robot_states = SwarmFullStates()
                     robot_states.x = x
                     robot_states.y = y
                     robot_states.battery = self.battery_size - 1
-                    print("battery: {0}".format(robot_states.battery))
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = robot_states
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, \
@@ -135,21 +138,24 @@ class World:
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 7:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id]) # TODO: find better way to do this policy filepath
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 8:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction 
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 9:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : "policies/vi_policy.npy"}, self.robot_constants[robot_id])
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
@@ -179,6 +185,9 @@ class World:
         else:
             new_states = state_outcomes[0]
         new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
+        for j in range(self.num_food):
+            if new_food_map[self.food_pos[j][0], self.food_pos[j][1]]:
+                new_food_map[self.food_pos[j][0], self.food_pos[j][1]] = self.food_heading[j]
         self.map.map[MapLayer.FOOD, :, :] = new_food_map
         self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
         self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 

@@ -7,9 +7,9 @@ from actions import *
 from transition_models import *
 from reward_functions import *
 
-from params.single_robot_mdp import *
+from params._1_single_robot_mdp_correct_model import *
 
-output_filename = "policies/vi_policy.npy"
+output_filename = "policies/single_robot_vi_policy.npy"
 
 # Set transition and reward functions
 T = mdpDirectionalFoodTransitionModel
