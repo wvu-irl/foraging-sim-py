@@ -45,7 +45,6 @@ class World:
 
         # Record policy filepaths, if offline policies are to be used
         self.policy_filepath_list = policy_filepath_list
-        print(self.policy_filepath_list)
 
         # Record the full state dimensions
         self.full_state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" :self.battery_size, "num_food" : self.num_food, "heading_size" : self.heading_size}
@@ -217,10 +216,13 @@ class World:
         if state_prime_at_home == True and state_at_home == False:
             results_out.num_times_home_visited = results_in.num_times_home_visited + 1
 
-        if state_prime_at_home == True and state_prime.has_food == False and state.has_food == False:
+        if state_prime_at_home == True and state_prime.has_food == False and state.has_food == True:
             results_out.num_food_retrieved = results_in.num_food_retrieved + 1
 
         if state_prime.x != state.x or state_prime.y != state.y:
             results_out.total_distance_traversed = results_in.total_distance_traversed + 1
+
+        if state_prime.battery == 0 and state.battery > 0:
+            results_out.battery_died = True
 
         return results_out

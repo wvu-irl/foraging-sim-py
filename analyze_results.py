@@ -9,6 +9,7 @@ food_data = data["num_food_retrieved"] #[i, j] where i = trials, j = robots
 num_times_home_visited_data = data["num_times_home_visited"]
 total_distance_traversed_data = data["total_distance_traversed"]
 total_reward_data = data["total_reward"]
+battery_died = data["battery_died"]
 
 num_trials = food_data.shape[0]
 num_robots = food_data.shape[1]
@@ -64,8 +65,11 @@ reward_stddev = np.std(total_reward)
 print("reward_mean: {0}".format(reward_mean))
 print("reward_max: {0}".format(reward_max))
 print("reward_min: {0}".format(reward_min))
-print("reward_stddev: {0}".format(reward_stddev))
+print("reward_stddev: {0}\n".format(reward_stddev))
 
+battery_died_percentage = float(np.count_nonzero(battery_died)) / (float(num_trials *num_robots)) * 100.0
+
+print("battery_died_percentage: {0}%".format(battery_died_percentage))
 
 food_cdf_x, food_cdf_counts = np.unique(total_food_retrieved, return_counts=True)
 food_cdf_y = np.cumsum(food_cdf_counts)
@@ -78,4 +82,17 @@ food_ax.plot(food_cdf_x, food_cdf_y, drawstyle="steps-post")
 food_ax.grid()
 food_ax.set_xlabel("Total food retrieved")
 food_ax.set_ylabel("Probability")
+
+reward_cdf_x, reward_cdf_counts = np.unique(total_reward, return_counts=True)
+reward_cdf_y = np.cumsum(reward_cdf_counts)
+reward_cdf_y = np.divide(reward_cdf_y, reward_cdf_y[-1])
+reward_cdf_x = np.insert(reward_cdf_x, 0, reward_cdf_x[0])
+reward_cdf_y = np.insert(reward_cdf_y, 0, 0.0)
+
+reward_fig, reward_ax = plt.subplots()
+reward_ax.plot(reward_cdf_x, reward_cdf_y, drawstyle="steps-post")
+reward_ax.grid()
+reward_ax.set_xlabel("Total reward")
+reward_ax.set_ylabel("Probability")
+
 plt.show()

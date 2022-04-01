@@ -71,7 +71,8 @@ delta = 1.0
 gamma = 0.9 # Discount factor
 
 V = np.zeros(num_states)
-pi = np.ones(num_states, dtype=np.int) * -1
+#pi = np.ones(num_states, dtype=np.int) * -1
+pi = np.zeros(num_states, dtype=np.int)
 iterations = np.zeros(num_states, dtype=np.int)
 
 V_new = np.zeros(num_states)  # Initialize values
@@ -80,6 +81,7 @@ for i in range(max_iter):
     max_diff = 1e-6
     for s in range(num_states):
         #print("s: {0}".format(s))
+        terminal_state = False
         s_vals = deEnumerateState(s, state_dimensions)
         max_val = float('-inf')
         possible_actions = list(range(num_actions))
@@ -89,46 +91,50 @@ for i in range(max_iter):
             possible_actions.remove(Actions.DROP)
         if (s_vals.x != home_pos[0] or s_vals.y != home_pos[1]) and s_vals.has_food == True:
             possible_actions.remove(Actions.DROP)
+        if s_vals.battery == 0:
+            terminal_state = True
         #print(possible_actions)
-        for a in possible_actions:
-            #print("a: {0}".format(a))
-            # Compute state value
-            val = 0.0
-            #print("+++++++++++++++++++++++")
-            s_prime_vals, T_prob = T(s_vals, a, constants)
-            for idx in range(len(s_prime_vals)):
-                #print("s_prime: {0}".format(s_prime))
-                #print("++++++++++++++++++++++++++++++++++++++")
-                s_prime = enumerateState(s_prime_vals[idx], state_dimensions)
-                R_val = R(s_vals, a, s_prime_vals[idx], constants)
-                #print("r_val: {0}, T_prob: {1}".format(R_val, T_prob[idx]))
-                new_val = T_prob[idx] * (R_val + gamma * V[s_prime])
+        if not terminal_state:
+            for a in possible_actions:
+                #print("a: {0}".format(a))
+                # Compute state value
+                val = 0.0
+                #print("+++++++++++++++++++++++")
+                s_prime_vals, T_prob = T(s_vals, a, constants)
+                for idx in range(len(s_prime_vals)):
+                    #print("s_prime: {0}".format(s_prime))
+                    #print("++++++++++++++++++++++++++++++++++++++")
+                    s_prime = enumerateState(s_prime_vals[idx], state_dimensions)
+                    R_val = R(s_vals, a, s_prime_vals[idx], constants)
+                    #print("r_val: {0}, T_prob: {1}".format(R_val, T_prob[idx]))
+                    new_val = T_prob[idx] * (R_val + gamma * V[s_prime])
 
-                #if R_val <= -10000.0 and T_prob[idx] > 0.0:
-                #    print("T_prob: {0}".format(T_prob))
-                #    print("R_val: {0}".format(R_val))
-                #    #print("new_val: {0}\n".format(new_val))
-                #    print("undefined reward allowed")
-                #    print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(s_vals.x, s_vals.y, s_vals.has_food, s_vals.battery, s_vals.food_state))
-                #    print("action: {0}".format(a))
-                #    print("state_prime x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}\n".format(s_prime_vals[idx].x, s_prime_vals[idx].y, s_prime_vals[idx].has_food, s_prime_vals[idx].battery, s_prime_vals[idx].food_state))
-                #print("-------------------------------------")
-                val += new_val
+                    #if R_val <= -10000.0 and T_prob[idx] > 0.0:
+                    #    print("T_prob: {0}".format(T_prob))
+                    #    print("R_val: {0}".format(R_val))
+                    #    #print("new_val: {0}\n".format(new_val))
+                    #    print("undefined reward allowed")
+                    #    print("state x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}".format(s_vals.x, s_vals.y, s_vals.has_food, s_vals.battery, s_vals.food_state))
+                    #    print("action: {0}".format(a))
+                    #    print("state_prime x: {0}, y: {1}, has_food: {2}, battery: {3}, food_state: {4}\n".format(s_prime_vals[idx].x, s_prime_vals[idx].y, s_prime_vals[idx].has_food, s_prime_vals[idx].battery, s_prime_vals[idx].food_state))
+                    #print("-------------------------------------")
+                    val += new_val
 
-            #print("-----------------------")
-            
-            # Update best policy
-            #print("val: %.6f" % val)
-            #if val == 0.0:
-            #    print("*****bad action: {0}".format(a))
-            if val >= max_val:
-                pi[s] = a # Store action with highest value
-                max_val = val
-        #print("max_val: %.6f" % max_val)
-        V_new[s] = max_val # Update value with highest value
+                #print("-----------------------")
+                
+                # Update best policy
+                #print("val: %.6f" % val)
+                #if val == 0.0:
+                #    print("*****bad action: {0}".format(a))
+                if val >= max_val:
+                    pi[s] = a # Store action with highest value
+                    max_val = val
+            #print("max_val: %.6f" % max_val)
+            V_new[s] = max_val # Update value with highest value
 
-        # Update max difference
-        max_diff = max(max_diff, abs(V[s] - V_new[s]))
+            # Update max difference
+            max_diff = max(max_diff, abs(V[s] - V_new[s]))
+
     #print("V: {0}".format(V))
     #print("V_new: {0}".format(V_new))
     #diff = np.abs(np.subtract(V, V_new))

@@ -1,13 +1,13 @@
 #!/bin/bash
  
 # Name of job:
-#PBS -N foraging_nonlocal
+#PBS -N foraging2
  
 # Where to write stderr:
-#PBS -e foraging_nonlocal.err
+#PBS -e foraging2.err
  
 # Where to write stdout: 
-#PBS -o foraging_nonlocal.out
+#PBS -o foraging2.out
  
 # Specify number of nodes, processors (really threads) per node, and the maximum allowed run time for the job
 # Can also specify max memory requested with something like mem=10gb

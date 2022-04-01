@@ -3,8 +3,10 @@ from actions import *
 import numpy as np
 
 def mdpRewardFunction(state, action, state_prime, constants):
-    if state_prime.battery == 0: # Check if battery becomes empty
+    if state_prime.battery == 0 and state.battery > 0: # Check if battery becomes empty
         r = -1000.0
+    elif state_prime.battery == 0 and state.battery == 0: # Battery is already dead, terminal state, no need to keep penalizing
+        r = 0.0
     elif Actions.MOVE_E <= action <= Actions.MOVE_SE:
         r = -1.0
     elif action == Actions.STAY:
