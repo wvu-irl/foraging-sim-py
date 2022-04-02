@@ -27,15 +27,9 @@ class World:
         self.home_pos = self.map.findHomePosition(0)
 
         # Record the food positions, headings, and clusters lists
-        self.food_pos, self.food_heading = self.map.findFoodInfo()
+        self.food_pos, self.food_heading, self.food_cluster = self.map.findFoodInfo()
         self.num_food = len(self.food_pos)
-        self.num_clusters = 2
-        self.food_cluster = [0] * self.num_food
-        for i in range(self.num_food):
-            if self.food_pos[i][1] >= 2: # TODO: need a more flexible way of defining food clusters that extends beyond 2 clusters
-                self.food_cluster[i] = 0
-            else:
-                self.food_cluster[i] = 1
+        self.num_clusters = max(self.food_cluster) + 1
         
         # Set max battery
         self.battery_size = battery_size

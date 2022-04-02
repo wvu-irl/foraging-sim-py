@@ -1,3 +1,4 @@
+import sys
 import copy
 from PIL import Image
 import numpy as np
@@ -7,9 +8,11 @@ from actions import *
 from transition_models import *
 from reward_functions import *
 
-from params._1_single_robot_mdp_correct_model import *
+from params._2_single_robot_mdp_correct_model import *
 
-output_filename = "policies/single_robot_vi_policy.npy"
+model_num = int(sys.argv[1])
+
+output_filename = "policies/single_robot_vi_policy_" + str(model_num) + ".npy"
 
 # Set transition and reward functions
 T = mdpDirectionalFoodTransitionModel
@@ -35,15 +38,17 @@ map_obj = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
 map_shape = map_obj.map_shape
         
 # Record the food positions and headings lists
-food_pos, food_heading = map_obj.findFoodInfo()
+food_pos, food_heading, food_cluster = map_obj.findFoodInfo()
 num_food = len(food_pos)
+num_clusters = max(food_cluster) + 1
 print("num_food: {0}".format(num_food))
-        
+print("num_clusters: {0}".format(num_clusters))
+
 # Record home location
 home_pos = map_obj.findHomePosition(0)
 
 # Record constants and state dimensions
-constants = {"map_shape" : map_shape, "battery_size" : battery_size, "home_pos" : home_pos,"num_food" : num_food, "food_pos" : food_pos}
+constants = {"map_shape" : map_shape, "battery_size" : battery_size, "home_pos" : home_pos,"num_food" : num_food, "food_pos" : food_pos, "num_clusters" : num_clusters, "food_cluster" : food_cluster}
 state_dimensions = {"x_size" : map_shape[0], "y_size" : map_shape[1], "has_food_size" : 2, "battery_size" : battery_size, "num_food" : num_food}
 num_states = state_dimensions["x_size"] * state_dimensions["y_size"] * state_dimensions["has_food_size"] * state_dimensions["battery_size"] * (2 ** state_dimensions["num_food"])
 num_actions = Actions.DROP + 1
@@ -100,7 +105,7 @@ for i in range(max_iter):
                 # Compute state value
                 val = 0.0
                 #print("+++++++++++++++++++++++")
-                s_prime_vals, T_prob = T(s_vals, a, constants)
+                s_prime_vals, T_prob = T(s_vals, a, constants, model_num)
                 for idx in range(len(s_prime_vals)):
                     #print("s_prime: {0}".format(s_prime))
                     #print("++++++++++++++++++++++++++++++++++++++")

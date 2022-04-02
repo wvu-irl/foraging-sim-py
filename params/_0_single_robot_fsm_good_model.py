@@ -10,4 +10,4 @@ policy_filepath_list = []
 num_time_steps = 100
 num_monte_carlo_trials = 1000
 num_threads = 80
-results_filename = "results/0_single_robot_fsm_results.npz"
+results_filename = "results/0_single_robot_fsm_good_model_results.npz"

@@ -14,11 +14,17 @@ save_plots = False
 
 # Load simulation parameters
 if sys.argv[1] == "0":
-    from params._0_single_robot_fsm import *
+    from params._0_single_robot_fsm_good_model import *
 elif sys.argv[1] == "1":
-    from params._1_single_robot_mdp_correct_model import *
+    from params._1_single_robot_fsm_bad_model import *
 elif sys.argv[1] == "2":
-    from params._2_single_robot_mdp_wrong_model import *
+    from params._2_single_robot_fsm_very_bad_model import *
+elif sys.argv[1] == "3":
+    from params._3_single_robot_mdp_good_model import *
+elif sys.argv[1] == "4":
+    from params._4_single_robot_mdp_bad_model import *
+elif sys.argv[1] == "5":
+    from params._5_single_robot_mdp_very_bad_model import *
 else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *

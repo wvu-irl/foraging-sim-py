@@ -16,7 +16,7 @@ def mdpRewardFunction(state, action, state_prime, constants):
     elif action == Actions.GRAB and state.has_food == False and state_prime.has_food == True:
         r = 20.0
     elif action == Actions.DROP and state.has_food == True and state_prime.has_food == False and state.x == constants["home_pos"][0] and state.y == constants["home_pos"][1]:
-        r = 10000.0
+        r = 100.0
     else:
         r = -10000.0
     

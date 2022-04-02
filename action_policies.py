@@ -34,7 +34,7 @@ class FSMState(IntEnum):
 
 def simpleFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 4
+    battery_go_home_threshold = 5
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
     num_food = self.constants["num_food"]
@@ -102,7 +102,7 @@ def simpleFSMActionPolicy(self):
 
 def uncertainGrabFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 4
+    battery_go_home_threshold = 5
 
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
@@ -123,6 +123,9 @@ def uncertainGrabFSMActionPolicy(self):
                         if food_pos[i][0] == self.fsm_failed_food_locations[j]["x"] and food_pos[i][1] == self.fsm_failed_food_locations[j]["y"]:
                             exclude = True
                     distance = max(abs(self.states.x - food_pos[i][0]), abs(self.states.y - food_pos[i][1]))
+                    # TEMP *****************
+                    exclude = False
+                    # *********************
                     if distance < min_distance and not exclude:
                         min_distance = distance
                         min_distance_index = i
@@ -190,7 +193,7 @@ def uncertainGrabFSMActionPolicy(self):
 
 def uncertainGrabRandomSelectFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 4
+    battery_go_home_threshold = 5
     
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
@@ -211,6 +214,9 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
                         if food_pos[i][0] == self.fsm_failed_food_locations[j]["x"] and food_pos[i][1] == self.fsm_failed_food_locations[j]["y"]:
                             exclude = True
                     distance = float(max(abs(self.states.x - food_pos[i][0]), abs(self.states.y - food_pos[i][1])))
+                    # TEMP *****************
+                    exclude = False
+                    # *********************
                     if not exclude:
                         if distance > 0.0:
                             food_pmf[i] = 1.0/(distance + 1.0)
@@ -284,9 +290,9 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
     return chosen_action
 
 
-def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self): # TODO: this needs updated
+def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 4
+    battery_go_home_threshold = 5
     
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
@@ -313,6 +319,9 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self): # TODO: this
                         if food_pos[i][0] == self.fsm_failed_food_locations[j]["x"] and food_pos[i][1] == self.fsm_failed_food_locations[j]["y"]:
                             exclude = True
                     distance = float(max(abs(self.states.x - food_pos[i][0]), abs(self.states.y - food_pos[i][1])))
+                    # TEMP *****************
+                    exclude = False
+                    # *********************
                     if not exclude:
                         if distance > 0.0:
                             if use_local_influence:
@@ -392,169 +401,6 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self): # TODO: this
 
     return chosen_action
 
-
-
-
-
-
-
-
-
-
-
-
-
-    # Constants
-    battery_go_home_threshold = 4
-
-    keep_executing = True
-    while keep_executing:
-        if self.fsm_state == FSMState.SELECT_TARGET:
-            debugPrint("fsm_state: SELECT_TARGET")
-            self.fsm_nearest_food_found = False
-            if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
-                self.fsm_state = FSMState.GO_HOME
-            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
-                self.fsm_state = FSMState.GO_HOME
-            elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
-                self.fsm_state = FSMState.APPROACH
-            else: # Else, select a search move action
-                if not self.fsm_search_dir_chosen:
-                    self.fsm_search_dir_chosen = True
-                    #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
-                    pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW]
-                    rng = np.random.default_rng()
-                    self.fsm_search_pmf = rng.choice(pmf_elements)
-                use_local_influence = False
-                if isRobotVisible(self.submap, self.constants["personality"]):
-                    # If robot of the same personality is visible, check if it is further away from home current location
-                    (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"])
-                    distance_to_home = max(abs(self.states.x - self.home_pos[0]), abs(self.states.y - self.home_pos[1])) # Chebyshev distance
-                    other_robot_distance_to_home = max(abs(self.states.x + other_robot_delta_x - self.home_pos[0]), abs(self.states.y + other_robot_delta_y - self.home_pos[1]))
-                    if other_robot_distance_to_home > distance_to_home and other_robot_has_food:
-                        # If the other robot is farther away from home and has food, record so
-                        use_local_influence = True
-                if use_local_influence:
-                    # Use influence from this robot to choose move action
-                    if other_robot_delta_x >= 0 and other_robot_delta_y > 0: # First quadrant
-                        diag_distance = other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_E
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_N
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_NE
-                    elif other_robot_delta_x < 0 and other_robot_delta_y >= 0: # Second quadrant
-                        diag_distance = -other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_W
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_N
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_NW
-                    elif other_robot_delta_x <= 0 and other_robot_delta_y < 0: # Third quadrant
-                        diag_distance = other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_W
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_S
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_SW
-                    elif other_robot_delta_x > 0 and other_robot_delta_y <= 0: # Fourth quadrant
-                        diag_distance = -other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_E
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_S
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_SE
-
-                blocked_moves = findBlockedMoves(self.submap)
-                pmf = removeBlockedMovesFromPMF(self.fsm_search_pmf, blocked_moves)
-                elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-                rng = np.random.default_rng()
-                chosen_action = rng.choice(elements, 1, p=pmf)
-                self.fsm_state = FSMState.SELECT_TARGET
-                keep_executing = False
-
-        elif self.fsm_state == FSMState.APPROACH:
-            debugPrint("fsm_state: APPROACH")
-            self.fsm_search_dir_chosen = False
-            if self.fsm_nearest_food_found == False:
-                debugPrint("find nearest food")
-                (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
-                if nearest_delta_x == sys.maxsize or nearest_delta_y == sys.maxsize:
-                    blocked_moves = findBlockedMoves(self.submap)
-                    pmf = removeBlockedMovesFromPMF(MovePMFs.uniform, blocked_moves)
-                    elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-                    rng = np.random.default_rng()
-                    chosen_action = rng.choice(elements, 1, p=pmf)
-                    self.fsm_state = FSMState.APPROACH
-                    keep_executing = False
-                else:
-                    self.target_food_x = nearest_delta_x + self.states.x
-                    self.target_food_y = nearest_delta_y + self.states.y
-                    self.fsm_nearest_food_found = True
-                    self.fsm_state = FSMState.APPROACH
-            else:
-                if self.states.x == self.target_food_x and self.states.y == self.target_food_y:
-                    debugPrint("grab")
-                    chosen_action = Actions.GRAB
-                    self.fsm_nearest_food_found = False
-                    self.fsm_state = FSMState.CONFIRM_COLLECT
-                    keep_executing = False
-                else:
-                    debugPrint("move towards nearest food")
-                    chosen_action = moveToGoal(self.target_food_x, self.target_food_y, self.states.x, self.states.y)
-                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
-                    self.fsm_state = FSMState.APPROACH
-                    keep_executing = False
-
-        elif self.fsm_state == FSMState.GO_HOME:
-            debugPrint("fsm_state: GO_HOME")
-            self.fsm_search_dir_chosen = False
-            self.fsm_nearest_food_found = False
-            self.fsm_failed_grab_attempts = 0
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
-                if self.states.has_food:
-                    chosen_action = Actions.DROP
-                    self.fsm_state = FSMState.SELECT_TARGET
-                    keep_executing = False
-                else:
-                    chosen_action = Actions.STAY
-                    self.fsm_state = FSMState.SELECT_TARGET
-                    keep_executing = False
-            else:
-                chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
-                chosen_action = obstacleAvoidance(chosen_action, self.submap)
-                self.fsm_state = FSMState.GO_HOME
-                keep_executing = False
-
-        elif self.fsm_state == FSMState.CONFIRM_COLLECT:
-            debugPrint("fsm_state: CONFIRM_COLLECT")
-            self.fsm_search_dir_chosen = False
-            self.fsm_nearest_food_found = False
-            if self.states.has_food:
-                debugPrint("food picked up, going home")
-                self.fsm_state = FSMState.GO_HOME
-            else:
-                debugPrint("food pickup failed")
-                self.fsm_failed_grab_attempts += 1
-                if self.fsm_failed_grab_attempts >= 2:
-                    self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
-                    self.failed_grab_attempts = 0
-                    self.fsm_state = FSMState.SELECT_TARGET
-
-
-    return chosen_action
 
 def moveToGoal(goal_x, goal_y, x, y):
     if goal_x > x and goal_y == y:

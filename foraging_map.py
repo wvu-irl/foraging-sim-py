@@ -113,9 +113,15 @@ class ForagingMap:
     def findFoodInfo(self):
         food_pos = []
         food_heading = []
+        food_cluster = []
         for x in range(self.map_shape[0]):
             for y in range(self.map_shape[1]):
                 if self.map[MapLayer.FOOD, x, y] > 0:
                     food_pos.append([x, y])
                     food_heading.append(self.map[MapLayer.FOOD, x, y])
-        return food_pos, food_heading
+                    if y >= 2:
+                        cluster_val = 0
+                    else:
+                        cluster_val = 1
+                    food_cluster.append(cluster_val)
+        return food_pos, food_heading, food_cluster
