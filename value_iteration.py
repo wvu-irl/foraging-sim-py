@@ -8,11 +8,13 @@ from actions import *
 from transition_models import *
 from reward_functions import *
 
-from params._2_single_robot_mdp_correct_model import *
+from params._3_single_robot_mdp_good_model import *
 
 model_num = int(sys.argv[1])
 
-output_filename = "policies/single_robot_vi_policy_" + str(model_num) + ".npy"
+policy_output_filename = "policies/single_robot_vi_policy_" + str(model_num) + ".npy"
+v_output_filename = "policies/single_robot_vi_state_value_" + str(model_num) + ".npy"
+q_output_filename = "policies/single_robot_vi_state_action_value_" + str(model_num) + ".npy"
 
 # Set transition and reward functions
 T = mdpDirectionalFoodTransitionModel
@@ -76,6 +78,7 @@ delta = 1.0
 gamma = 0.9 # Discount factor
 
 V = np.zeros(num_states)
+Q = np.zeros((num_states, num_actions))
 #pi = np.ones(num_states, dtype=np.int) * -1
 pi = np.zeros(num_states, dtype=np.int)
 iterations = np.zeros(num_states, dtype=np.int)
@@ -131,6 +134,7 @@ for i in range(max_iter):
                 #print("val: %.6f" % val)
                 #if val == 0.0:
                 #    print("*****bad action: {0}".format(a))
+                Q[s, a] = val
                 if val >= max_val:
                     pi[s] = a # Store action with highest value
                     max_val = val
@@ -156,7 +160,9 @@ for i in range(max_iter):
 print("Done!")
 print(pi)
 #print(V)
-np.save(output_filename, pi)
+np.save(policy_output_filename, pi)
+np.save(v_output_filename, V)
+np.save(q_output_filename, Q)
 
 
 #def valueIterationSingleState(s, value_lock=None, iteration_lock=None):

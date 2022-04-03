@@ -402,6 +402,46 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
     return chosen_action
 
 
+def mmMDPMajorityVotingActionPolicy(self):
+    votes = np.zeros(self.num_actions, dtype=np.int)
+    state_index = enumerateState(self.states, self.state_dimensions)
+    for i in range(self.num_models):
+        action = self.policy[i][state_index]
+        votes[action] += 1
+
+    return np.argmax(votes)
+
+
+def mmMDPWeightedMajorityVotingActionPolicy(self):
+    votes = np.zeros(self.num_actions, dtype=np.float)
+    state_index = enumerateState(self.states, self.state_dimensions)
+    for i in range(self.num_models):
+        action = self.policy[i][state_index]
+        votes[action] += self.bum[i]
+
+    return np.argmax(votes)
+
+
+def mmMDPHighestPreferenceActionPolicy(self):
+    preference = np.zeros(self.num_actions, dtype=np.float)
+    state_index = enumerateState(self.states, self.state_dimensions)
+    for i in range(self.num_models):
+        for j in range(self.num_actions):
+            preference[j] += self.Q[i][state_index, j]
+
+    return np.argmax(preference)
+
+
+def mmMDPWeightedHighestPreferenceActionPolicy(self):
+    preference = np.zeros(self.num_actions, dtype=np.float)
+    state_index = enumerateState(self.states, self.state_dimensions)
+    for i in range(self.num_models):
+        for j in range(self.num_actions):
+            preference[j] += self.Q[i][state_index, j] * self.bum[i]
+
+    return np.argmax(preference)
+
+
 def moveToGoal(goal_x, goal_y, x, y):
     if goal_x > x and goal_y == y:
         return Actions.MOVE_E

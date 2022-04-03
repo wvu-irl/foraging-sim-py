@@ -9,7 +9,7 @@ from reward_functions import *
 from results_metrics import ResultsMetrics
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, num_time_steps):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps):
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
         self.map_shape = self.map.map_shape
@@ -37,12 +37,22 @@ class World:
         # Set max heading state size
         self.heading_size = heading_size
 
-        # Record policy filepaths, if offline policies are to be used
+        # Record policy, V and Q filepaths, if offline policies are to be used
         self.policy_filepath_list = policy_filepath_list
+        self.v_filepath_list = v_filepath_list
+        self.q_filepath_list = q_filepath_list
+        if isinstance(self.policy_filepath_list[0], list):
+            self.num_models = len(self.policy_filepath_list[0])
+        else:
+            self.num_models = 1
 
-        # Record the full state dimensions
+        # Record arbitration type, if mm-mdp
+        self.arbitration_type_list = arbitration_type_list
+
+        # Record the full state dimensions and number of actions
         self.full_state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" :self.battery_size, "num_food" : self.num_food, "heading_size" : self.heading_size}
         self.num_full_states =  self.full_state_dimensions["x_size"] * self.full_state_dimensions["y_size"] * self.full_state_dimensions["has_food_size"] * self.full_state_dimensions["battery_size"] * (2 ** self.full_state_dimensions["num_food"]) * self.full_state_dimensions["heading_size"]
+        self.num_actions = Actions.DROP + 1
 
         # Record number of robots and initialize lists of robots, states, and models
         self.num_robots = len(self.robot_personality_list)
@@ -62,7 +72,7 @@ class World:
             for y in range(self.map_shape[1]):
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
-                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9]:
+                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12]:
                         robot_states = FullStates()
                     elif robot_personality_list[robot_id] in [4, 5, 6]:
                         robot_states = SwarmFullStates()
@@ -70,20 +80,24 @@ class World:
                     robot_states.y = y
                     robot_states.battery = self.battery_size - 1
                     robot_states.food_state = int((2 ** self.num_food) - 1)
-                    self.true_robot_states[robot_id] = robot_states
+                    self.true_robot_states[robot_id] = copy.deepcopy(robot_states)
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, \
+                             "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
-                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, \
+                            "id" : robot_id, "personality" : robot_personality_list[robot_id]}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         self.true_reward_function[robot_id] = mdpRewardFunction
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 1:
                         self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -92,6 +106,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 2:
                         self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -100,6 +115,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 3:
                         self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -108,6 +124,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 4:
                         self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -116,6 +133,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 5:
                         self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -124,6 +142,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 6:
                         self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -132,6 +151,7 @@ class World:
                         self.use_submap[robot_id] = True
                     elif robot_personality_list[robot_id] == 7:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 1
                         self.robot[robot_id].states.heading = 1
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -140,6 +160,7 @@ class World:
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 8:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
                         self.true_robot_states[robot_id].heading = 3
                         self.robot[robot_id].states.heading = 3
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
@@ -148,6 +169,37 @@ class World:
                         self.use_submap[robot_id] = False
                     elif robot_personality_list[robot_id] == 9:
                         self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 10:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 11:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        self.true_reward_function[robot_id] = mdpRewardFunction 
+                        self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 12:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
