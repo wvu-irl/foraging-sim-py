@@ -7,6 +7,8 @@ from transition_models import *
 from observation_models import *
 from reward_functions import *
 from results_metrics import ResultsMetrics
+import matplotlib.pyplot as plt
+from map_viz import displayMap
 
 class World:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps):
@@ -41,7 +43,7 @@ class World:
         self.policy_filepath_list = policy_filepath_list
         self.v_filepath_list = v_filepath_list
         self.q_filepath_list = q_filepath_list
-        if isinstance(self.policy_filepath_list[0], list):
+        if self.policy_filepath_list and isinstance(self.policy_filepath_list[0], list):
             self.num_models = len(self.policy_filepath_list[0])
         else:
             self.num_models = 1
@@ -83,10 +85,10 @@ class World:
                     self.true_robot_states[robot_id] = copy.deepcopy(robot_states)
                     self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, \
                             "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, \
-                             "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y)}
                     self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, \
                             "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, \
-                            "id" : robot_id, "personality" : robot_personality_list[robot_id]}
+                            "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y)}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     if robot_personality_list[robot_id] == 0:
                         self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
@@ -209,7 +211,9 @@ class World:
 
     def updateRobotObservation(self, i):
         #if self.use_submap[i]:
-        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states)
+        food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
+        self.true_robot_states[i].food_state = food_state
+        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
         observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
         #else:
         #    observation = self.true_observation_model[i](self.true_robot_states[i], self.true_constants[i])

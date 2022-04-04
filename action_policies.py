@@ -11,6 +11,7 @@ class FSMState(IntEnum):
     APPROACH = 1
     GO_HOME = 2
     CONFIRM_COLLECT = 3
+    GO_TO_INIT = 4
 
 # DEPCRACATED
 #class MovePMFs:
@@ -34,7 +35,7 @@ class FSMState(IntEnum):
 
 def simpleFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 5
+    battery_go_home_threshold = self.constants["battery_size"] // 2
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
     num_food = self.constants["num_food"]
@@ -58,9 +59,7 @@ def simpleFSMActionPolicy(self):
                 self.target_food_y = food_pos[min_distance_index][1]
                 self.fsm_state = FSMState.APPROACH
             else:
-                chosen_action = Actions.STAY
-                self.fsm_state = FSMState.SELECT_TARGET
-                keep_executing = False
+                self.fsm_state = FSMState.GO_TO_INIT
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
@@ -96,13 +95,23 @@ def simpleFSMActionPolicy(self):
                 chosen_action = obstacleAvoidance(chosen_action, self.submap)
                 self.fsm_state = FSMState.GO_HOME
                 keep_executing = False
+        
+        elif self.fsm_state == FSMState.GO_TO_INIT:
+            debugPrint("fsm_state: GO_TO_INIT")
+            if self.states.battery > 1:
+                chosen_action = moveToGoal(self.init_pos[0], self.init_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+            else:
+                chosen_action = Actions.STAY
+            self.fsm_state = FSMState.GO_TO_INIT
+            keep_executing = False
 
     return chosen_action
 
 
 def uncertainGrabFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 5
+    battery_go_home_threshold = self.constants["battery_size"] // 2
 
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
@@ -134,9 +143,7 @@ def uncertainGrabFSMActionPolicy(self):
                 self.target_food_y = food_pos[min_distance_index][1]
                 self.fsm_state = FSMState.APPROACH
             else:
-                chosen_action = Actions.STAY
-                self.fsm_state = FSMState.SELECT_TARGET
-                keep_executing = False
+                self.fsm_state = FSMState.GO_TO_INIT
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
@@ -187,13 +194,22 @@ def uncertainGrabFSMActionPolicy(self):
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SELECT_TARGET
 
+        elif self.fsm_state == FSMState.GO_TO_INIT:
+            debugPrint("fsm_state: GO_TO_INIT")
+            if self.states.battery > 1:
+                chosen_action = moveToGoal(self.init_pos[0], self.init_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+            else:
+                chosen_action = Actions.STAY
+            self.fsm_state = FSMState.GO_TO_INIT
+            keep_executing = False
 
     return chosen_action
 
 
 def uncertainGrabRandomSelectFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 5
+    battery_go_home_threshold = self.constants["battery_size"] // 2
     
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
@@ -230,9 +246,7 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
                 self.target_food_y = food_pos[selected_food_index][1]
                 self.fsm_state = FSMState.APPROACH
             else:
-                chosen_action = Actions.STAY
-                self.fsm_state = FSMState.SELECT_TARGET
-                keep_executing = False
+                self.fsm_state = FSMState.GO_TO_INIT
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
@@ -286,13 +300,22 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SELECT_TARGET
 
+        elif self.fsm_state == FSMState.GO_TO_INIT:
+            debugPrint("fsm_state: GO_TO_INIT")
+            if self.states.battery > 1:
+                chosen_action = moveToGoal(self.init_pos[0], self.init_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+            else:
+                chosen_action = Actions.STAY
+            self.fsm_state = FSMState.GO_TO_INIT
+            keep_executing = False
 
     return chosen_action
 
 
 def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
     # Constants
-    battery_go_home_threshold = 5
+    battery_go_home_threshold = self.constants["battery_size"] // 2
     
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
@@ -311,7 +334,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
             other_robot_food_cluster_total = np.zeros(self.constants["num_clusters"])
             for i in range(len(other_robot_properties)):
                 if other_robot_properties[i]["has_food"]:
-                    other_robot_food_cluster_total[other_robot_properties["food_cluster"]] += 1
+                    other_robot_food_cluster_total[other_robot_properties[i]["food_cluster"]] += 1
             for i in range(self.constants["num_food"]):
                 exclude = False
                 if food_map[food_pos[i][0], food_pos[i][1]]:
@@ -327,7 +350,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
                             if use_local_influence:
                                 preferred_cluster = np.argmax(other_robot_food_cluster_total)
                                 if self.constants["food_cluster"][i] == preferred_cluster:
-                                    food_pmf[i] = 2.0/(distance + 1.0)
+                                    food_pmf[i] = 3.0/(distance + 1.0)
                                 else:
                                     food_pmf[i] = 0.5/(distance + 1.0)
                             else:
@@ -342,9 +365,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
                 self.target_food_y = food_pos[selected_food_index][1]
                 self.fsm_state = FSMState.APPROACH
             else:
-                chosen_action = Actions.STAY
-                self.fsm_state = FSMState.SELECT_TARGET
-                keep_executing = False
+                self.fsm_state = FSMState.GO_TO_INIT
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
@@ -398,6 +419,15 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SELECT_TARGET
 
+        elif self.fsm_state == FSMState.GO_TO_INIT:
+            debugPrint("fsm_state: GO_TO_INIT")
+            if self.states.battery > 1:
+                chosen_action = moveToGoal(self.init_pos[0], self.init_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+            else:
+                chosen_action = Actions.STAY
+            self.fsm_state = FSMState.GO_TO_INIT
+            keep_executing = False
 
     return chosen_action
 
@@ -480,7 +510,7 @@ def actionToDirection(action):
     elif action == Actions.MOVE_SE:
         return Direction.SE
     else:
-        return Direction.STAY
+        return Direction.NONE
 
 def removeBlockedMovesFromPMF(pmf, blocked_moves):
     new_pmf = pmf

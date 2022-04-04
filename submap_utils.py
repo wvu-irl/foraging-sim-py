@@ -251,7 +251,7 @@ def listVisibleRobotProperties(submap, personality = -1):
         if submap_object_list[i] == MapLayer.ROBOT:
             # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
             if submap_property_list[i]["personality"] == personality or personality == -1:
-                robot_properties.append({"has_food" : submap_property_list[i]["has_food"], "food_cluster" :submap_property_list[i]["food_cluster"]})
+                robot_properties.append({"has_food" : submap_property_list[i]["has_food"], "food_cluster" : submap_property_list[i]["food_cluster"]})
 
     return robot_properties
 
@@ -293,7 +293,7 @@ def getBinaryFromFoodMap(food_map, num_food, food_pos):
     map_shape = food_map.shape
     for x in range(map_shape[0]):
         for y in range(map_shape[1]):
-            if food_map[x, y] == 1:
+            if food_map[x, y] >= 1:
                 for i in range(num_food):
                     if x == food_pos[i][0] and y == food_pos[i][1]:
                         food_state += (1 << i)

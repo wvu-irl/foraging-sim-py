@@ -10,7 +10,7 @@ def displayMap(obj, plt, fig, ax):
                 robot_id = obj.map.map[MapLayer.ROBOT, x, y] - 1
                 robot_personality = obj.robot_personality_list[robot_id]
                 if obj.true_robot_states[robot_id].battery < 1e-3: # If robot battery is dead, make dark gray
-                    robot_color = [50, 50, 50]  # Dark gray
+                    robot_color = [100, 100, 100]  # Gray
                 #elif robot_personality == 0:
                 #    robot_color = [0, 0, 155]  # Dark Blue
                 elif robot_personality in [0, 1, 4, 7, 10]:

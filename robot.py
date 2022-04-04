@@ -27,6 +27,7 @@ class SimpleDeterministicRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         self.fsm_state = FSMState.SELECT_TARGET
 
     def chooseAction(self):
@@ -44,6 +45,7 @@ class SimpleRandomGrabRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -63,6 +65,7 @@ class randomSelectRandomGrabRobot(Robot):
         self.states = SwarmStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -82,6 +85,7 @@ class randomSelectLocalInteractionRandomGrabRobot(Robot):
         self.states = SwarmStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         self.fsm_state = FSMState.SELECT_TARGET
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -101,6 +105,7 @@ class SingleMDPRobot(Robot):
         self.states = States()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         policy_filepath = initial_values["policy_filepath"]
         self.policy = np.load(policy_filepath)
         self.state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" : constants["battery_size"], "num_food" : constants["num_food"]}
@@ -123,6 +128,7 @@ class SingleMMMDPRobot(Robot):
         self.chosen_action = 0
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
         self.state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" : constants["battery_size"], "num_food" : constants["num_food"]}
         self.num_actions = constants["num_actions"]
         self.num_models = initial_values["num_models"]

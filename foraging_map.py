@@ -23,7 +23,7 @@ class ForagingMap:
         self.map[MapLayer.OBSTACLE] = obstacle_layer
         self.map[MapLayer.ROBOT] = robot_layer
 
-    def getSubMap(self, query_x, query_y, distance, true_states):
+    def getSubMap(self, query_x, query_y, distance, true_states, constants):
         # Check that boundaries of queried submap do not extend outside map boundary
         # Coerce them into range if they do
         if query_x - distance < 0:
@@ -77,10 +77,10 @@ class ForagingMap:
 #                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 #
                 # Check robot layer
-                if submap[MapLayer.ROBOT, x, y] != 0 and delta_x != 0 and delta_y != 0: # Contains another robot
+                if submap[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
                     robot_id = submap[MapLayer.ROBOT, x, y] - 1
                     submap_object_list.append(MapLayer.ROBOT)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "battery" : true_states[robot_id].battery, "personality" : true_states[robot_id].personality}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "food_cluster" : constants[robot_id]["food_cluster"], "battery" : true_states[robot_id].battery, "personality" : constants[robot_id]["personality"]}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)
@@ -119,7 +119,7 @@ class ForagingMap:
                 if self.map[MapLayer.FOOD, x, y] > 0:
                     food_pos.append([x, y])
                     food_heading.append(self.map[MapLayer.FOOD, x, y])
-                    if y >= 2:
+                    if y >= (self.map_shape[1] // 2):
                         cluster_val = 0
                     else:
                         cluster_val = 1

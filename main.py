@@ -8,7 +8,7 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = True
+config.enable_debug_prints = False
 enable_plots = True
 save_plots = False
 
@@ -49,6 +49,24 @@ elif sys.argv[1] == "16":
     from params._16_single_robot_mmmdp_whp_model_1 import *
 elif sys.argv[1] == "17":
     from params._17_single_robot_mmmdp_whp_model_2 import *
+elif sys.argv[1] == "18":
+    from params._18_swarm_homo_no_local_model_0 import *
+elif sys.argv[1] == "19":
+    from params._19_swarm_homo_no_local_model_1 import *
+elif sys.argv[1] == "20":
+    from params._20_swarm_homo_no_local_model_2 import *
+elif sys.argv[1] == "21":
+    from params._21_swarm_homo_local_model_0 import *
+elif sys.argv[1] == "22":
+    from params._22_swarm_homo_local_model_1 import *
+elif sys.argv[1] == "23":
+    from params._23_swarm_homo_local_model_2 import *
+elif sys.argv[1] == "24":
+    from params._24_swarm_diverse_local_model_0 import *
+elif sys.argv[1] == "25":
+    from params._25_swarm_diverse_local_model_1 import *
+elif sys.argv[1] == "26":
+    from params._26_swarm_diverse_local_model_2 import *
 else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
