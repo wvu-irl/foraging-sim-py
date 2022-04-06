@@ -334,6 +334,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
             other_robot_food_cluster_total = np.zeros(self.constants["num_clusters"])
             for i in range(len(other_robot_properties)):
                 if other_robot_properties[i]["has_food"]:
+                    use_local_influence = True
                     other_robot_food_cluster_total[other_robot_properties[i]["food_cluster"]] += 1
             for i in range(self.constants["num_food"]):
                 exclude = False
@@ -350,13 +351,20 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
                             if use_local_influence:
                                 preferred_cluster = np.argmax(other_robot_food_cluster_total)
                                 if self.constants["food_cluster"][i] == preferred_cluster:
-                                    food_pmf[i] = 3.0/(distance + 1.0)
+                                    food_pmf[i] = 30.0/(distance + 1.0)
                                 else:
-                                    food_pmf[i] = 0.5/(distance + 1.0)
+                                    food_pmf[i] = 1.0/(distance + 1.0)
                             else:
                                 food_pmf[i] = 1.0/(distance + 1.0)
                         else:
-                            food_pmf[i] = 1.0
+                            if use_local_influence:
+                                preferred_cluster = np.argmax(other_robot_food_cluster_total)
+                                if self.constants["food_cluster"][i] == preferred_cluster:
+                                    food_pmf[i] = 30.0
+                                else:
+                                    food_pmf[i] = 1.0
+                            else:
+                                food_pmf[i] = 1.0
             food_pmf_sum = np.sum(food_pmf)
             if food_pmf_sum > 0.0:
                 food_pmf /= food_pmf_sum

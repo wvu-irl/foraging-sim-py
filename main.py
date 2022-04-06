@@ -62,11 +62,17 @@ elif sys.argv[1] == "22":
 elif sys.argv[1] == "23":
     from params._23_swarm_homo_local_model_2 import *
 elif sys.argv[1] == "24":
-    from params._24_swarm_diverse_local_model_0 import *
+    from params._24_swarm_diverse_no_local_model_0 import *
 elif sys.argv[1] == "25":
-    from params._25_swarm_diverse_local_model_1 import *
+    from params._25_swarm_diverse_no_local_model_1 import *
 elif sys.argv[1] == "26":
-    from params._26_swarm_diverse_local_model_2 import *
+    from params._26_swarm_diverse_no_local_model_2 import *
+elif sys.argv[1] == "27":
+    from params._27_swarm_diverse_local_model_0 import *
+elif sys.argv[1] == "28":
+    from params._28_swarm_diverse_local_model_1 import *
+elif sys.argv[1] == "29":
+    from params._29_swarm_diverse_local_model_2 import *
 else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
