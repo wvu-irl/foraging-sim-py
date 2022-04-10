@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-num_files = len(sys.argv) - 1
+num_files = len(sys.argv) - 2
+
+prefix = sys.argv[1]
 
 food_data = [None] * num_files
 num_times_home_visited_data = [None] * num_files
@@ -11,7 +13,7 @@ total_reward_data = [None] * num_files
 battery_died = [None] * num_files
 
 for k in range(num_files):
-    filename = sys.argv[k+1]
+    filename = sys.argv[k+2]
     data = np.load(filename)
     food_data[k] = data["num_food_retrieved"] #[i, j] where i = trials, j = robots
     num_times_home_visited_data[k] = data["num_times_home_visited"]
@@ -95,7 +97,7 @@ for k in range(num_files):
 
     print("---------------------------------------------------------------\n\n")
 
-    plot_label = "$T_" + str(k) + "$"
+    plot_label = "$T_{" + str(k) + "}^{t}$"
 #    food_cdf_x, food_cdf_counts = np.unique(total_food_retrieved[k, :], return_counts=True)
 #    food_cdf_y = np.cumsum(food_cdf_counts)
 #    food_cdf_y = np.divide(food_cdf_y, food_cdf_y[-1])
@@ -123,11 +125,20 @@ for k in range(num_files):
     box_plot_labels[k] = plot_label
     total_reward_box_data[k] = total_reward[k, :]
 
+min_limit = np.amin(total_reward) - 50
+max_limit = np.amax(total_reward) + 50
+
+reward_ax.set_xlim(min_limit, max_limit)
+
 reward_box_ax.boxplot(total_reward_box_data, vert = 0, notch=True, patch_artist=True)
 reward_box_ax.set_xlabel("Total Reward")
 reward_box_ax.set_yticklabels(box_plot_labels)
 reward_box_ax.grid()
+reward_box_ax.set_xlim(min_limit, max_limit)
 
 plt.show()
-reward_fig.savefig("figures/accumulated_reward_cdf.eps", format="eps", bbox_inches="tight", pad_inches=0)
-reward_box_fig.savefig("figures/accumulated_reward_box_plot.eps", format="eps", bbox_inches="tight", pad_inches=0)
+
+cdf_filename = "figures/" + prefix + "_accumulated_reward_cdf.eps"
+box_filename = "figures/" + prefix + "_accumulated_reward_box_plot.eps"
+reward_fig.savefig(cdf_filename, format="eps", bbox_inches="tight", pad_inches=0)
+reward_box_fig.savefig(box_filename, format="eps", bbox_inches="tight", pad_inches=0)
