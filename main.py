@@ -10,7 +10,7 @@ import sys
 
 config.enable_debug_prints = False
 enable_plots = True
-save_plots = False
+save_plots = True
 
 # Load simulation parameters
 if sys.argv[1] == "0":
@@ -108,7 +108,7 @@ def runWrapper(obj):
         if enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
-                map_fig.savefig("figures/fig%02d.png" % t)
+                map_fig.savefig("figures/fig%d.png" % t)
             print("t = {0}".format(t))
 
     return obj
