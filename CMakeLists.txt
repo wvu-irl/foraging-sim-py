@@ -159,8 +159,25 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
- catkin_install_python(PROGRAMS
-   air_hockey_node.py
+ catkin_install_python(PROGRAMS air_hockey_node.py
+   action_policies.py
+   actions.py
+   air_hockey_interface.py
+   analyze_results.py
+   config.py
+   debug_print.py
+   foraging_map.py
+   map_viz.py
+   observation_models.py
+   results_metrics.py
+   reward_functions.py
+   robot.py
+   save_results.py
+   state_estimators.py
+   states.py
+   submap_utils.py
+   transition_models.py
+   world.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

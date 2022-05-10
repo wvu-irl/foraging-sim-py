@@ -65,7 +65,7 @@ class World:
         self.true_robot_states = [None] * self.num_robots
         self.true_observation_model = [None] * self.num_robots
         self.true_transition_model = [None] * self.num_robots
-        self.real_world_interface = [None} * self.num_robots
+        self.real_world_interface = [None] * self.num_robots
         self.true_reward_function = [None] * self.num_robots
         self.true_total_reward = np.zeros(self.num_robots)
         self.use_submap = [False] * self.num_robots
@@ -98,11 +98,11 @@ class World:
                     self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                     if self.real_world_exp:
                         if robot_personality_list[robot_id] in [0, 1, 4, 7, 10]:
-                            robot_color = [255, 0, 0]   # Red
+                            robot_color = [1.0, 0.0, 0.0]   # Red
                         elif robot_personality in [2, 5, 8, 11]:
-                            robot_color = [0, 0, 255]   # Blue
+                            robot_color = [0.0, 0.0, 1.0]   # Blue
                         elif robot_personality in [3, 6, 9, 12]:
-                            robot_color = [255, 0, 255] # Purple
+                            robot_color = [1.0, 0.0, 1.0] # Purple
                         self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, robot_color)
                     else:
                         self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
@@ -200,7 +200,7 @@ class World:
     def executeRobotAction(self, i):
         action = self.robot[i].chooseAction()
         if self.real_world_exp:
-            new_states = self.real_world_interface[i](self.true_robot_states[i], action, self.true_constants[i])
+            new_states = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
         else:
             state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
             if len(state_outcomes) > 1:

@@ -16,6 +16,11 @@ class AirHockeyInterface:
         self.robot_id = robot_id
         self.color = color
         
+        # Set air hockey interface parameters
+        self.min_number_iterations = 5
+        self.pos_error_thresh = 0.07 # m
+        self.grid_to_vicon_conv_factor = 0.15 # m/grid cell
+        
         # Set topic names based on robot_id
         waypoint_topic = "turtle" + str(robot_id + 1) + "/waypoint"
         grabber_topic = "turtle" + str(robot_id + 1) + "/electromag"
@@ -24,23 +29,21 @@ class AirHockeyInterface:
         # TODO: need topic for proximity sensor or somehting
 
         # Initialize ROS publishers and subscribers
-        self.waypoint_pub = rospy.Publisher(waypoint_topic, Twist, queue_size=1)
-        self.grabber_pub = rospy.Publisher(grabber_topic, Bool, queue_size=1)
-        self.color_pub = rospy.Publisher(led_topic, SOMETHING, queue_size=1)
+        self.waypoint_pub = rospy.Publisher(waypoint_topic, Twist, queue_size=1, latch=True)
+        self.grabber_pub = rospy.Publisher(grabber_topic, Bool, queue_size=1, latch=True)
+        self.color_pub = rospy.Publisher(led_topic, ColorRGBA, queue_size=1, latch=True)
         self.pose_sub = rospy.Subscriber(pose_topic, TransformStamped, self.poseCallback)
         # TODO: need subscriber for proximity sensor or somehting
     
         # Set LED color
-        color_msg = ColorRGBA
-        color_msg.r = color["r"]
-        color_msg.g = color["g"]
-        color_msg.b = color["b"]
+        color_msg = ColorRGBA()
+        color_msg.r = color[0]
+        color_msg.g = color[1]
+        color_msg.b = color[1]
         self.color_pub.publish(color_msg)
 
         self.loop_rate = rospy.Rate(10) # Hz
 
-        self.min_number_iterations = 5
-        self.pos_error_thresh = 0.1 # m
 
     def executeTransition(self, states, action, constants):
         # Record initial values from current states
@@ -53,10 +56,11 @@ class AirHockeyInterface:
         food_heading = constants["food_heading"]
         food_cluster = constants["food_cluster"]
         food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
-        at_home = isAtHome(states.x, states.y, home_pos)
+        at_home = self.isAtHome(states.x, states.y, home_pos)
 
         # Send commands based on chosen action
         grab_action = False
+        drop_action = False
         if action == Actions.STAY: # Stay
             (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
             move_action = False
@@ -87,16 +91,17 @@ class AirHockeyInterface:
         elif action == Actions.GRAB: # Grab food
             move_action = False
             grab_action = True
+            grabber_msg = Bool()
             if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
-                grabber_msg = Bool
                 grabber_msg.data = True
-                grabber_pub.publish(grabber_msg)
+                self.grabber_pub.publish(grabber_msg)
         elif action == Actions.DROP: # Drop food
             move_action = False
+            drop_action = True
+            grabber_msg = Bool()
             if states.has_food and states.battery > 0 and at_home:
-                grabber_msg = Bool
                 grabber_msg.data = False
-                grabber_pub.publish(grabber_msg)
+                self.grabber_pub.publish(grabber_msg)
         else:
             raise RuntimeError("action is not valid: {0}".format(action))
 
@@ -104,9 +109,9 @@ class AirHockeyInterface:
             goal_x = float(initial_x + delta_x)
             goal_y = float(initial_y + delta_y)
             if (0 <= int(goal_x) < map_shape[0]) and (0 <= int(goal_y) < map_shape[1]) and states.battery > 0: # Only send the drive goal if it is within the map boundaries and battery not dead
-                goal_msg = Twist
-                goal_msg.linear.x
-                goal_msg.linear.y
+                goal_msg = Twist()
+                goal_msg.linear.x = goal_x * self.grid_to_vicon_conv_factor
+                goal_msg.linear.y = goal_y * self.grid_to_vicon_conv_factor
                 self.waypoint_pub.publish(goal_msg)
             else:
                 goal_x = float(initial_x)
@@ -119,11 +124,13 @@ class AirHockeyInterface:
         keep_executing = True
         i = 0
         while (not rospy.is_shutdown()) and keep_executing:
-            x_err = goal_x - self.true_pos_x
-            y_err = goal_y - self.true_pos_y
+            x_err = goal_x - self.true_pos_x # grid cells
+            y_err = goal_y - self.true_pos_y # grid cells
             pos_err = math.hypot(x_err, y_err)
+            print("i: {0}, pos_err: {1}".format(i, pos_err * self.grid_to_vicon_conv_factor))
             i += 1
-            if i >= self.min_number_iterations and pos_err < self.pos_error_thresh:
+            if i >= self.min_number_iterations and (pos_err * self.grid_to_vicon_conv_factor) < self.pos_error_thresh:
+                print("goal reached")
                 keep_executing = False
             self.loop_rate.sleep()
 
@@ -152,15 +159,24 @@ class AirHockeyInterface:
                     new_states.food_cluster = food_cluster[food_index]
                 food_map[new_states.x, new_states.y] = 0 # Remove food from robot's location on map
                 new_states.food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
-        if new_states.has_food == False and isinstance(states, SwarmStates):
-            new_states.food_cluster = -1
+        if drop_action:
+            if states.has_food:
+                new_states.has_food = False
+            if isinstance(states, SwarmStates):
+                new_states.food_cluster = -1
 
         return new_states
 
 
     def poseCallback(self, msg):
-        self.true_pos_x = msg.transform.translation.x
-        self.true_pos_y = msg.transform.translation.y
+        self.true_pos_x = msg.transform.translation.x / self.grid_to_vicon_conv_factor
+        self.true_pos_y = msg.transform.translation.y / self.grid_to_vicon_conv_factor
 
     #def foodSensorCallback(self, msg):
     #    self.food_sensor = msg.data
+
+    def isAtHome(self, x, y, home_pos):
+        if x == home_pos[0] and y == home_pos[1]:
+            return True
+        else:
+            return False
