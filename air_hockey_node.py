@@ -90,7 +90,7 @@ robot_layer = np.array(robot_img)
 
 def run():
     rospy.init_node("foraging_air_hockey_interface")
-    world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps)
+    world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=True)
     map_fix, map_ax = plt.subplots()
     plt.ion()
     plt.show()

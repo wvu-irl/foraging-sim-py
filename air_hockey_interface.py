@@ -131,7 +131,7 @@ class AirHockeyInterface:
         new_states = copy.deepcopy(states)
         new_states.x = round(self.true_pos_x)
         new_states.y = round(self.true_pos_y)
-        #new_states.has_food = self.food_sensor
+        #new_states.has_food = self.food_sensor # TODO: make food sensor work
         if move_action:
             new_states.battery = states.battery - 1
             if new_states.battery < 0:
@@ -145,6 +145,9 @@ class AirHockeyInterface:
                     break
             # Check if food was found at the current location
             if food_index > -1:
+                # TEMP!!!!!!!!!!!!!!!!!!!!!
+                new_states.has_food = True # TODO: for testing, remove this when food sensor is implemented
+                # !!!!!!!!!!!!!!!!!!!!!!!!
                 if isinstance(states, SwarmStates):
                     new_states.food_cluster = food_cluster[food_index]
                 food_map[new_states.x, new_states.y] = 0 # Remove food from robot's location on map
