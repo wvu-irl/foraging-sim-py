@@ -104,6 +104,9 @@ def run():
         if rospy.is_shutdown():
             break
 
+    # Save results
+    saveResultsFile(results_filename, [world])
+
 if __name__=='__main__':
     try:
         run()

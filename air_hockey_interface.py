@@ -1,6 +1,7 @@
 from submap_utils import *
 from states import *
 from actions import *
+from debug_print import debugPrint
 import numpy as np
 import copy
 import math
@@ -36,10 +37,11 @@ class AirHockeyInterface:
         # TODO: need subscriber for proximity sensor or somehting
     
         # Set LED color
+        self.color = color
         color_msg = ColorRGBA()
-        color_msg.r = color[0]
-        color_msg.g = color[1]
-        color_msg.b = color[1]
+        color_msg.r = self.color[0]
+        color_msg.g = self.color[1]
+        color_msg.b = self.color[1]
         self.color_pub.publish(color_msg)
 
         self.loop_rate = rospy.Rate(10) # Hz
@@ -127,10 +129,10 @@ class AirHockeyInterface:
             x_err = goal_x - self.true_pos_x # grid cells
             y_err = goal_y - self.true_pos_y # grid cells
             pos_err = math.hypot(x_err, y_err)
-            print("i: {0}, pos_err: {1}".format(i, pos_err * self.grid_to_vicon_conv_factor))
+            debugPrint("i: {0}, pos_err: {1}".format(i, pos_err * self.grid_to_vicon_conv_factor))
             i += 1
             if i >= self.min_number_iterations and (pos_err * self.grid_to_vicon_conv_factor) < self.pos_error_thresh:
-                print("goal reached")
+                debugPrint("goal reached")
                 keep_executing = False
             self.loop_rate.sleep()
 
@@ -139,10 +141,16 @@ class AirHockeyInterface:
         new_states.x = round(self.true_pos_x)
         new_states.y = round(self.true_pos_y)
         #new_states.has_food = self.food_sensor # TODO: make food sensor work
-        if move_action:
-            new_states.battery = states.battery - 1
-            if new_states.battery < 0:
-                new_states.battery = 0
+
+        # If at home, battery receives charge
+        new_at_home = self.isAtHome(new_states.x, new_states.y, home_pos)
+        if new_at_home:
+            new_states.battery = constants["battery_size"] - 1
+        else:
+            if move_action:
+                new_states.battery = states.battery - 1
+                if new_states.battery < 0:
+                    new_states.battery = 0
         if grab_action: 
             # Find which food index is the food at the current location, if there is one
             food_index = -1
@@ -161,9 +169,18 @@ class AirHockeyInterface:
                 new_states.food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
         if drop_action:
             if states.has_food:
-                new_states.has_food = False
+                # TEMP!!!!!!!!!!!!!!!!!!!!!
+                new_states.has_food = False # TODO: for testing, remove this when food sensor is implemented
+                # !!!!!!!!!!!!!!!!!!!!!!!!
             if isinstance(states, SwarmStates):
                 new_states.food_cluster = -1
+
+        # Update LED brightness based on battery charge
+        color_msg = ColorRGBA()
+        color_msg.r = self.color[0] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        color_msg.g = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        color_msg.b = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        self.color_pub.publish(color_msg)
 
         return new_states
 
