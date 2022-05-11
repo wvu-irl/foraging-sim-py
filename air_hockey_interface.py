@@ -45,6 +45,8 @@ class AirHockeyInterface:
         self.color_pub.publish(color_msg)
 
         self.loop_rate = rospy.Rate(10) # Hz
+        self.true_pos_x = 0.0
+        self.true_pos_y = 0.0
 
 
     def executeTransition(self, states, action, constants):

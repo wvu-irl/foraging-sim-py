@@ -78,9 +78,13 @@ else:
 
 # Load map initialization image files
 food_img = Image.open(food_img_path)
+food_img = food_img.transpose(Image.TRANSPOSE)
 home_img = Image.open(home_img_path)
+home_img = home_img.transpose(Image.TRANSPOSE)
 obstacle_img = Image.open(obstacle_img_path)
+obstacle_img = obstacle_img.transpose(Image.TRANSPOSE)
 robot_img = Image.open(robot_img_path)
+robot_img = robot_img.transpose(Image.TRANSPOSE)
 
 # Convert images to numpy arrays
 food_layer = np.array(food_img)
@@ -91,9 +95,19 @@ robot_layer = np.array(robot_img)
 def run():
     rospy.init_node("foraging_air_hockey_interface")
     world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=True)
+    plt.switch_backend("QT4Agg")
+    mgr = plt.get_current_fig_manager()
+    mgr.full_screen_toggle()
+    py = mgr.canvas.height()
+    px = mgr.canvas.width()
+    mgr.window.close()
     map_fig, map_ax = plt.subplots()
+    mgr = plt.get_current_fig_manager()
+    mgr.window.move(px, 1)
+    mgr.full_screen_toggle()
     plt.ion()
     plt.show()
+    displayMap(world, plt, map_fig, map_ax)
 
     for t in range(num_time_steps):
         world.simulationStep()

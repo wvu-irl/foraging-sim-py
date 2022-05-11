@@ -119,7 +119,7 @@ class ForagingMap:
                 if self.map[MapLayer.FOOD, x, y] > 0:
                     food_pos.append([x, y])
                     food_heading.append(self.map[MapLayer.FOOD, x, y])
-                    if y >= (self.map_shape[1] // 2):
+                    if x >= (self.map_shape[0] // 2):
                         cluster_val = 0
                     else:
                         cluster_val = 1
