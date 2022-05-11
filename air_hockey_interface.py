@@ -20,7 +20,7 @@ class AirHockeyInterface:
         # Set air hockey interface parameters
         self.min_number_iterations = 5
         self.pos_error_thresh = 0.07 # m
-        self.grid_to_vicon_conv_factor = 0.15 # m/grid cell
+        self.grid_to_vicon_conv_factor = 0.2 # m/grid cell
         
         # Set topic names based on robot_id
         waypoint_topic = "turtle" + str(robot_id + 1) + "/waypoint"
