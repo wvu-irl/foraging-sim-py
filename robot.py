@@ -99,6 +99,46 @@ class randomSelectLocalInteractionRandomGrabRobot(Robot):
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
 
+class UnknownMapFSMRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = SwarmStates()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
+        self.fsm_state = FSMState.SEARCH
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_food_locations = []
+
+    def chooseAction(self):
+        return searchFSMActionPolicy(self, False)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+
+class UnknownMapFSMLocalInteractionRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = SwarmStates()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.init_pos = constants["init_pos"]
+        self.fsm_state = FSMState.SEARCH
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_food_locations = []
+
+    def chooseAction(self):
+        return searchFSMActionPolicy(self, True)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+
 class SingleMDPRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)

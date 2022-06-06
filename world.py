@@ -9,10 +9,13 @@ from reward_functions import *
 from results_metrics import ResultsMetrics
 import matplotlib.pyplot as plt
 from map_viz import displayMap
-from air_hockey_interface import AirHockeyInterface
 
 class World:
     def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp = False):
+        # If real world experiment, import air hockey interface (if not, don't import so not dependent on ROS)
+        if real_world_exp:
+            from air_hockey_interface import AirHockeyInterface
+
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
         self.map_shape = self.map.map_shape
@@ -79,10 +82,12 @@ class World:
             for y in range(self.map_shape[1]):
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
-                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12]:
+                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
                         robot_states = FullStates()
-                    elif robot_personality_list[robot_id] in [4, 5, 6]:
+                    elif robot_personality_list[robot_id] in [4, 5, 6, 16, 17, 18]:
                         robot_states = SwarmFullStates()
+                    else:
+                        raise RuntimeError("robot personality: ({0}) not in list of valid personalities".format(robot_personality_list[robot_id]))
                     robot_states.x = x
                     robot_states.y = y
                     robot_states.battery = self.battery_size - 1
@@ -186,6 +191,42 @@ class World:
                         self.true_robot_states[robot_id].heading = 5
                         self.robot[robot_id].states.heading = 5
                         self.use_submap[robot_id] = False
+                    elif robot_personality_list[robot_id] == 13:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 14:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 15:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 16:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 17:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_submap[robot_id] = True
+                    elif robot_personality_list[robot_id] == 18:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_submap[robot_id] = True
 
     def updateRobotObservation(self, i):
         #if self.use_submap[i]:

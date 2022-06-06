@@ -13,11 +13,11 @@ def displayMap(obj, plt, fig, ax):
                     robot_color = [100, 100, 100]  # Gray
                 #elif robot_personality == 0:
                 #    robot_color = [0, 0, 155]  # Dark Blue
-                elif robot_personality in [0, 1, 4, 7, 10]:
+                elif robot_personality in [0, 1, 4, 7, 10, 13, 16]:
                     robot_color = [255, 0, 0]   # Red
-                elif robot_personality in [2, 5, 8, 11]:
+                elif robot_personality in [2, 5, 8, 11, 14, 17]:
                     robot_color = [0, 0, 255]   # Blue
-                elif robot_personality in [3, 6, 9, 12]:
+                elif robot_personality in [3, 6, 9, 12, 15, 18]:
                     robot_color = [255, 0, 255] # Purple
                 #elif robot_personality == 4:
                 #    #robot_color = [255, 128, 0] # Orange
