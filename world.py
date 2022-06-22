@@ -71,7 +71,7 @@ class World:
         self.real_world_interface = [None] * self.num_robots
         self.true_reward_function = [None] * self.num_robots
         self.true_total_reward = np.zeros(self.num_robots)
-        self.use_submap = [False] * self.num_robots
+        self.use_full_map = [False] * self.num_robots
         self.results_metrics = [None] * self.num_robots
 
         # Record if this is a real world experiment (True) or simulation (False)
@@ -101,6 +101,122 @@ class World:
                             "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y)}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
+                    self.true_reward_function[robot_id] = mdpRewardFunction
+                    if robot_personality_list[robot_id] == 0:
+                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 1:
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 2:
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 3:
+                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 4:
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 5:
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 6:
+                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 7:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 8:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 9:
+                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 10:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 11:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 12:
+                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = True
+                    elif robot_personality_list[robot_id] == 13:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 14:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 15:
+                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 16:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 1
+                        self.robot[robot_id].states.heading = 1
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 17:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 3
+                        self.robot[robot_id].states.heading = 3
+                        self.use_full_map[robot_id] = False
+                    elif robot_personality_list[robot_id] == 18:
+                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
+                        self.robot[robot_id].states = copy.deepcopy(robot_states)
+                        self.true_robot_states[robot_id].heading = 5
+                        self.robot[robot_id].states.heading = 5
+                        self.use_full_map[robot_id] = False
                     if self.real_world_exp:
                         if robot_personality_list[robot_id] in [0, 1, 4, 7, 10]:
                             robot_color = [1.0, 0.0, 0.0]   # Red
@@ -110,128 +226,15 @@ class World:
                             robot_color = [1.0, 0.0, 1.0] # Purple
                         self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, robot_color)
                     else:
-                        self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
-                    self.true_reward_function[robot_id] = mdpRewardFunction
-                    if robot_personality_list[robot_id] == 0:
-                        self.robot[robot_id] = SimpleRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 1:
-                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 2:
-                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 3:
-                        self.robot[robot_id] = randomSelectRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 4:
-                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 5:
-                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 6:
-                        self.robot[robot_id] = randomSelectLocalInteractionRandomGrabRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 7:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 8:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 9:
-                        self.robot[robot_id] = SingleMDPRobot({"policy_filepath" : self.policy_filepath_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 10:
-                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 11:
-                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 12:
-                        self.robot[robot_id] = SingleMMMDPRobot({"num_models": self.num_models, "policy_filepath" : self.policy_filepath_list[robot_id], "v_filepath" : self.v_filepath_list[robot_id], "q_filepath" : self.q_filepath_list[robot_id], "arbitration_type" : self.arbitration_type_list[robot_id]}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.robot[robot_id].T = mdpDirectionalFoodTransitionModel
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = False
-                    elif robot_personality_list[robot_id] == 13:
-                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 14:
-                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 15:
-                        self.robot[robot_id] = UnknownMapFSMRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 16:
-                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 1
-                        self.robot[robot_id].states.heading = 1
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 17:
-                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 3
-                        self.robot[robot_id].states.heading = 3
-                        self.use_submap[robot_id] = True
-                    elif robot_personality_list[robot_id] == 18:
-                        self.robot[robot_id] = UnknownMapFSMLocalInteractionRobot({}, self.robot_constants[robot_id])
-                        self.robot[robot_id].states = copy.deepcopy(robot_states)
-                        self.true_robot_states[robot_id].heading = 5
-                        self.robot[robot_id].states.heading = 5
-                        self.use_submap[robot_id] = True
+                        if self.use_full_map[robot_id]:
+                            self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
+                        else:
+                            self.true_transition_model[robot_id] = unknownMapDirectionalFoodTransitionModelTrue
 
     def updateRobotObservation(self, i):
-        #if self.use_submap[i]:
-        food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
-        self.true_robot_states[i].food_state = food_state
+        if self.use_full_map[i]:
+            food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
+            self.true_robot_states[i].food_state = food_state
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
         observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
         #else:
@@ -240,22 +243,27 @@ class World:
 
     def executeRobotAction(self, i):
         action = self.robot[i].chooseAction()
-        if self.real_world_exp:
-            new_states = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
-        else:
+        if self.use_full_map[i]:
             state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
             if len(state_outcomes) > 1:
                 rng = np.random.default_rng()
                 new_states = rng.choice(state_outcomes, p=state_outcome_probs)
             else:
                 new_states = state_outcomes[0]
-        new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
-        for j in range(self.num_food):
-            if new_food_map[self.food_pos[j][0], self.food_pos[j][1]]:
-                new_food_map[self.food_pos[j][0], self.food_pos[j][1]] = self.food_heading[j]
-        self.map.map[MapLayer.FOOD, :, :] = new_food_map
-        self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
-        self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
+            new_food_map = getFoodMapFromBinary(new_states.food_state, self.num_food, self.food_pos, self.map_shape)
+            for j in range(self.num_food):
+                if new_food_map[self.food_pos[j][0], self.food_pos[j][1]]:
+                    new_food_map[self.food_pos[j][0], self.food_pos[j][1]] = self.food_heading[j]
+            self.map.map[MapLayer.FOOD, :, :] = new_food_map
+            self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
+            self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
+        else:
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states, self.true_constants[i]) # TODO: may need to change getSubMap distance to something other than 1 when code is updated to use grids smaller than robot size
+            if self.real_world_exp:
+                (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
+            else:
+                (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
+            self.map.setSubMap(new_states.x, new_states.y, new_submap)
 
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states, self.true_constants[i])
         self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants[i])

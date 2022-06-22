@@ -107,6 +107,7 @@ class UnknownMapFSMRobot(Robot):
         self.home_pos = constants["home_pos"]
         self.init_pos = constants["init_pos"]
         self.fsm_state = FSMState.SEARCH
+        self.fsm_search_dir_chosen = False
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
 

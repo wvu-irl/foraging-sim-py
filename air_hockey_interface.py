@@ -49,17 +49,14 @@ class AirHockeyInterface:
         self.true_pos_y = 0.0
 
 
-    def executeTransition(self, states, action, constants):
+    def executeTransition(self, states, submap, action, constants):
+        new_submap_object_list = []
+        new_submap_property_list = []
         # Record initial values from current states
         initial_x = states.x
         initial_y = states.y
         map_shape = constants["map_shape"]
         home_pos = constants["home_pos"]
-        num_food = constants["num_food"]
-        food_pos = constants["food_pos"]
-        food_heading = constants["food_heading"]
-        food_cluster = constants["food_cluster"]
-        food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
         at_home = self.isAtHome(states.x, states.y, home_pos)
 
         # Send commands based on chosen action
@@ -144,6 +141,11 @@ class AirHockeyInterface:
         new_states.y = round(self.true_pos_y)
         #new_states.has_food = self.food_sensor # TODO: make food sensor work
 
+        # If robot has moved, mark old position in map to be removed and increment distance traversed
+        if new_states.x != initial_x or new_states.y != initial_y:
+            new_submap_object_list.append(MapLayer.ROBOT)
+            new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
+
         # If at home, battery receives charge
         new_at_home = self.isAtHome(new_states.x, new_states.y, home_pos)
         if new_at_home:
@@ -154,28 +156,21 @@ class AirHockeyInterface:
                 if new_states.battery < 0:
                     new_states.battery = 0
         if grab_action: 
-            # Find which food index is the food at the current location, if there is one
-            food_index = -1
-            for i in range(num_food):
-                if food_pos[i][0] == new_states.x and food_pos[i][1] == new_states.y:
-                    food_index = i
-                    break
             # Check if food was found at the current location
-            if food_index > -1:
+            if isFoodAtPos(0, 0, submap):
+                food_heading = getFoodHeading(0, 0, submap)
                 # TEMP!!!!!!!!!!!!!!!!!!!!!
                 new_states.has_food = True # TODO: for testing, remove this when food sensor is implemented
+                new_states.food_heading = food_heading
+                new_submap_object_list.append(MapLayer.FOOD)
+                new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
                 # !!!!!!!!!!!!!!!!!!!!!!!!
-                if isinstance(states, SwarmStates):
-                    new_states.food_cluster = food_cluster[food_index]
-                food_map[new_states.x, new_states.y] = 0 # Remove food from robot's location on map
-                new_states.food_state = getBinaryFromFoodMap(food_map, num_food, food_pos)
         if drop_action:
             if states.has_food:
                 # TEMP!!!!!!!!!!!!!!!!!!!!!
                 new_states.has_food = False # TODO: for testing, remove this when food sensor is implemented
+                new_states.food_heading = 0
                 # !!!!!!!!!!!!!!!!!!!!!!!!
-            if isinstance(states, SwarmStates):
-                new_states.food_cluster = -1
 
         # Update LED brightness based on battery charge
         color_msg = ColorRGBA()
@@ -184,7 +179,9 @@ class AirHockeyInterface:
         color_msg.b = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
         self.color_pub.publish(color_msg)
 
-        return new_states
+        # Return new states and new submap
+        new_submap = (new_submap_object_list, new_submap_property_list)
+        return (new_states, new_submap)
 
 
     def poseCallback(self, msg):

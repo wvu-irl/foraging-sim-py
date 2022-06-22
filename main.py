@@ -8,9 +8,9 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 enable_plots = True
-save_plots = True
+save_plots = False
 
 # Load simulation parameters
 if sys.argv[1] == "0":
