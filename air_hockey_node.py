@@ -11,6 +11,7 @@ import sys
 
 config.enable_debug_prints = False
 save_plots = False
+use_manual_control = False
 
 # Load simulation parameters
 if sys.argv[1] == "0":
@@ -94,7 +95,7 @@ robot_layer = np.array(robot_img)
 
 def run():
     rospy.init_node("foraging_air_hockey_interface")
-    world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=True)
+    world = World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=True, manual_control=use_manual_control)
     plt.switch_backend("QT4Agg")
     mgr = plt.get_current_fig_manager()
     #mgr.full_screen_toggle()
@@ -110,11 +111,18 @@ def run():
     displayMap(world, plt, map_fig, map_ax)
 
     for t in range(num_time_steps):
-        world.simulationStep()
         displayMap(world, plt, map_fig, map_ax) 
         if save_plots == 1:
             map_fig.savefig("figures/fig%d.png" % t)
         print("t = {0}".format(t))
+
+        world.simulationStep()
+
+        if (t == num_time_steps - 1):
+            displayMap(world, plt, map_fig, map_ax) 
+            if save_plots == 1:
+                map_fig.savefig("figures/fig%d.png" % t+1)
+
         if rospy.is_shutdown():
             break
 

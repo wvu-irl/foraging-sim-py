@@ -11,10 +11,13 @@ import matplotlib.pyplot as plt
 from map_viz import displayMap
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp = False):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp = False, manual_control = False):
         # If real world experiment, import air hockey interface (if not, don't import so not dependent on ROS)
         if real_world_exp:
             from air_hockey_interface import AirHockeyInterface
+
+        # Record if manual control is enabled (for debugging)
+        self.manual_control = manual_control
 
         # Initialize map
         self.map = ForagingMap(food_layer, home_layer, obstacle_layer, robot_layer)
@@ -82,6 +85,7 @@ class World:
             for y in range(self.map_shape[1]):
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
+                    print("Initialization: robot x,y = [{0},{1}]".format(x, y))
                     if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
                         robot_states = FullStates()
                     elif robot_personality_list[robot_id] in [4, 5, 6, 16, 17, 18]:
@@ -236,13 +240,48 @@ class World:
             food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
             self.true_robot_states[i].food_state = food_state
         submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
+        #print("Observation submap:")
+        #for j in range(len(submap[0])):
+        #    if submap[0][j] == MapLayer.FOOD:
+        #        print("FOOD: delta x,y = [{0},{1}]".format(submap[1][j]["delta_x"], submap[1][j]["delta_y"]))
+        #    elif submap[0][j] == MapLayer.ROBOT:
+        #        print("ROBOT: delta x,y = [{0},{1}]".format(submap[1][j]["delta_x"], submap[1][j]["delta_y"]))
+        #    elif submap[0][j] == MapLayer.HOME:
+        #        print("HOME: delta x,y = [{0},{1}]".format(submap[1][j]["delta_x"], submap[1][j]["delta_y"]))
+        #    elif submap[0][j] == MapLayer.OBSTACLE:
+        #        print("OBSTACLE: delta x,y = [{0},{1}]".format(submap[1][j]["delta_x"], submap[1][j]["delta_y"]))
         observation = self.true_observation_model[i](self.true_robot_states[i], submap, self.true_constants[i])
         #else:
         #    observation = self.true_observation_model[i](self.true_robot_states[i], self.true_constants[i])
         self.robot[i].stateEstimator(observation)
 
     def executeRobotAction(self, i):
-        action = self.robot[i].chooseAction()
+        if self.manual_control:
+            user_input = input("")
+            if user_input == '6':
+                action = Actions.MOVE_E
+            elif user_input == '9':
+                action = Actions.MOVE_NE
+            elif user_input == '8':
+                action = Actions.MOVE_N
+            elif user_input == '7':
+                action = Actions.MOVE_NW
+            elif user_input == '4':
+                action = Actions.MOVE_W
+            elif user_input == '1':
+                action = Actions.MOVE_SW
+            elif user_input == '2':
+                action = Actions.MOVE_S
+            elif user_input == '3':
+                action = Actions.MOVE_SE
+            elif user_input == '+':
+                action = Actions.GRAB
+            elif user_input == '-':
+                action = Actions.DROP
+            else:
+                action = Actions.STAY
+        else:
+            action = self.robot[i].chooseAction()
         if self.use_full_map[i]:
             state_outcomes, state_outcome_probs = self.true_transition_model[i](self.true_robot_states[i], action, self.true_constants[i])
             if len(state_outcomes) > 1:
@@ -258,7 +297,7 @@ class World:
             self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
             self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
         else:
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 1, self.true_robot_states, self.true_constants[i]) # TODO: may need to change getSubMap distance to something other than 1 when code is updated to use grids smaller than robot size
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 2, self.true_robot_states, self.true_constants) # TODO: may need to change getSubMap distance to something other than 2 when code is updated to use grids smaller than robot size
             if self.real_world_exp:
                 (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
             else:

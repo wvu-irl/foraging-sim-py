@@ -459,7 +459,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     self.fsm_search_dir_chosen = True
                     #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
                     #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW]
-                    pmf_elements = [MovePMFs.narrow_E, MovePMFs.narrow_NE]
+                    pmf_elements = [MovePMFs.narrow_E]
                     rng = np.random.default_rng()
                     self.fsm_search_pmf = rng.choice(pmf_elements)
                 use_local_influence = False

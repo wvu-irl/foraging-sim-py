@@ -52,32 +52,30 @@ class ForagingMap:
         # Iterate over submap and populate lists of neighboring objects
         submap_object_list = []
         submap_property_list = []
-        submap_shape = submap.shape
-        submap_center = ((submap_shape[1] - 1)/2, (submap_shape[2] - 1)/2)
-        for x in range(submap_shape[1]):
-            for y in range(submap_shape[2]):
+        for x in range(x_min, x_max):
+            for y in range(y_min, y_max):
                 # Find relative position of grid cell
-                delta_x = int(x - submap_center[0])
-                delta_y = int(y - submap_center[1])
+                delta_x = int(x - query_x)
+                delta_y = int(y - query_y)
                
                 # Check food layer
-                if submap[MapLayer.FOOD, x, y] > 0: # Contains food
+                if self.map[MapLayer.FOOD, x, y] > 0: # Contains food
                     submap_object_list.append(MapLayer.FOOD)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : submap[MapLayer.FOOD, x, y]})
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : self.map[MapLayer.FOOD, x, y]})
 
                 # Check home layer
-                if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
+                if self.map[MapLayer.HOME, x, y] == 1: # Is a home cell
                     submap_object_list.append(MapLayer.HOME)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check obstacle layer
-                if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
+                if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
                     submap_object_list.append(MapLayer.OBSTACLE)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check robot layer
-                if submap[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
-                    robot_id = submap[MapLayer.ROBOT, x, y] - 1
+                if self.map[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
+                    robot_id = self.map[MapLayer.ROBOT, x, y] - 1
                     submap_object_list.append(MapLayer.ROBOT)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "food_cluster" : constants[robot_id]["food_cluster"], "battery" : true_states[robot_id].battery, "personality" : constants[robot_id]["personality"]}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
 

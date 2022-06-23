@@ -8,9 +8,10 @@ from save_results import saveResultsFile
 import config
 import sys
 
-config.enable_debug_prints = True
+config.enable_debug_prints = False
 enable_plots = True
 save_plots = False
+use_manual_control = False
 
 # Load simulation parameters
 if sys.argv[1] == "0":
@@ -106,8 +107,6 @@ def runWrapper(obj):
 
     # Run each trial
     for t in range(num_time_steps):
-        obj.simulationStep()
-
         # Display map for current time step, if only one trial
         if enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
@@ -115,12 +114,20 @@ def runWrapper(obj):
                 map_fig.savefig("figures/fig%d.png" % t)
             print("t = {0}".format(t))
 
+        obj.simulationStep()
+        
+        # Display final map if at final time step
+        if (t == num_time_steps - 1) and enable_plots and num_threads == 1:
+            displayMap(obj, plt, map_fig, map_ax)
+            if save_plots == 1:
+                map_fig.savefig("figures/fig%d.png" % t+1)
+
     return obj
 
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")
