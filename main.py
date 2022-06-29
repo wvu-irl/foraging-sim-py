@@ -7,10 +7,11 @@ from map_viz import displayMap
 from save_results import saveResultsFile
 import config
 import sys
+import time
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 enable_plots = True
-save_plots = False
+save_plots = True
 use_manual_control = False
 
 # Load simulation parameters
@@ -112,15 +113,17 @@ def runWrapper(obj):
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
                 map_fig.savefig("figures/fig%d.png" % t)
-            print("t = {0}".format(t))
+            print("\nt = {0}".format(t))
 
         obj.simulationStep()
+        time.sleep(0.5)
         
         # Display final map if at final time step
         if (t == num_time_steps - 1) and enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
-                map_fig.savefig("figures/fig%d.png" % t+1)
+                t = t+1
+                map_fig.savefig("figures/fig%d.png" % t)
 
     return obj
 

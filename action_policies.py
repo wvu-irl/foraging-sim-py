@@ -442,16 +442,18 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
 def searchFSMActionPolicy(self, enable_local_influence):
     # Constants
     battery_go_home_threshold = self.constants["battery_size"] // 2
+    debugPrint("last_successful_approach_dir: {0}".format(self.fsm_last_successful_approach_dir))
 
     keep_executing = True
     while keep_executing:
         if self.fsm_state == FSMState.SEARCH:
             debugPrint("fsm_state: SEARCH")
             self.fsm_nearest_food_found = False
+            self.fsm_failed_food_locations = []
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
-            #elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
-            #    self.fsm_state = FSMState.GO_HOME
+            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
+                self.fsm_state = FSMState.GO_HOME
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
@@ -459,11 +461,11 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     self.fsm_search_dir_chosen = True
                     #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
                     #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW]
-                    pmf_elements = [MovePMFs.narrow_E]
+                    pmf_elements = [MovePMFs.narrow_NE, MovePMFs.narrow_N]
                     rng = np.random.default_rng()
                     self.fsm_search_pmf = rng.choice(pmf_elements)
                 use_local_influence = False
-                if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]):
+                if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]): # TODO: update how this works, including the approach direction used by the other agent
                     # If robot of the same personality is visible, check if it is further away from home current location
                     (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"])
                     distance_to_home = max(abs(self.states.x - self.home_pos[0]), abs(self.states.y - self.home_pos[1])) # Chebyshev distance
@@ -537,21 +539,48 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
                 else:
+                    # Directional approach logic
+                    if self.fsm_last_successful_approach_dir >= 0:
+                        debugPrint("Last approach dir successful: {0}".format(self.fsm_last_successful_approach_dir))
+                        approach_dir = self.fsm_last_successful_approach_dir
+                    else:
+                        elements = [Direction.E, Direction.NE, Direction.N, Direction.NW, Direction.W, Direction.SW, Direction.S, Direction.SE]
+                        pmf = np.ones(len(elements), dtype=np.float) / float(len(elements))  # TODO: need alternate logic for use_local_influence
+                        rng = np.random.default_rng()
+                        approach_dir = rng.choice(elements, 1, p=pmf)
+                        self.fsm_last_successful_approach_dir = approach_dir
+                        debugPrint("Random approach dir: {0}".format(approach_dir))
+                    (approach_offset_delta_x, approach_offset_delta_y) = getDeltaFromDirection(approach_dir)
                     self.nearest_food_x = nearest_delta_x + self.states.x
                     self.nearest_food_y = nearest_delta_y + self.states.y
-                    self.fsm_nearest_food_found = True
-                    self.fsm_state = FSMState.APPROACH
+                    self.approach_goal_x = self.nearest_food_x + approach_offset_delta_x
+                    self.approach_goal_y = self.nearest_food_y + approach_offset_delta_y
+                    if self.approach_goal_x < 0 or self.approach_goal_x >= self.map_shape[0] or self.approach_goal_y < 0 or self.approach_goal_y >= self.map_shape[1]:
+                        self.fsm_state = FSMState.GO_HOME
+                        self.fsm_last_successful_approach_dir = -1
+                    else:
+                        self.fsm_nearest_food_found = True
+                        self.fsm_state = FSMState.APPROACH
             else:
-                if self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
+                if self.states.x == self.approach_goal_x and self.states.y == self.approach_goal_y:
+                    debugPrint("at approach location, move to food")
+                    chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
+                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                    self.fsm_state = FSMState.APPROACH
+                    keep_executing = False
+                elif self.states.x == self.nearest_food_x and self.states.y == self.nearest_food_y:
                     debugPrint("grab")
                     chosen_action = Actions.GRAB
                     self.fsm_nearest_food_found = False
                     self.fsm_state = FSMState.CONFIRM_COLLECT
                     keep_executing = False
                 else:
-                    debugPrint("move towards nearest food")
-                    chosen_action = moveToGoal(self.nearest_food_x, self.nearest_food_y, self.states.x, self.states.y)
-                    chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                    debugPrint("move towards nearest food approach location")
+                    chosen_action = moveToGoal(self.approach_goal_x, self.approach_goal_y, self.states.x, self.states.y)
+                    temp_submap = copy.deepcopy(self.submap)
+                    temp_submap[0].append(MapLayer.OBSTACLE)
+                    temp_submap[1].append({"delta_x" : self.nearest_food_x - self.states.x, "delta_y" : self.nearest_food_y - self.states.y})
+                    chosen_action = obstacleAvoidance(chosen_action, temp_submap)
                     self.fsm_state = FSMState.APPROACH
                     keep_executing = False
 
@@ -584,8 +613,9 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 self.fsm_state = FSMState.GO_HOME
             else:
                 debugPrint("food pickup failed")
+                self.fsm_last_successful_approach_dir = -1
                 self.fsm_failed_grab_attempts += 1
-                if self.fsm_failed_grab_attempts >= 2:
+                if self.fsm_failed_grab_attempts >= 2: # TODO: revise this concept
                     self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
                     self.failed_grab_attempts = 0
                     self.fsm_state = FSMState.SEARCH

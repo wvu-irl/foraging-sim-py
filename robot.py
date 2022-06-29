@@ -110,6 +110,7 @@ class UnknownMapFSMRobot(Robot):
         self.fsm_search_dir_chosen = False
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
+        self.fsm_last_successful_approach_dir = -1
 
     def chooseAction(self):
         return searchFSMActionPolicy(self, False)
@@ -130,6 +131,7 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.fsm_state = FSMState.SEARCH
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
+        self.fsm_last_successful_approach_dir = -1
 
     def chooseAction(self):
         return searchFSMActionPolicy(self, True)

@@ -328,7 +328,7 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
     # Update x and y states
     new_x = current_x + delta_x
     new_y = current_y + delta_y
-    print("delta x,y = [{0},{1}]".format(delta_x, delta_y))
+    #print("delta x,y = [{0},{1}]".format(delta_x, delta_y))
 
     # Check of new_x and new_y are within map boundaries
     if new_x >= map_shape[0]:
@@ -357,7 +357,8 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
         # Check if food is located at new location
         if isFoodAtPos(delta_x, delta_y, submap):
             # Define the robot's probability of pushing food, based on the direction it approaches from
-            food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
+            #food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
+            food_push_prob_pmf = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float)
             #food_push_prob_pmf = np.ones(8, dtype=np.float)
             food_push_prob_pmf = np.roll(food_push_prob_pmf, states.heading - 1)
 
@@ -404,8 +405,3 @@ def isAtHome(x, y, home_pos):
     else:
         return False
 
-def isOutsideMap(x, y, map_shape):
-    if x < 0 or x >= map_shape[0] or y < 0 or y >= map_shape[1]:
-        return True
-    else:
-        return False

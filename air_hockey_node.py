@@ -121,7 +121,8 @@ def run():
         if (t == num_time_steps - 1):
             displayMap(world, plt, map_fig, map_ax) 
             if save_plots == 1:
-                map_fig.savefig("figures/fig%d.png" % t+1)
+                t = t+1
+                map_fig.savefig("figures/fig%d.png" % t)
 
         if rospy.is_shutdown():
             break

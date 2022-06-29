@@ -280,6 +280,12 @@ def atEdgeOfMap(x, y, map_shape):
     else:
         return False
 
+def isOutsideMap(x, y, map_shape):
+    if x < 0 or x >= map_shape[0] or y < 0 or y >= map_shape[1]:
+        return True
+    else:
+        return False
+
 def getFoodMapFromBinary(food_state, num_food, food_pos, map_shape):
     food_map = np.zeros(map_shape)
     for i in range(num_food):
