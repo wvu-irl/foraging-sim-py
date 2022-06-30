@@ -357,8 +357,8 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
         # Check if food is located at new location
         if isFoodAtPos(delta_x, delta_y, submap):
             # Define the robot's probability of pushing food, based on the direction it approaches from
-            #food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
-            food_push_prob_pmf = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float)
+            food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
+            #food_push_prob_pmf = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float)
             #food_push_prob_pmf = np.ones(8, dtype=np.float)
             food_push_prob_pmf = np.roll(food_push_prob_pmf, states.heading - 1)
 

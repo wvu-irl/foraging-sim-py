@@ -106,8 +106,9 @@ class UnknownMapFSMRobot(Robot):
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.init_pos = constants["init_pos"]
+        self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH
-        self.fsm_search_dir_chosen = False
+        self.fsm_search_goal_chosen = False
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
         self.fsm_last_successful_approach_dir = -1
@@ -128,7 +129,9 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.init_pos = constants["init_pos"]
+        self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH
+        self.fsm_search_goal_chosen = False
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
         self.fsm_last_successful_approach_dir = -1

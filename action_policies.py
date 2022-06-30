@@ -4,6 +4,7 @@ from submap_utils import *
 from transition_models import *
 import numpy as np
 from debug_print import debugPrint
+from scipy.stats import chi2
 
 @unique
 class FSMState(IntEnum):
@@ -443,6 +444,13 @@ def searchFSMActionPolicy(self, enable_local_influence):
     # Constants
     battery_go_home_threshold = self.constants["battery_size"] // 2
     debugPrint("last_successful_approach_dir: {0}".format(self.fsm_last_successful_approach_dir))
+    if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]): # TODO: update how this works, including the approach direction used by the other agent
+        # If robot of the same personality is visible, check if it has food
+        (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"]) # TODO: update this to return full list of other robot info, not just reduced down like this
+        if other_robot_has_food:
+            # If so, record info to be used for local influence
+            self.use_local_influence = True
+            # TODO: finish
 
     keep_executing = True
     while keep_executing:
@@ -452,81 +460,39 @@ def searchFSMActionPolicy(self, enable_local_influence):
             self.fsm_failed_food_locations = []
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
                 self.fsm_state = FSMState.GO_HOME
-            elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
-                self.fsm_state = FSMState.GO_HOME
+            #elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
+            #    self.fsm_state = FSMState.GO_HOME
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
-                if not self.fsm_search_dir_chosen:
-                    self.fsm_search_dir_chosen = True
-                    #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW, MovePMFs.wide_W, MovePMFs.wide_SW, MovePMFs.wide_S, MovePMFs.wide_SE]
-                    #pmf_elements = [MovePMFs.wide_E, MovePMFs.wide_NE, MovePMFs.wide_N, MovePMFs.wide_NW]
-                    pmf_elements = [MovePMFs.narrow_NE, MovePMFs.narrow_N]
-                    rng = np.random.default_rng()
-                    self.fsm_search_pmf = rng.choice(pmf_elements)
-                use_local_influence = False
-                if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]): # TODO: update how this works, including the approach direction used by the other agent
-                    # If robot of the same personality is visible, check if it is further away from home current location
-                    (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"])
-                    distance_to_home = max(abs(self.states.x - self.home_pos[0]), abs(self.states.y - self.home_pos[1])) # Chebyshev distance
-                    other_robot_distance_to_home = max(abs(self.states.x + other_robot_delta_x - self.home_pos[0]), abs(self.states.y + other_robot_delta_y - self.home_pos[1]))
-                    if other_robot_distance_to_home > distance_to_home and other_robot_has_food:
-                        # If the other robot is farther away from home and has food, record so
-                        use_local_influence = True
-                if use_local_influence:
-                    # Use influence from this robot to choose move action
-                    if other_robot_delta_x >= 0 and other_robot_delta_y > 0: # First quadrant
-                        diag_distance = other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_E
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_N
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_NE
-                    elif other_robot_delta_x < 0 and other_robot_delta_y >= 0: # Second quadrant
-                        diag_distance = -other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_W
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_N
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_NW
-                    elif other_robot_delta_x <= 0 and other_robot_delta_y < 0: # Third quadrant
-                        diag_distance = other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_W
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_S
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_SW
-                    elif other_robot_delta_x > 0 and other_robot_delta_y <= 0: # Fourth quadrant
-                        diag_distance = -other_robot_delta_x - other_robot_delta_y
-                        distances = [other_robot_delta_y, other_robot_delta_x, diag_distance]
-                        min_distance_index = distances.index(min(distances))
-                        if min_distance_index == 0:
-                            self.fsm_search_pmf = MovePMFs.narrow_E
-                        elif min_distance_index == 1:
-                            self.fsm_search_pmf = MovePMFs.narrow_S
-                        elif min_distance_index == 2:
-                            self.fsm_search_pmf = MovePMFs.narrow_SE
-
-                blocked_moves = findBlockedMoves(self.submap)
-                pmf = removeBlockedMovesFromPMF(self.fsm_search_pmf, blocked_moves)
-                elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-                rng = np.random.default_rng()
-                chosen_action = rng.choice(elements, 1, p=pmf)
-                self.fsm_state = FSMState.SEARCH
-                keep_executing = False
+                if not self.fsm_search_goal_chosen:
+                    #if self.use_local_influence:
+                    #    # Use influence from this robot to choose move action
+                    #else:
+                    search_goal_prob_map = np.zeros(self.map_shape, dtype=np.float)
+                    for x in range(self.map_shape[0]):
+                        for y in range(self.map_shape[1]):
+                            distance = max(abs(x - self.states.x), abs(y - self.states.y))
+                            search_goal_prob_map[x, y] = chi2.pdf(float(distance), df=int(self.map_shape[0] / 2))
+                    search_goal_prob_map /= np.sum(search_goal_prob_map)
+                    flat_map = search_goal_prob_map.flatten()
+                    search_rng = np.random.default_rng()
+                    flat_index = search_rng.choice(a=flat_map.size, p=flat_map)
+                    (self.search_goal_x, self.search_goal_y) = np.unravel_index(flat_index, search_goal_prob_map.shape)
+                    print("search, goal x,y: [{0},{1}]".format(self.search_goal_x, self.search_goal_y))
+                    self.fsm_search_goal_chosen = True
+                else:
+                    if self.states.x == self.search_goal_x and self.states.y == self.search_goal_y:
+                        self.fsm_search_goal_chosen = False
+                    else:
+                        chosen_action = moveToGoal(self.search_goal_x, self.search_goal_y, self.states.x, self.states.y)
+                        chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                        self.fsm_state = FSMState.SEARCH
+                        keep_executing = False
 
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
-            self.fsm_search_dir_chosen = False
+            self.fsm_search_goal_chosen = False
             if self.fsm_nearest_food_found == False:
                 debugPrint("find nearest food")
                 (nearest_delta_x, nearest_delta_y) = findNearestFood(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y)
@@ -586,7 +552,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
 
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
-            self.fsm_search_dir_chosen = False
+            self.fsm_search_goal_chosen = False
             self.fsm_nearest_food_found = False
             self.fsm_failed_grab_attempts = 0
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
@@ -606,7 +572,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
 
         elif self.fsm_state == FSMState.CONFIRM_COLLECT:
             debugPrint("fsm_state: CONFIRM_COLLECT")
-            self.fsm_search_dir_chosen = False
+            self.fsm_search_goal_chosen = False
             self.fsm_nearest_food_found = False
             if self.states.has_food:
                 debugPrint("food picked up, going home")
