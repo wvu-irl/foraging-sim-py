@@ -444,9 +444,10 @@ def searchFSMActionPolicy(self, enable_local_influence):
     # Constants
     battery_go_home_threshold = self.constants["battery_size"] // 2
     debugPrint("last_successful_approach_dir: {0}".format(self.fsm_last_successful_approach_dir))
-    if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]): # TODO: update how this works, including the approach direction used by the other agent
-        # If robot of the same personality is visible, check if it has food
-        (other_robot_delta_x, other_robot_delta_y, other_robot_has_food) = findNearestRobot(self.submap, self.constants["personality"]) # TODO: update this to return full list of other robot info, not just reduced down like this
+    if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]):
+        # If robot of the same personality is visible, record parameters for local influence
+        other_robot_properties = listVisibleRobotProperties(self.submap, self.constants["personality"])
+        for i in range(len(other_robot_properties)):
         if other_robot_has_food:
             # If so, record info to be used for local influence
             self.use_local_influence = True
@@ -555,6 +556,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
             self.fsm_search_goal_chosen = False
             self.fsm_nearest_food_found = False
             self.fsm_failed_grab_attempts = 0
+            self.use_local_influence = False
             if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
                 if self.states.has_food:
                     chosen_action = Actions.DROP

@@ -86,10 +86,12 @@ class World:
                 robot_id = self.map.map[MapLayer.ROBOT, x, y] - 1
                 if robot_id >= 0: # TODO: improve this initialization to initialize different robots differently (i.e., different heading, etc)
                     print("Initialization: robot x,y = [{0},{1}]".format(x, y))
-                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
+                    if robot_personality_list[robot_id] in [0, 1, 2, 3, 7, 8, 9, 10, 11, 12]:
                         robot_states = FullStates()
-                    elif robot_personality_list[robot_id] in [4, 5, 6, 16, 17, 18]:
+                    elif robot_personality_list[robot_id] in [4, 5, 6]:
                         robot_states = SwarmFullStates()
+                    elif robot_personality_list[robot_id] in [13, 14, 15, 16, 17, 18]:
+                        robot_states = UnknownMapFullStates()
                     else:
                         raise RuntimeError("robot personality: ({0}) not in list of valid personalities".format(robot_personality_list[robot_id]))
                     robot_states.x = x

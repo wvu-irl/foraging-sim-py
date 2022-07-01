@@ -77,7 +77,8 @@ class ForagingMap:
                 if self.map[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
                     robot_id = self.map[MapLayer.ROBOT, x, y] - 1
                     submap_object_list.append(MapLayer.ROBOT)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "food_cluster" : constants[robot_id]["food_cluster"], "battery" : true_states[robot_id].battery, "personality" : constants[robot_id]["personality"]}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
+                    robot_properties_dict = {**{"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "personality" : constants[robot_id]["personality"]}, **true_robot_states[robot_id].localInfluenceData()}
+                    submap_property_list.append(robot_properties_dict)
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)

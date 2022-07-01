@@ -102,7 +102,7 @@ class randomSelectLocalInteractionRandomGrabRobot(Robot):
 class UnknownMapFSMRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)
-        self.states = SwarmStates()
+        self.states = UnknownMapStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.init_pos = constants["init_pos"]
@@ -125,7 +125,7 @@ class UnknownMapFSMRobot(Robot):
 class UnknownMapFSMLocalInteractionRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)
-        self.states = SwarmStates()
+        self.states = UnknownMapStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
         self.init_pos = constants["init_pos"]

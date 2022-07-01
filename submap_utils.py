@@ -251,7 +251,7 @@ def listVisibleRobotProperties(submap, personality = -1):
         if submap_object_list[i] == MapLayer.ROBOT:
             # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
             if submap_property_list[i]["personality"] == personality or personality == -1:
-                robot_properties.append({"has_food" : submap_property_list[i]["has_food"], "food_cluster" : submap_property_list[i]["food_cluster"]})
+                robot_properties.append(submap_property_list[i])
 
     return robot_properties
 
