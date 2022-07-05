@@ -9,9 +9,9 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = True
-enable_plots = True
-save_plots = True
+config.enable_debug_prints = False
+enable_plots = False
+save_plots = False
 use_manual_control = False
 
 # Load simulation parameters

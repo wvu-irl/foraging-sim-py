@@ -121,6 +121,9 @@ class UnknownMapFSMRobot(Robot):
 
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
+    
+    def resetOtherRobotLists(self):
+        pass
 
 class UnknownMapFSMLocalInteractionRobot(Robot):
     def __init__(self, initial_values, constants):
@@ -135,6 +138,10 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
         self.fsm_last_successful_approach_dir = -1
+        self.fsm_other_robot_id = []
+        self.fsm_other_robot_food_x = []
+        self.fsm_other_robot_food_y = []
+        self.fsm_other_robot_approach_dir = []
 
     def chooseAction(self):
         return searchFSMActionPolicy(self, True)
@@ -144,6 +151,12 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
 
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
+
+    def resetOtherRobotLists(self):
+        self.fsm_other_robot_id = []
+        self.fsm_other_robot_food_x = []
+        self.fsm_other_robot_food_y = []
+        self.fsm_other_robot_approach_dir = []
 
 class SingleMDPRobot(Robot):
     def __init__(self, initial_values, constants):

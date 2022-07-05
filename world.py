@@ -304,6 +304,11 @@ class World:
                 (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
             else:
                 (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
+            # TODO: temporary solution for passing internal robot data out to the true states for local interacion data communication
+            new_states.last_food_x = self.robot[i].states.last_food_x
+            new_states.last_food_y = self.robot[i].states.last_food_y
+            new_states.last_approach_dir = self.robot[i].states.last_approach_dir
+            # -----------------------------------------------------------------------------------------------------------------------
             self.map.setSubMap(new_states.x, new_states.y, new_submap)
 
         self.true_total_reward[i] += self.true_reward_function[i](self.true_robot_states[i], action, new_states, self.true_constants[i])

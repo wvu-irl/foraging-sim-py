@@ -308,7 +308,7 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
                 rng = np.random.default_rng()
                 if rng.random() < grab_success_prob:
                     new_states.has_food = True
-                    new_states.food_heading = food_heading
+                    #new_states.food_heading = food_heading
                     new_submap_object_list.append(MapLayer.FOOD)
                     new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
     elif action == Actions.DROP: # Drop food
