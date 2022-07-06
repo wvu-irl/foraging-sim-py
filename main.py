@@ -10,9 +10,10 @@ import sys
 import time
 
 config.enable_debug_prints = False
-enable_plots = False
+enable_plots = True
 save_plots = False
 use_manual_control = False
+slow_mode = False
 
 # Load simulation parameters
 if sys.argv[1] == "0":
@@ -115,15 +116,20 @@ def runWrapper(obj):
                 map_fig.savefig("figures/fig%d.png" % t)
             print("\nt = {0}".format(t))
 
-        obj.simulationStep()
-        time.sleep(0.5)
+        terminal_condition = obj.simulationStep()
+        if slow_mode and num_threads == 1:
+            time.sleep(0.5)
         
         # Display final map if at final time step
-        if (t == num_time_steps - 1) and enable_plots and num_threads == 1:
+        if ((t == num_time_steps - 1) or terminal_condition) and enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
                 t = t+1
                 map_fig.savefig("figures/fig%d.png" % t)
+
+        # End simulation early if terminal condition reached
+        if terminal_condition:
+            break
 
     return obj
 

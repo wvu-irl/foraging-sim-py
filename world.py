@@ -76,6 +76,7 @@ class World:
         self.true_total_reward = np.zeros(self.num_robots)
         self.use_full_map = [False] * self.num_robots
         self.results_metrics = [None] * self.num_robots
+        self.total_food_retrieved = 0
 
         # Record if this is a real world experiment (True) or simulation (False)
         self.real_world_exp = real_world_exp
@@ -319,6 +320,10 @@ class World:
         for i in range(self.num_robots):
             self.updateRobotObservation(i)
             self.executeRobotAction(i)
+            if self.total_food_retrieved >= self.num_food: # Terminal condition: all food retrieved
+                return True
+
+        return False
 
     def updateResultsMetrics(self, results_in, state, state_prime, constants):
         results_out = copy.deepcopy(results_in)
@@ -338,6 +343,7 @@ class World:
 
         if state_prime_at_home == True and state_prime.has_food == False and state.has_food == True:
             results_out.num_food_retrieved = results_in.num_food_retrieved + 1
+            self.total_food_retrieved += 1
 
         if state_prime.x != state.x or state_prime.y != state.y:
             results_out.total_distance_traversed = results_in.total_distance_traversed + 1
