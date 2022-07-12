@@ -136,7 +136,7 @@ def runWrapper(obj):
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")

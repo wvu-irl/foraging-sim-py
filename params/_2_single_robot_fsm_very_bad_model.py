@@ -13,4 +13,5 @@ arbitration_type_list = []
 num_time_steps = 200
 num_monte_carlo_trials = 1
 num_threads = 1
+food_respawn = True
 results_filename = "results/test_2_single_robot_fsm_very_bad_model_results.npz"

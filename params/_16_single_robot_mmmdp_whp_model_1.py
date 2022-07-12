@@ -13,4 +13,5 @@ arbitration_type_list = [3]
 num_time_steps = 100
 num_monte_carlo_trials = 1000
 num_threads = 80
+food_respawn = True
 results_filename = "results/16_single_robot_mmmdp_whp_model_1_results.npz"

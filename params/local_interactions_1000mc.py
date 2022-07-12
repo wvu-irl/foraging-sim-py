@@ -9,4 +9,5 @@ heading_size = 8
 num_time_steps = 1000
 num_monte_carlo_trials = 1000
 num_threads = 80
+food_respawn = True
 results_filename = "results/local_interactions_monte_carlo_results.npz"

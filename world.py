@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from map_viz import displayMap
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, real_world_exp = False, manual_control = False):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, food_respawn, real_world_exp = False, manual_control = False):
         # If real world experiment, import air hockey interface (if not, don't import so not dependent on ROS)
         if real_world_exp:
             from air_hockey_interface import AirHockeyInterface
@@ -31,6 +31,9 @@ class World:
 
         # Record number of timesteps
         self.num_time_steps = num_time_steps
+
+        # Record if food should respawn
+        self.food_respawn = food_respawn
 
         # Record home location
         self.home_pos = self.map.findHomePosition(0)
@@ -316,13 +319,25 @@ class World:
         self.results_metrics[i] = self.updateResultsMetrics(self.results_metrics[i], self.true_robot_states[i], new_states, self.true_constants[i])
         self.true_robot_states[i] = new_states
 
+    def foodRespawnUpdate(self):
+        rng = np.random.default_rng()
+        # Loop over all food spawning positions in the map
+        for i in range(self.num_food):
+            # If there is not food at a location currently, perform sample random outcome to respawn
+            pos = self.food_pos[i]
+            if self.map.map[MapLayer.FOOD, pos[0], pos[1]] == 0:
+                if rng.uniform() < 0.01: # TODO: decide if this number needs to be conditional on other factors, like num_robots, num_time_steps, etc
+                    self.map.map[MapLayer.FOOD, pos[0], pos[1]] = self.food_heading[i]
+
     def simulationStep(self):
         for i in range(self.num_robots):
             self.updateRobotObservation(i)
             self.executeRobotAction(i)
-            if self.total_food_retrieved >= self.num_food: # Terminal condition: all food retrieved
-                return True
-
+            if not self.food_respawn:
+                if self.total_food_retrieved >= self.num_food: # Terminal condition: all food retrieved
+                    return True
+        if self.food_respawn:
+            self.foodRespawnUpdate()
         return False
 
     def updateResultsMetrics(self, results_in, state, state_prime, constants):

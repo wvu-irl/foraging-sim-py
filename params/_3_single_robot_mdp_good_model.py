@@ -13,4 +13,5 @@ arbitration_type_list = []
 num_time_steps = 100
 num_monte_carlo_trials = 1
 num_threads = 1
+food_respawn = True
 results_filename = "results/test_3_single_robot_mdp_good_model_results.npz"
