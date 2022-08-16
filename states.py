@@ -58,15 +58,17 @@ class UnknownMapFullStates:
         self.y = 0
         self.has_food = False
         self.battery = 0
-        self.last_food_x = -1
-        self.last_food_y = -1
+        self.last_successful_food_x = -1
+        self.last_successful_food_y = -1
+        self.last_failed_food_x = -1
+        self.last_failed_food_y = -1
         self.last_approach_dir = -1
         
         # Extra states
         self.heading = 0
     
     def localInfluenceData(self):
-        return {"has_food" : self.has_food, "battery" : self.battery, "last_food_x" : self.last_food_x, "last_food_y" : self.last_food_y, "last_approach_dir" : self.last_approach_dir}
+        return {"has_food" : self.has_food, "battery" : self.battery, "last_successful_food_x" : self.last_successful_food_x, "last_successful_food_y" : self.last_successful_food_y, "last_failed_food_x" : self.last_failed_food_x, "last_failed_food_y" : self.last_failed_food_y, "last_approach_dir" : self.last_approach_dir}
 
 class UnknownMapStates:
     def __init__(self):
@@ -74,12 +76,14 @@ class UnknownMapStates:
         self.y = 0
         self.has_food = False
         self.battery = 0
-        self.last_food_x = -1
-        self.last_food_y = -1
+        self.last_successful_food_x = -1
+        self.last_successful_food_y = -1
+        self.last_failed_food_x = -1
+        self.last_failed_food_y = -1
         self.last_approach_dir = -1
     
     def localInfluenceData(self):
-        return {"has_food" : self.has_food, "battery" : self.battery, "last_food_x" : self.last_food_x, "last_food_y" : self.last_food_y, "last_approach_dir" : self.last_approach_dir}
+        return {"has_food" : self.has_food, "battery" : self.battery, "last_successful_food_x" : self.last_successful_food_x, "last_successful_food_y" : self.last_successful_food_y, "last_failed_food_x" : self.last_failed_food_x, "last_failed_food_y" : self.last_failed_food_y, "last_approach_dir" : self.last_approach_dir}
 
 def enumerateState(state, state_dimensions):
     state_index = np.ravel_multi_index((state.x, state.y, int(state.has_food == True), state.battery, state.food_state), \

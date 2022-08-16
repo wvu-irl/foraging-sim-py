@@ -445,7 +445,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
     # Constants
     battery_go_home_threshold = self.constants["battery_size"] // 2
     debugPrint("\nrobot id: {0}".format(self.constants["id"]))
-    debugPrint("last_successful_approach_dir: {0}".format(self.fsm_last_successful_approach_dir))
+    debugPrint("last_successful_approach_dir: {0}".format(self.states.last_approach_dir))
     if enable_local_influence and isRobotVisible(self.submap, self.constants["personality"]):
         # If robot of the same personality is visible, record parameters for local influence
         other_robot_properties = listVisibleRobotProperties(self.submap, self.constants["personality"])
@@ -455,8 +455,10 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 self.use_local_influence = True
                 if not other_robot_properties[i]["id"] in self.fsm_other_robot_id:
                     self.fsm_other_robot_id.append(other_robot_properties[i]["id"])
-                    self.fsm_other_robot_food_x.append(other_robot_properties[i]["last_food_x"])
-                    self.fsm_other_robot_food_y.append(other_robot_properties[i]["last_food_y"])
+                    self.fsm_other_robot_last_successful_food_x.append(other_robot_properties[i]["last_successful_food_x"])
+                    self.fsm_other_robot_last_successful_food_y.append(other_robot_properties[i]["last_successful_food_y"])
+                    self.fsm_other_robot_last_failed_food_x.append(other_robot_properties[i]["last_failed_food_x"])
+                    self.fsm_other_robot_last_failed_food_y.append(other_robot_properties[i]["last_failed_food_y"])
                     self.fsm_other_robot_approach_dir.append(other_robot_properties[i]["last_approach_dir"])
 
     keep_executing = True
@@ -465,23 +467,40 @@ def searchFSMActionPolicy(self, enable_local_influence):
             debugPrint("fsm_state: SEARCH")
             self.fsm_nearest_food_found = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
+                self.fsm_failed_search_attempts = 0
                 self.fsm_state = FSMState.GO_HOME
             #elif atEdgeOfMap(self.states.x, self.states.y, self.map_shape) and not isAtHome(self.states.x, self.states.y, self.home_pos): # If at edge of map, go home
             #    self.fsm_state = FSMState.GO_HOME
+            # TODO: concept of failed_food_locations needs to change
             elif isFoodVisible(self.submap, self.fsm_failed_food_locations, self.states.x, self.states.y): # If food is visible, approach
+                self.fsm_failed_search_attempts = 0
                 self.fsm_state = FSMState.APPROACH
             else: # Else, select a search move action
                 if not self.fsm_search_goal_chosen:
-                    search_goal_prob_map = np.zeros(self.map_shape, dtype=np.float)
+                    search_goal_prob_map = np.ones(self.map_shape, dtype=np.float)
+                    search_goal_prob_map /= float(np.size(search_goal_prob_map))
                     for x in range(self.map_shape[0]):
                         for y in range(self.map_shape[1]):
+                            if self.state.last_successful_food_x > 0 and self.state.last_successful_food_y > 0:
+                                distance = max(abs(x - self.state.last_successful_food_x), abs(y - self.state.last_successful_food_y))
+                                search_goal_prob_map[x, y] += norm_dist.pdf(float(distance)) / 2.0
+                            if self.state.last_failed_food_x > 0 and self.state.last_failed_food_y > 0:
+                                distance = max(abs(x - self.state.last_failed_food_x), abs(y - self.state.last_failed_food_y))
+                                search_goal_prob_map[x, y] -= norm_dist.pdf(float(distance)) / 2.0
+                                if search_goal_prob_map[x, y] <= 0.0:
+                                    search_goal_prob_map[x, y] = 1e-3 # Do not make let any grid cells have zero probability of being chosen
                             if self.use_local_influence:
                                 for k in range(len(self.fsm_other_robot_id)):
-                                    distance = max(abs(x - self.fsm_other_robot_food_x[k]), abs(y - self.fsm_other_robot_food_y[k]))
-                                    search_goal_prob_map[x, y] += norm_dist.pdf(float(distance)) * 2.0
-                            else:
-                                distance = max(abs(x - self.states.x), abs(y - self.states.y))
-                                search_goal_prob_map[x, y] = chi2.pdf(float(distance), df=int(self.map_shape[0] / 2))
+                                    if self.fsm_other_robot_last_successful_food_x > 0 and self.fsm_other_robot_last_successful_food_y > 0:
+                                        distance = max(abs(x - self.fsm_other_robot_last_successful_food_x[k]), abs(y - self.fsm_other_robot_last_successful_food_y[k]))
+                                        search_goal_prob_map[x, y] += norm_dist.pdf(float(distance)) / 2.0
+                                    if self.fsm_other_robot_last_failed_food_x > 0 and self.fsm_other_robot_last_failed_food_y > 0:
+                                        distance = max(abs(x - self.fsm_other_robot_last_failed_food_x[k]), abs(y - self.fsm_other_robot_last_failed_food_y[k]))
+                                        search_goal_prob_map[x, y] -= norm_dist.pdf(float(distance)) / 2.0
+                                        if search_goal_prob_map[x, y] <= 0.0:
+                                            search_goal_prob_map[x, y] = 1e-3 # Do not make let any grid cells have zero probability of being chosen
+                            distance = max(abs(x - self.states.x), abs(y - self.states.y))
+                            search_goal_prob_map[x, y] *= chi2.pdf(float(distance), df=int(self.map_shape[0] / 2))
                     search_goal_prob_map /= np.sum(search_goal_prob_map)
                     flat_map = search_goal_prob_map.flatten()
                     search_rng = np.random.default_rng()
@@ -492,12 +511,16 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 else:
                     if self.states.x == self.search_goal_x and self.states.y == self.search_goal_y:
                         self.fsm_search_goal_chosen = False
+                        self.fsm_failed_grab_attempts += 1
+                        if 
                     else:
                         chosen_action = moveToGoal(self.search_goal_x, self.search_goal_y, self.states.x, self.states.y)
                         chosen_action = obstacleAvoidance(chosen_action, self.submap)
                         self.fsm_state = FSMState.SEARCH
                         keep_executing = False
-
+        
+        # TODO: need to change concept of failed_food_locations to last failed location and not use it as an exclusion
+        # Maybe randomly pick visible food to approach instead of nearest?
         elif self.fsm_state == FSMState.APPROACH:
             debugPrint("fsm_state: APPROACH")
             self.fsm_search_goal_chosen = False
@@ -514,9 +537,9 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     keep_executing = False
                 else:
                     # Directional approach logic
-                    if self.fsm_last_successful_approach_dir >= 0:
-                        debugPrint("Last approach dir successful: {0}".format(self.fsm_last_successful_approach_dir))
-                        approach_dir = self.fsm_last_successful_approach_dir
+                    if self.states.last_approach_dir >= 0:
+                        debugPrint("Last approach dir successful: {0}".format(self.states.last_approach_dir))
+                        approach_dir = self.states.last_approach_dir
                     else:
                         elements = [Direction.E, Direction.NE, Direction.N, Direction.NW, Direction.W, Direction.SW, Direction.S, Direction.SE]
                         pmf = np.ones(len(elements), dtype=np.float)
@@ -526,7 +549,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
                         pmf /= np.sum(pmf)
                         rng = np.random.default_rng()
                         approach_dir = rng.choice(elements, 1, p=pmf)
-                        self.fsm_last_successful_approach_dir = approach_dir
+                        self.states.last_approach_dir = approach_dir
                         debugPrint("Random approach dir: {0}".format(approach_dir))
                     (approach_offset_delta_x, approach_offset_delta_y) = getDeltaFromDirection(approach_dir)
                     self.nearest_food_x = nearest_delta_x + self.states.x
@@ -534,7 +557,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     self.approach_goal_x = self.nearest_food_x + approach_offset_delta_x
                     self.approach_goal_y = self.nearest_food_y + approach_offset_delta_y
                     if self.approach_goal_x < 0 or self.approach_goal_x >= self.map_shape[0] or self.approach_goal_y < 0 or self.approach_goal_y >= self.map_shape[1]:
-                        self.fsm_last_successful_approach_dir = -1
+                        self.states.last_approach_dir = -1
                         self.fsm_failed_food_locations.append({"x" : self.nearest_food_x, "y" : self.nearest_food_y})
                         self.failed_grab_attempts = 0
                         self.fsm_state = FSMState.SEARCH 
@@ -605,12 +628,12 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 # TODO: temporary solution for passing internal robot data out to the true states for local interacion data communication
                 self.states.last_food_x = self.states.x
                 self.states.last_food_y = self.states.y
-                self.states.last_approach_dir = self.fsm_last_successful_approach_dir
+                self.states.last_approach_dir = self.states.last_approach_dir
                 # ----------------------------------------------------------------------------------------------------------------------
                 self.fsm_state = FSMState.GO_HOME
             else:
                 debugPrint("food pickup failed")
-                self.fsm_last_successful_approach_dir = -1
+                self.states.last_approach_dir = -1
                 self.fsm_failed_grab_attempts += 1
                 if self.fsm_failed_grab_attempts >= 2: # TODO: revise this concept
                     self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
