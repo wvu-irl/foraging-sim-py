@@ -163,6 +163,43 @@ def findNearestFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot
 
     return (nearest_delta_x, nearest_delta_y)
 
+def listVisibleFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot_y = sys.maxsize):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    food_delta_x = [] 
+    food_delta_y = [] 
+    other_robot_delta_x = []
+    other_robot_delta_y = []
+    
+    for i in range(len(submap_object_list)):
+        # Check iif entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # Record its location
+            other_robot_delta_x.append(submap_property_list[i]["delta_x"])
+            other_robot_delta_y.append(submap_property_list[i]["delta_y"])
+
+    for i in range(len(submap_object_list)):
+        # Check if entry is a food entry
+        if submap_object_list[i] == MapLayer.FOOD:
+            # Exclude locations marked as excluded food or occupied by other robot
+            exclude = False
+            for j in range(len(exclude_locations)):
+                if submap_property_list[i]["delta_x"] == (exclude_locations[j]["x"] - robot_x) and submap_property_list[i]["delta_y"] == (exclude_locations[j]["y"] - robot_y):
+                    debugPrint("listVisibleFood: EXCLUDE FAILED FOOD")
+                    exclude = True
+
+            for k in range(len(other_robot_delta_x)):
+                if submap_property_list[i]["delta_x"] == other_robot_delta_x[k] and submap_property_list[i]["delta_y"] == other_robot_delta_y[k]:
+                    debugPrint("listVisibleFood: EXCLUDE FOOD OCCUPIED BY OTHER ROBOT")
+                    exclude = True
+            
+            if not exclude:
+                food_delta_x.append(submap_property_list[i]["delta_x"])
+                food_delta_y.append(submap_property_list[i]["delta_y"])
+
+    return (food_delta_x, food_delta_y)
+
 def getFoodHeading(delta_x, delta_y, submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]

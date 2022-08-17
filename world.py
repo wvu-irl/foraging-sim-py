@@ -309,8 +309,10 @@ class World:
             else:
                 (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
             # TODO: temporary solution for passing internal robot data out to the true states for local interacion data communication
-            new_states.last_food_x = self.robot[i].states.last_food_x
-            new_states.last_food_y = self.robot[i].states.last_food_y
+            new_states.last_successful_food_x = self.robot[i].states.last_successful_food_x
+            new_states.last_successful_food_y = self.robot[i].states.last_successful_food_y
+            new_states.last_failed_food_x = self.robot[i].states.last_failed_food_x
+            new_states.last_failed_food_y = self.robot[i].states.last_failed_food_y
             new_states.last_approach_dir = self.robot[i].states.last_approach_dir
             # -----------------------------------------------------------------------------------------------------------------------
             self.map.setSubMap(new_states.x, new_states.y, new_submap)
