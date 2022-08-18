@@ -354,31 +354,31 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
         new_submap_object_list.append(MapLayer.ROBOT)
         new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
 
-        # Check if food is located at new location
-        if isFoodAtPos(delta_x, delta_y, submap):
-            # Define the robot's probability of pushing food, based on the direction it approaches from
-            food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
-            #food_push_prob_pmf = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float)
-            #food_push_prob_pmf = np.ones(8, dtype=np.float)
-            food_push_prob_pmf = np.roll(food_push_prob_pmf, states.heading - 1)
+        ## Check if food is located at new location
+        #if isFoodAtPos(delta_x, delta_y, submap):
+        #    # Define the robot's probability of pushing food, based on the direction it approaches from
+        #    food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
+        #    #food_push_prob_pmf = np.array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float)
+        #    #food_push_prob_pmf = np.ones(8, dtype=np.float)
+        #    food_push_prob_pmf = np.roll(food_push_prob_pmf, states.heading - 1)
 
-            # Sample from random number generator to check if robot might push food
-            move_dir = getDirectionFromDelta(delta_x, delta_y)
-            food_push_prob_val = food_push_prob_pmf[move_dir - 1]
-            food_push_rng = np.random.default_rng()
-            if food_push_rng.random() < food_push_prob_val:
-                # Check if food would get pushed into other food, robot, obstacle, or edge of map
-                candidate_new_food_delta_x = delta_x * 2
-                candidate_new_food_delta_y = delta_y * 2
-                if (not isFoodAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isRobotAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isObstacleAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isOutsideMap(current_x + candidate_new_food_delta_x, current_y + candidate_new_food_delta_y, map_shape)):
-                    # Record the heading of the food being pushed
-                    food_heading = getFoodHeading(delta_x, delta_y, submap)
+        #    # Sample from random number generator to check if robot might push food
+        #    move_dir = getDirectionFromDelta(delta_x, delta_y)
+        #    food_push_prob_val = food_push_prob_pmf[move_dir - 1]
+        #    food_push_rng = np.random.default_rng()
+        #    if food_push_rng.random() < food_push_prob_val:
+        #        # Check if food would get pushed into other food, robot, obstacle, or edge of map
+        #        candidate_new_food_delta_x = delta_x * 2
+        #        candidate_new_food_delta_y = delta_y * 2
+        #        if (not isFoodAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isRobotAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isObstacleAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isOutsideMap(current_x + candidate_new_food_delta_x, current_y + candidate_new_food_delta_y, map_shape)):
+        #            # Record the heading of the food being pushed
+        #            food_heading = getFoodHeading(delta_x, delta_y, submap)
 
-                    # Remove food from current location in map and place it at new location in map
-                    new_submap_object_list.append(MapLayer.FOOD)
-                    new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's new location on map (the new submap is relative to the robot's new position)
-                    new_submap_object_list.append(MapLayer.FOOD)
-                    new_submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "val" : food_heading}) # Place food at new location to which it was pushed (the new submap is relative to the robot's new position)
+        #            # Remove food from current location in map and place it at new location in map
+        #            new_submap_object_list.append(MapLayer.FOOD)
+        #            new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's new location on map (the new submap is relative to the robot's new position)
+        #            new_submap_object_list.append(MapLayer.FOOD)
+        #            new_submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "val" : food_heading}) # Place food at new location to which it was pushed (the new submap is relative to the robot's new position)
 
     # If at home, battery receives charge
     if at_home:
