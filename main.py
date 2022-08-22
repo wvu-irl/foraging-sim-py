@@ -13,7 +13,7 @@ config.enable_debug_prints = True
 enable_plots = True
 save_plots = False
 use_manual_control = False
-slow_mode = False
+slow_mode = True
 
 # Load simulation parameters
 if sys.argv[1] == "0":
