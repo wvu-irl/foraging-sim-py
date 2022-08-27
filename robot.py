@@ -114,6 +114,7 @@ class UnknownMapFSMRobot(Robot):
         self.fsm_failed_food_locations = []
         self.grab_prob_map = np.ones(self.map_shape, dtype=np.float)
         self.grab_prob_map /= np.sum(self.grab_prob_map)
+        self.avg_food_distance = 1
 
     def chooseAction(self):
         return searchFSMActionPolicy(self, False)
@@ -149,6 +150,7 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.fsm_failed_food_locations = []
         self.grab_prob_map = np.ones(self.map_shape, dtype=np.float)
         self.grab_prob_map /= np.sum(self.grab_prob_map)
+        self.avg_food_distance = 1
 
     def chooseAction(self):
         return searchFSMActionPolicy(self, True)

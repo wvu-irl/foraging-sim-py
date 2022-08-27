@@ -9,7 +9,7 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 enable_plots = True
 save_plots = True
 use_manual_control = False
