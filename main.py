@@ -9,9 +9,9 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = True
-enable_plots = True
-save_plots = True
+config.enable_debug_prints = False
+config.enable_plots = False
+save_plots = False
 use_manual_control = False
 slow_mode = False
 
@@ -102,7 +102,7 @@ robot_layer = np.array(robot_img)
 
 def runWrapper(obj): 
     # Initialize plot objects, if only one trial
-    if enable_plots and num_threads == 1:
+    if config.enable_plots and num_threads == 1:
         map_fig, map_ax = plt.subplots()
         plt.ion()
         plt.show()
@@ -110,7 +110,7 @@ def runWrapper(obj):
     # Run each trial
     for t in range(num_time_steps):
         # Display map for current time step, if only one trial
-        if enable_plots and num_threads == 1:
+        if config.enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
                 map_fig.savefig("figures/fig%d.png" % t)
@@ -121,7 +121,7 @@ def runWrapper(obj):
             time.sleep(0.5)
         
         # Display final map if at final time step
-        if ((t == num_time_steps - 1) or terminal_condition) and enable_plots and num_threads == 1:
+        if ((t == num_time_steps - 1) or terminal_condition) and config.enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
                 t = t+1

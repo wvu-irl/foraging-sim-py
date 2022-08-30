@@ -13,5 +13,5 @@ arbitration_type_list = []
 num_time_steps = 200
 num_monte_carlo_trials = 1000
 num_threads = 80
-food_respawn = True
+food_respawn = False
 results_filename = "results/test_21_swarm_homo_local_model_0_results.npz"

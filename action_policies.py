@@ -1,3 +1,4 @@
+import config
 from enum import IntEnum, unique
 from actions import Actions
 from submap_utils import *
@@ -8,14 +9,15 @@ from scipy.stats import chi2
 from scipy.stats import norm as norm_dist
 import matplotlib.pyplot as plt
 
-search_goal_fig, search_goal_ax = plt.subplots()
-grab_prob_fig, grab_prob_ax = plt.subplots()
-temp_arr = np.array([[0.0, 0.05], [0.05, 0.0]])
-c_map = search_goal_ax.imshow(temp_arr)
-search_goal_fig.colorbar(c_map)
-c_map = grab_prob_ax.imshow(temp_arr)
-grab_prob_fig.colorbar(c_map)
-plt.ion()
+if config.enable_plots:
+    search_goal_fig, search_goal_ax = plt.subplots()
+    grab_prob_fig, grab_prob_ax = plt.subplots()
+    temp_arr = np.array([[0.0, 0.05], [0.05, 0.0]])
+    c_map = search_goal_ax.imshow(temp_arr)
+    search_goal_fig.colorbar(c_map)
+    c_map = grab_prob_ax.imshow(temp_arr)
+    grab_prob_fig.colorbar(c_map)
+    plt.ion()
 
 @unique
 class FSMState(IntEnum):
@@ -529,11 +531,12 @@ def searchFSMActionPolicy(self, enable_local_influence):
             self.distance_weighted_grab_prob_map /= np.sum(self.distance_weighted_grab_prob_map)
             self.search_goal_prob_map /= np.sum(self.search_goal_prob_map)
 
-            grab_prob_ax.cla()
-            search_goal_ax.cla()
-            grab_prob_img = grab_prob_ax.imshow(np.swapaxes(self.grab_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
-            search_goal_img = search_goal_ax.imshow(np.swapaxes(self.search_goal_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
-            plt.show()
+            if config.enable_plots:
+                grab_prob_ax.cla()
+                search_goal_ax.cla()
+                grab_prob_img = grab_prob_ax.imshow(np.swapaxes(self.grab_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
+                search_goal_img = search_goal_ax.imshow(np.swapaxes(self.search_goal_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
+                plt.show()
 
             self.fsm_approach_target_food_selected = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home
