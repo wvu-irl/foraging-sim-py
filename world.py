@@ -36,7 +36,7 @@ class World:
         self.food_respawn = food_respawn
 
         # Record home location
-        self.home_pos = self.map.findHomePosition(0)
+        self.home_pos , self.home_region = self.map.findHome()
 
         # Record the food positions, headings, and clusters lists
         self.food_pos, self.food_heading, self.food_cluster = self.map.findFoodInfo()
@@ -103,8 +103,8 @@ class World:
                     robot_states.battery = self.battery_size - 1
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = copy.deepcopy(robot_states)
-                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "heading_size" : self.heading_size, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
-                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
+                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "heading_size" : self.heading_size, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
+                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                     self.true_reward_function[robot_id] = mdpRewardFunction
@@ -340,13 +340,13 @@ class World:
 
     def updateResultsMetrics(self, results_in, state, state_prime, constants):
         results_out = copy.deepcopy(results_in)
-        home_pos = constants["home_pos"]
-        if state.x == home_pos[0] and state.y == home_pos[1]:
+        home_region = constants["home_region"]
+        if state.x in home_region[0] and state.y in home_region[1]:
             state_at_home = True
         else:
             state_at_home = False
 
-        if state_prime.x == home_pos[0] and state_prime.y == home_pos[1]:
+        if state_prime.x in home_region[0] and state_prime.y in home_region[1]:
             state_prime_at_home = True
         else:
             state_prime_at_home = False

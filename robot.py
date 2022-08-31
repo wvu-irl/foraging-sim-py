@@ -105,6 +105,7 @@ class UnknownMapFSMRobot(Robot):
         self.states = UnknownMapStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.home_region = constants["home_region"]
         self.init_pos = constants["init_pos"]
         self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH
@@ -134,6 +135,7 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.states = UnknownMapStates()
         self.map_shape = constants["map_shape"]
         self.home_pos = constants["home_pos"]
+        self.home_region = constants["home_region"]
         self.init_pos = constants["init_pos"]
         self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH

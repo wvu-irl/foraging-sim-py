@@ -9,12 +9,13 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
     current_y = states.y
     map_shape = constants["map_shape"]
     home_pos = constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
     food_heading = constants["food_heading"]
     food_cluster = constants["food_cluster"]
     food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
-    at_home = isAtHome(states.x, states.y, home_pos)
+    at_home = isAtHome(states.x, states.y, home_region)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         move_action = True
@@ -112,7 +113,7 @@ def mdpDirectionalFoodTransitionModelTrue(states, action, constants):
         new_states[0].x = new_x
         new_states[0].y = new_y
 
-        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_pos)
+        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_region)
         
         # If at home, battery receives charge
         if new_at_home:
@@ -135,11 +136,12 @@ def mdpDirectionalFoodTransitionModel(states, action, constants, model_num = 0):
     current_y = states.y
     map_shape = constants["map_shape"]
     home_pos = constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = constants["num_food"]
     food_pos = constants["food_pos"]
     food_cluster = constants["food_cluster"]
     food_map = getFoodMapFromBinary(states.food_state, num_food, food_pos, map_shape)
-    at_home = isAtHome(states.x, states.y, home_pos)
+    at_home = isAtHome(states.x, states.y, home_region)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
         move_action = True
@@ -253,7 +255,7 @@ def mdpDirectionalFoodTransitionModel(states, action, constants, model_num = 0):
         new_states[0].x = new_x
         new_states[0].y = new_y
 
-        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_pos)
+        new_at_home = isAtHome(new_states[0].x, new_states[0].y, home_region)
         
         # If at home, battery receives charge
         if new_at_home:
@@ -278,7 +280,8 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
     current_y = states.y
     map_shape = constants["map_shape"]
     home_pos = constants["home_pos"]
-    at_home = isAtHome(states.x, states.y, home_pos)
+    home_region = constants["home_region"]
+    at_home = isAtHome(states.x, states.y, home_region)
     if action == Actions.STAY: # Stay
         (delta_x, delta_y) = getDeltaFromDirection(Direction.NONE)
     elif action == Actions.MOVE_E: # Move E
@@ -399,9 +402,8 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
     new_submap = (new_submap_object_list, new_submap_property_list)
     return (new_states, new_submap)
 
-def isAtHome(x, y, home_pos):
-    if x == home_pos[0] and y == home_pos[1]:
+def isAtHome(x, y, home_region):
+    if x in home_region[0] and y in home_region[1]:
         return True
     else:
         return False
-

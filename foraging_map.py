@@ -99,14 +99,22 @@ class ForagingMap:
                 self.map[MapLayer.ROBOT, center_x, center_y] = submap_property_list[i]["id"] + 1 # Set new robot position
                 self.map[MapLayer.ROBOT, map_x, map_y] = 0 # Remove old robot position
     
-    def findHomePosition(self, robot_id):
+    def findHome(self):
+        home_x = []
+        home_y = []
         for x in range(self.map_shape[0]):
             for y in range(self.map_shape[1]):
-                if self.map[MapLayer.HOME, x, y] - 1 == robot_id:
-                    return (x, y)
-
-        # If code falls through to here, no home location for given robot id
-        return (sys.maxsize, sys.maxsize)
+                if self.map[MapLayer.HOME, x, y]:
+                    home_x.append(x)
+                    home_y.append(y)
+        if len(home_x) == 1:
+            return (home_x[0], home_y[0]), (home_x, home_y)
+        elif len(home_x) > 1:
+            avg_x = int(sum(home_x) / len(home_x))
+            avg_y = int(sum(home_y) / len(home_y))
+            return (avg_x, avg_y), (home_x, home_y)
+        else:
+            return (sys.maxsize, sys.maxsize), (home_x, home_y)
 
     def findFoodInfo(self):
         food_pos = []

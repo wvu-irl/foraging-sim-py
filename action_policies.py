@@ -52,6 +52,7 @@ def simpleFSMActionPolicy(self):
     battery_go_home_threshold = self.constants["battery_size"] // 2
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = self.constants["num_food"]
     food_pos = self.constants["food_pos"]
 
@@ -95,7 +96,7 @@ def simpleFSMActionPolicy(self):
 
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+            if isAtHome(self.states.x, self.states.y, home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
                     self.fsm_state = FSMState.SELECT_TARGET
@@ -129,6 +130,7 @@ def uncertainGrabFSMActionPolicy(self):
 
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = self.constants["num_food"]
     food_pos = self.constants["food_pos"]
     keep_executing = True
@@ -180,7 +182,7 @@ def uncertainGrabFSMActionPolicy(self):
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
             self.fsm_failed_grab_attempts = 0
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+            if isAtHome(self.states.x, self.states.y, home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
                     self.fsm_state = FSMState.SELECT_TARGET
@@ -228,6 +230,7 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = self.constants["num_food"]
     food_pos = self.constants["food_pos"]
     keep_executing = True
@@ -286,7 +289,7 @@ def uncertainGrabRandomSelectFSMActionPolicy(self):
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
             self.fsm_failed_grab_attempts = 0
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+            if isAtHome(self.states.x, self.states.y, home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
                     self.fsm_state = FSMState.SELECT_TARGET
@@ -334,6 +337,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
     rng = np.random.default_rng()
     map_shape = self.constants["map_shape"]
     home_pos = self.constants["home_pos"]
+    home_region = constants["home_region"]
     num_food = self.constants["num_food"]
     food_pos = self.constants["food_pos"]
     keep_executing = True
@@ -413,7 +417,7 @@ def uncertainGrabRandomSelectLocalInteractionFSMActionPolicy(self):
         elif self.fsm_state == FSMState.GO_HOME:
             debugPrint("fsm_state: GO_HOME")
             self.fsm_failed_grab_attempts = 0
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+            if isAtHome(self.states.x, self.states.y, home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
                     self.fsm_state = FSMState.SELECT_TARGET
@@ -681,7 +685,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
             self.fsm_failed_food_locations = []
             self.use_local_influence = False
             self.resetOtherRobotLists()
-            if self.states.x == self.home_pos[0] and self.states.y == self.home_pos[1]:
+            if isAtHome(self.states.x, self.states.y, self.home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
                     self.fsm_state = FSMState.SEARCH
