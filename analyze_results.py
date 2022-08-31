@@ -5,10 +5,18 @@ import sys
 def percentChagne(x, x_ref):
     return (x - x_ref)/abs(x_ref) * 100.0
 
-num_files = len(sys.argv) - 3
+num_args = len(sys.argv) - 1
+if "--" not in sys.argv:
+    raise RuntimeError("input filenames for comparison not split by '--'")    
+
+split_index = sys.argv.index("--")
 
 prefix1 = sys.argv[1]
-prefix2 = sys.argv[2]
+prefix2 = sys.argv[split_index+1]
+filename_indices = list(range(2, split_index)) + list(range(split_index+2, len(sys.argv)))
+num_files = len(filename_indices)
+if (num_files % 2) != 0:
+    raise RuntimeError("number of input files for comparison not equal")
 
 food_data = [None] * num_files
 num_times_home_visited_data = [None] * num_files
@@ -16,14 +24,16 @@ total_distance_traversed_data = [None] * num_files
 total_reward_data = [None] * num_files
 battery_died = [None] * num_files
 
-for k in range(num_files):
-    filename = sys.argv[k+3]
+k = 0
+for index in filename_indices:
+    filename = sys.argv[index]
     data = np.load(filename)
     food_data[k] = data["num_food_retrieved"] #[i, j] where i = trials, j = robots
     num_times_home_visited_data[k] = data["num_times_home_visited"]
     total_distance_traversed_data[k] = data["total_distance_traversed"]
     total_reward_data[k] = data["total_reward"]
     battery_died[k] = data["battery_died"]
+    k += 1
 
 num_trials = food_data[0].shape[0]
 num_robots = food_data[0].shape[1]
