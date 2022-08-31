@@ -9,7 +9,7 @@ from scipy.stats import chi2
 from scipy.stats import norm as norm_dist
 import matplotlib.pyplot as plt
 
-if config.enable_plots:
+if config.enable_action_policy_plots:
     search_goal_fig, search_goal_ax = plt.subplots()
     grab_prob_fig, grab_prob_ax = plt.subplots()
     temp_arr = np.array([[0.0, 0.05], [0.05, 0.0]])
@@ -515,7 +515,10 @@ def searchFSMActionPolicy(self, enable_local_influence):
                                 if self.grab_prob_map[x, y] <= 0.0:
                                     self.grab_prob_map[x, y] = 1e-6 # Do not make let any grid cells have zero probability of being chosen
                     distance = max(abs(x - self.states.x), abs(y - self.states.y))
-                    self.distance_weighted_grab_prob_map[x, y] = self.grab_prob_map[x, y] / float(distance)
+                    if distance > 0:
+                        self.distance_weighted_grab_prob_map[x, y] = self.grab_prob_map[x, y] / float(distance)
+                    else:
+                        self.distance_weighted_grab_prob_map[x, y] = self.grab_prob_map[x, y]
                     if distance <= self.constants["perception_range"]:
                         self.search_goal_prob_map[x, y] = 0.0
                     else:
@@ -531,7 +534,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
             self.distance_weighted_grab_prob_map /= np.sum(self.distance_weighted_grab_prob_map)
             self.search_goal_prob_map /= np.sum(self.search_goal_prob_map)
 
-            if config.enable_plots:
+            if config.enable_action_policy_plots:
                 grab_prob_ax.cla()
                 search_goal_ax.cla()
                 grab_prob_img = grab_prob_ax.imshow(np.swapaxes(self.grab_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
