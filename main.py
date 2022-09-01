@@ -10,7 +10,7 @@ import sys
 import time
 
 config.enable_debug_prints = False
-config.enable_plots = False
+config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
 use_manual_control = False
@@ -77,6 +77,10 @@ elif sys.argv[1] == "28":
     from params._28_swarm_diverse_local_model_1 import *
 elif sys.argv[1] == "29":
     from params._29_swarm_diverse_local_model_2 import *
+elif sys.argv[1] == "local":
+    from params.local_interactions_1000mc import *
+elif sys.argv[1] == "nonlocal":
+    from params.no_local_interactions_1000mc import *
 else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
