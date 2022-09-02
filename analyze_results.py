@@ -27,11 +27,11 @@ print("num figures: {0}".format(num_figures))
 print("num_files_per_fig: {0}".format(num_files_per_fig))
 print(filenames)
 
-food_data = [[None] * num_files_per_fig] * num_figures
-num_times_home_visited_data = [[None] * num_files_per_fig] * num_figures
-total_distance_traversed_data = [[None] * num_files_per_fig] * num_figures
-total_reward_data = [[None] * num_files_per_fig] * num_figures
-battery_died = [[None] * num_files_per_fig] * num_figures
+food_data = [[None] * num_files_per_fig for i in range(num_figures)]
+num_times_home_visited_data = [[None] * num_files_per_fig for i in range(num_figures)]
+total_distance_traversed_data = [[None] * num_files_per_fig for i in range(num_figures)]
+total_reward_data = [[None] * num_files_per_fig for i in range(num_figures)]
+battery_died = [[None] * num_files_per_fig for i in range(num_figures)]
 
 for i in range(num_figures):
     for j in range(num_files_per_fig):
@@ -42,6 +42,14 @@ for i in range(num_figures):
         total_distance_traversed_data[i][j] = data["total_distance_traversed"]
         total_reward_data[i][j] = data["total_reward"]
         battery_died[i][j] = data["battery_died"]
+        print("filename: {0}".format(filename))
+        print("reward[{0},{1}]: {2}".format(i,j,total_reward_data[i][j][0,0]))
+
+print("after...")
+print("reward[0,0]: {0}".format(total_reward_data[0][0][0,0]))
+print("reward[0,1]: {0}".format(total_reward_data[0][1][0,0]))
+print("reward[1,0]: {0}".format(total_reward_data[1][0][0,0]))
+print("reward[1,1]: {0}".format(total_reward_data[1][1][0,0]))
 
 num_trials = food_data[0][0].shape[0]
 num_robots = food_data[0][0].shape[1]
@@ -60,8 +68,8 @@ reward_box_ax = [None] * num_figures
 for i in range(num_figures):
     reward_fig[i], reward_ax[i] = plt.subplots()
     reward_box_fig[i], reward_box_ax[i] = plt.subplots()
-total_reward_box_data = [[None] * num_files_per_fig] * num_figures
-box_plot_labels = [[None] * num_files_per_fig] * num_figures
+total_reward_box_data = [[None] * num_files_per_fig for i in range(num_figures)]
+box_plot_labels = [[None] * num_files_per_fig for i in range(num_figures)]
 
 plt.rcParams.update({"font.size": 12})
 plt.rcParams.update({"font.weight": "bold"})
@@ -171,6 +179,7 @@ for i in range(num_figures):
         reward_cdf_x = np.insert(reward_cdf_x, 0, reward_cdf_x[0])
         reward_cdf_y = np.insert(reward_cdf_y, 0, 0.0)
 
+        print("plot, [i,j] = [{0},{1}]".format(i, j))
         reward_ax[i].plot(reward_cdf_x, reward_cdf_y, drawstyle="steps-post", label=plot_label)
         
         box_plot_labels[i][j] = plot_label
@@ -209,7 +218,7 @@ for i in range(num_figures):
 
     reward_box_ax[i].boxplot(total_reward_box_data[i], vert = 0, notch=True, patch_artist=True)
     reward_box_ax[i].set_xlabel("Total Reward")
-    reward_box_ax[i].set_yticklabels(box_plot_labels)
+    reward_box_ax[i].set_yticklabels(box_plot_labels[i])
     reward_box_ax[i].grid()
     reward_box_ax[i].set_xlim(min_limit, max_limit)
 
