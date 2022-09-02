@@ -23,8 +23,6 @@ for i in range(num_figures):
             raise RuntimeError("number of input files for comparison not equal")
 
 num_files_per_fig = len(filenames[0])
-print("num figures: {0}".format(num_figures))
-print("num_files_per_fig: {0}".format(num_files_per_fig))
 print(filenames)
 
 food_data = [[None] * num_files_per_fig for i in range(num_figures)]
@@ -42,14 +40,6 @@ for i in range(num_figures):
         total_distance_traversed_data[i][j] = data["total_distance_traversed"]
         total_reward_data[i][j] = data["total_reward"]
         battery_died[i][j] = data["battery_died"]
-        print("filename: {0}".format(filename))
-        print("reward[{0},{1}]: {2}".format(i,j,total_reward_data[i][j][0,0]))
-
-print("after...")
-print("reward[0,0]: {0}".format(total_reward_data[0][0][0,0]))
-print("reward[0,1]: {0}".format(total_reward_data[0][1][0,0]))
-print("reward[1,0]: {0}".format(total_reward_data[1][0][0,0]))
-print("reward[1,1]: {0}".format(total_reward_data[1][1][0,0]))
 
 num_trials = food_data[0][0].shape[0]
 num_robots = food_data[0][0].shape[1]
@@ -160,7 +150,11 @@ for i in range(num_figures):
 
         print("---------------------------------------------------------------\n\n")
 
-        plot_label = "$T_{" + str(j) + "}^{t}$"
+        #plot_label = "$T_{" + str(j) + "}^{t}$"
+        if j == 0:
+            plot_label = "No Local Int"
+        else:
+            plot_label = "Local Int"
     #    food_cdf_x, food_cdf_counts = np.unique(total_food_retrieved[i, j, :], return_counts=True)
     #    food_cdf_y = np.cumsum(food_cdf_counts)
     #    food_cdf_y = np.divide(food_cdf_y, food_cdf_y[-1])
@@ -210,7 +204,8 @@ for i in range(num_figures):
     reward_ax[i].set_ylabel("Probability")
     reward_ax[i].legend()
 
-min_limit = np.amin(total_reward) - 50
+#min_limit = np.amin(total_reward) - 50
+min_limit = -10000
 max_limit = np.amax(total_reward) + 50
 
 for i in range(num_figures):
@@ -222,9 +217,17 @@ for i in range(num_figures):
     reward_box_ax[i].grid()
     reward_box_ax[i].set_xlim(min_limit, max_limit)
 
-    cdf_filename = "figures/" + prefix[i] + "_accumulated_reward_cdf.eps"
-    box_filename = "figures/" + prefix[i] + "_accumulated_reward_box_plot.eps"
-    reward_fig[i].savefig(cdf_filename, format="eps", bbox_inches="tight", pad_inches=0)
-    reward_box_fig[i].savefig(box_filename, format="eps", bbox_inches="tight", pad_inches=0)
+    cdf_filename_base = "figures/" + prefix[i] + "_accumulated_reward_cdf"
+    box_filename_base = "figures/" + prefix[i] + "_accumulated_reward_box_plot"
+
+    cdf_filename_eps = cdf_filename_base + ".eps"
+    box_filename_eps = box_filename_base + ".eps"
+    cdf_filename_png = cdf_filename_base + ".png"
+    box_filename_png = box_filename_base + ".png"
+
+    reward_fig[i].savefig(cdf_filename_eps, format="eps", bbox_inches="tight", pad_inches=0)
+    reward_box_fig[i].savefig(box_filename_eps, format="eps", bbox_inches="tight", pad_inches=0)
+    reward_fig[i].savefig(cdf_filename_png, format="png", bbox_inches="tight", pad_inches=0)
+    reward_box_fig[i].savefig(box_filename_png, format="png", bbox_inches="tight", pad_inches=0)
 
 plt.show()
