@@ -308,6 +308,19 @@ def findBlockedMoves(submap):
     
     return blocked_moves
 
+def isHomeAtPos(delta_x, delta_y, submap):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    for i in range(len(submap_object_list)):
+        # Check if entry is a food entry
+        if submap_object_list[i] == MapLayer.HOME:
+            # Check if home delta position matches query
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
+                return True
+    
+    # If code falls through to here, then there is no home at the query position
+    return False
 
 def atEdgeOfMap(x, y, map_shape):
     x_at_edge = (x == map_shape[0] - 1) or (x == 0)

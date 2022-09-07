@@ -576,9 +576,9 @@ def searchFSMActionPolicy(self, enable_local_influence):
                             self.states.last_successful_food_y = -1
                             self.states.last_failed_food_x = -1
                             self.states.last_failed_food_y = -1
-                            avg_food_rng = np.random.default_rng()
-                            possible_avg_food_distance = np.arange(1, min(self.map_shape[0], self.map_shape[1]), dtype=np.int)
-                            self.avg_food_distance = avg_food_rng.choice(possible_avg_food_distance)
+                            #avg_food_rng = np.random.default_rng()
+                            #possible_avg_food_distance = np.arange(1, min(self.map_shape[0], self.map_shape[1]), dtype=np.int)
+                            #self.avg_food_distance = avg_food_rng.choice(possible_avg_food_distance)
                     else:
                         chosen_action = moveToGoal(self.search_goal_x, self.search_goal_y, self.states.x, self.states.y)
                         chosen_action = obstacleAvoidance(chosen_action, self.submap)

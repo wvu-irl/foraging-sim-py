@@ -1,5 +1,5 @@
 food_img_path = "maps/25_25_food_map_clus_head_diff.png"
-home_img_path = "maps/25_25_home_map_single.png"
+home_img_path = "maps/25_25_home_map.png"
 obstacle_img_path = "maps/25_25_obstacle_map.png"
 robot_img_path = "maps/25_25_robot_map_8_bots.png"
 robot_personality_list = [16, 16, 16, 16, 16, 16, 16, 16]
@@ -11,7 +11,7 @@ v_filepath_list = []
 q_filepath_list = []
 arbitration_type_list = []
 num_time_steps = 500
-num_monte_carlo_trials = 1
-num_threads = 1
+num_monte_carlo_trials = 1000
+num_threads = 80
 food_respawn = False
 results_filename = "results/test_swarm_local_results.npz"

@@ -204,8 +204,7 @@ for i in range(num_figures):
     reward_ax[i].set_ylabel("Probability")
     reward_ax[i].legend()
 
-#min_limit = np.amin(total_reward) - 50
-min_limit = -10000
+min_limit = np.amin(total_reward) - 50
 max_limit = np.amax(total_reward) + 50
 
 for i in range(num_figures):
