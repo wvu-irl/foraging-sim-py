@@ -19,5 +19,10 @@ def mdpRewardFunction(state, action, state_prime, constants):
         r = 100.0
     else:
         r = 0.0 # This should stil never occur...
+        #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #print("state: bat: {0}, has_food: {1}, in home region: {2}".format(state.battery, state.has_food, state.x in constants["home_region"][0] and state.y in constants["home_region"][1]))
+        #print("action: {0}".format(action))
+        #print("state_prime: bat: {0}, has_food: {1}, in home region: {2}".format(state_prime.battery, state_prime.has_food, state_prime.x in constants["home_region"][0] and state_prime.y in constants["home_region"][1]))
+        #print("###########################\n")
     
     return r
