@@ -1,6 +1,7 @@
 from submap_utils import *
 from states import *
 from actions import *
+import config
 import numpy as np
 import copy
 
@@ -358,7 +359,7 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
         new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
 
         # Check if food is located at new location
-        if isFoodAtPos(delta_x, delta_y, submap):
+        if config.enable_food_pushing and isFoodAtPos(delta_x, delta_y, submap):
             # Define the robot's probability of pushing food, based on the direction it approaches from
             food_push_prob_pmf = np.array([0.5, 1.0, 0.0, 1.0, 0.5, 0.0, 1.0, 0.0], dtype=np.float)
             #food_push_prob_pmf = np.array([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0], dtype=np.float)

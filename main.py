@@ -85,6 +85,8 @@ else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
 
+config.enable_food_pushing = food_pushing
+
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
     raise RuntimeError("number of threads: {0} is greater than number of Monte Carlo trials {1}".format(num_threads, num_monte_carlo_trials))
@@ -121,7 +123,7 @@ def runWrapper(obj):
                 map_fig.savefig("figures/fig%d.png" % t)
             print("\nt = {0}".format(t))
 
-        terminal_condition = obj.simulationStep()
+        terminal_condition = obj.simulationStep(t)
         if slow_mode and num_threads == 1:
             time.sleep(0.5)
         
@@ -141,7 +143,7 @@ def runWrapper(obj):
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, heading_change_times, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")

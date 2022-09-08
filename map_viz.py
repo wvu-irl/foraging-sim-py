@@ -8,29 +8,29 @@ def displayMap(obj, plt, fig, ax):
         for y in range(obj.map.map_shape[1]):
             if obj.map.map[MapLayer.ROBOT, x, y] > 0: # Mark robot locations with color corresponding to personality type
                 robot_id = obj.map.map[MapLayer.ROBOT, x, y] - 1
-                robot_personality = obj.robot_personality_list[robot_id]
+                robot_heading = obj.true_robot_states[robot_id].heading
                 if obj.true_robot_states[robot_id].battery < 1e-3: # If robot battery is dead, make dark gray
                     robot_color = [100, 100, 100]  # Gray
-                #elif robot_personality == 0:
+                #elif robot_heading == 0:
                 #    robot_color = [0, 0, 155]  # Dark Blue
-                elif robot_personality in [0, 1, 4, 7, 10, 13, 16]:
+                elif robot_heading in [0, 1]:
                     robot_color = [255, 0, 0]   # Red
-                elif robot_personality in [2, 5, 8, 11, 14, 17]:
+                elif robot_heading == 3:
                     robot_color = [0, 0, 255]   # Blue
-                elif robot_personality in [3, 6, 9, 12, 15, 18]:
+                elif robot_heading == 5:
                     robot_color = [255, 0, 255] # Purple
-                #elif robot_personality == 4:
+                #elif robot_heading == 4:
                 #    #robot_color = [255, 128, 0] # Orange
                 #    robot_color = [255, 0, 0]   # Red
-                #elif robot_personality == 5:
+                #elif robot_heading == 5:
                 #    #robot_color = [150, 0, 255] # Violet
                 #    robot_color = [0, 0, 255]   # Blue
-                #elif robot_personality == 6:
+                #elif robot_heading == 6:
                 #    #robot_color = [60, 30, 0]   # Brown
                 #    robot_color = [255, 0, 255] # Purple
-                #elif robot_personality == 7:
+                #elif robot_heading == 7:
                 #    robot_color = [86, 0, 45]   # Burgandy
-                #elif robot_personality == 8:
+                #elif robot_heading == 8:
                 #    robot_color = [255, 200, 0] # Yellow
                 img[x, y, :] = np.array(robot_color, dtype=np.uint8)
             elif obj.map.map[MapLayer.OBSTACLE, x, y] > 0: # Mark obstacle locations as black

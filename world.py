@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from map_viz import displayMap
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, food_respawn, real_world_exp = False, manual_control = False):
+    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, heading_change_times, food_respawn, real_world_exp = False, manual_control = False):
         # If real world experiment, import air hockey interface (if not, don't import so not dependent on ROS)
         if real_world_exp:
             from air_hockey_interface import AirHockeyInterface
@@ -31,6 +31,9 @@ class World:
 
         # Record number of timesteps
         self.num_time_steps = num_time_steps
+
+        # Record heading change times
+        self.heading_change_times = heading_change_times
 
         # Record if food should respawn
         self.food_respawn = food_respawn
@@ -327,8 +330,15 @@ class World:
                 if rng.uniform() < 0.01: # TODO: decide if this number needs to be conditional on other factors, like num_robots, num_time_steps, etc
                     self.map.map[MapLayer.FOOD, pos[0], pos[1]] = self.food_heading[i]
 
-    def simulationStep(self):
+    def simulationStep(self, t):
         for i in range(self.num_robots):
+            if t in self.heading_change_times:
+                self.true_robot_states[i].heading += 4
+                self.robot[i].states.heading += 4
+                if self.true_robot_states[i].heading > 8:
+                    self.true_robot_states[i].heading = 1
+                if self.robot[i].states.heading > 8:
+                    self.robot[i].states.heading += 2
             self.updateRobotObservation(i)
             self.executeRobotAction(i)
             if not self.food_respawn:
