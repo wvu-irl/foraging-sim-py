@@ -11,10 +11,13 @@ import matplotlib.pyplot as plt
 from map_viz import displayMap
 
 class World:
-    def __init__(self, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, heading_change_times, food_respawn, real_world_exp = False, manual_control = False):
+    def __init__(self, trial_num, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp = False, manual_control = False):
         # If real world experiment, import air hockey interface (if not, don't import so not dependent on ROS)
         if real_world_exp:
             from air_hockey_interface import AirHockeyInterface
+
+        # Record trial number (needed for some data saving purposes)
+        self.trial_num = trial_num
 
         # Record if manual control is enabled (for debugging)
         self.manual_control = manual_control
@@ -63,6 +66,10 @@ class World:
 
         # Record arbitration type, if mm-mdp
         self.arbitration_type_list = arbitration_type_list
+
+        # Record whether previous experience is to be used and the filepath if so
+        self.use_prev_exp = use_prev_exp
+        self.prev_exp_filepath = prev_exp_filepath
 
         # Record the full state dimensions and number of actions
         self.full_state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" :self.battery_size, "num_food" : self.num_food, "heading_size" : self.heading_size}

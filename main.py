@@ -1,10 +1,11 @@
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 from world import World
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 from map_viz import displayMap
 from save_results import saveResultsFile
+from prev_exp import PrevExpData
 import config
 import sys
 import time
@@ -13,6 +14,7 @@ config.enable_debug_prints = False
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
+save_prev_exp = False
 use_manual_control = False
 slow_mode = False
 
@@ -86,6 +88,7 @@ else:
 #from params.single_robot_fsm import *
 
 config.enable_food_pushing = food_pushing
+num_robots = len(robot_personality_list)
 
 # Check that number of threads is less than number of Monte Carlo trials
 if num_threads > num_monte_carlo_trials:
@@ -107,6 +110,12 @@ home_layer = np.array(home_img)
 obstacle_layer = np.array(obstacle_img)
 robot_layer = np.array(robot_img)
 
+# If saving previous experience, initialize data container
+if save_prev_exp:
+    prev_exp_data = PrevExpData()
+    prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps)
+    lock = Lock()
+
 def runWrapper(obj): 
     # Initialize plot objects, if only one trial
     if config.enable_plots and num_threads == 1:
@@ -123,19 +132,31 @@ def runWrapper(obj):
                 map_fig.savefig("figures/fig%d.png" % t)
             print("\nt = {0}".format(t))
 
+        if save_prev_exp:
+            lock.acquire()
+            prev_exp_data.record(obj, t)
+            lock.release()
+
         terminal_condition = obj.simulationStep(t)
         if slow_mode and num_threads == 1:
             time.sleep(0.5)
         
-        # Display final map if at final time step
-        if ((t == num_time_steps - 1) or terminal_condition) and config.enable_plots and num_threads == 1:
-            displayMap(obj, plt, map_fig, map_ax)
-            if save_plots == 1:
-                t = t+1
-                map_fig.savefig("figures/fig%d.png" % t)
+        if ((t == num_time_steps - 1) or (enable_terminal_condition and terminal_condition)):
+            # Save final step of prev exp if at final time step
+            if save_prev_exp:
+                lock.acquire()
+                prev_exp_data.record(obj, t)
+                lock.release()
+
+            # Display final map if at final time step
+            if config.enable_plots and num_threads == 1:
+                displayMap(obj, plt, map_fig, map_ax)
+                if save_plots == 1:
+                    t = t+1
+                    map_fig.savefig("figures/fig%d.png" % t)
 
         # End simulation early if terminal condition reached
-        if terminal_condition:
+        if enable_terminal_condition and terminal_condition:
             break
 
     return obj
@@ -143,7 +164,7 @@ def runWrapper(obj):
 def poolHandler():
     # Initialize worlds
     print("Initializing worlds...")
-    sim_worlds = [World(food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, num_time_steps, heading_change_times, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
+    sim_worlds = [World(i, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")
@@ -159,6 +180,8 @@ def poolHandler():
 
     # Save results
     saveResultsFile(results_filename, sim_worlds)
+    if save_prev_exp:
+        prev_exp_data.save(prev_exp_filepath)
 
 if __name__=='__main__':
     poolHandler()
