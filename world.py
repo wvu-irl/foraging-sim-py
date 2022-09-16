@@ -256,6 +256,21 @@ class World:
                             self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         else:
                             self.true_transition_model[robot_id] = unknownMapDirectionalFoodTransitionModelTrue
+        # Initialize combined states and constants for first time step, if using previous experience
+        if self.use_prev_exp:
+            for j in range(self.num_prev_exp_robots):
+                self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, 0], self.prev_exp_data.y[j, 0, 0]] = self.prev_exp_robot_id[j] + 1
+                self.prev_exp_states[j].x = self.prev_exp_data.x[j, 0, 0]
+                self.prev_exp_states[j].y = self.prev_exp_data.y[j, 0, 0]
+                self.prev_exp_states[j].has_food = self.prev_exp_data.has_food[j, 0, 0]
+                self.prev_exp_states[j].battery = self.prev_exp_data.battery[j, 0, 0]
+                self.prev_exp_states[j].last_successful_food_x = self.prev_exp_data.last_successful_food_x[j, 0, 0]
+                self.prev_exp_states[j].last_successful_food_y = self.prev_exp_data.last_successful_food_y[j, 0, 0]
+                self.prev_exp_states[j].last_failed_food_x = self.prev_exp_data.last_failed_food_x[j, 0, 0]
+                self.prev_exp_states[j].last_failed_food_y = self.prev_exp_data.last_failed_food_y[j, 0, 0]
+                self.prev_exp_states[j].last_approach_dir = self.prev_exp_data.last_approach_dir[j, 0, 0]
+            self.combined_states = self.true_robot_states + self.prev_exp_states
+            self.combined_constants = self.true_constants + self.prev_exp_constants
 
     def updateRobotObservation(self, i, t):
         if self.use_full_map[i]:
@@ -263,12 +278,11 @@ class World:
             self.true_robot_states[i].food_state = food_state
         if self.use_prev_exp:
             for j in range(self.num_prev_exp_robots):
-                print("j: {0}, t: {1}".format(j, t))
                 if t == 0:
-                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j]
+                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j] + 1
                 else:
                     self.map.map[MapLayer.ROBOT, self.prev_exp_states[j].x, self.prev_exp_states[j].y] = 0
-                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j] 
+                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j] + 1
                 self.prev_exp_states[j].x = self.prev_exp_data.x[j, 0, t]
                 self.prev_exp_states[j].y = self.prev_exp_data.y[j, 0, t]
                 self.prev_exp_states[j].has_food = self.prev_exp_data.has_food[j, 0, t]
@@ -278,9 +292,9 @@ class World:
                 self.prev_exp_states[j].last_failed_food_x = self.prev_exp_data.last_failed_food_x[j, 0, t]
                 self.prev_exp_states[j].last_failed_food_y = self.prev_exp_data.last_failed_food_y[j, 0, t]
                 self.prev_exp_states[j].last_approach_dir = self.prev_exp_data.last_approach_dir[j, 0, t]
-            combined_states = self.true_robot_states + self.prev_exp_states
-            combined_constants = self.true_constants + self.prev_exp_constants
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, combined_states, combined_constants)
+            self.combined_states = self.true_robot_states + self.prev_exp_states
+            self.combined_constants = self.true_constants + self.prev_exp_constants
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.combined_states, self.combined_constants)
         else:
             submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
         #print("Observation submap:")
@@ -340,7 +354,10 @@ class World:
             self.map.map[MapLayer.ROBOT, self.true_robot_states[i].x, self.true_robot_states[i].y] = 0
             self.map.map[MapLayer.ROBOT, new_states.x, new_states.y] = i+1 
         else:
-            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 2, self.true_robot_states, self.true_constants) # TODO: may need to change getSubMap distance to something other than 2 when code is updated to use grids smaller than robot size
+            if self.use_prev_exp:
+                submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 2, self.combined_states, self.combined_constants)
+            else:
+                submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 2, self.true_robot_states, self.true_constants) # TODO: may need to change getSubMap distance to something other than 2 when code is updated to use grids smaller than robot size
             if self.real_world_exp:
                 (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
             else:

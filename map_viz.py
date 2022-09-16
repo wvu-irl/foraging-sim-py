@@ -12,8 +12,13 @@ def displayMap(obj, plt, fig, ax):
                     phantom = robot_id in obj.prev_exp_robot_id
                 else:
                     phantom = False
-                robot_heading = obj.true_robot_states[robot_id].heading
-                if obj.true_robot_states[robot_id].battery < 1e-3: # If robot battery is dead, make dark gray
+                if obj.use_prev_exp:
+                    robot_heading = obj.combined_states[robot_id].heading
+                    robot_battery = obj.combined_states[robot_id].battery
+                else:
+                    robot_heading = obj.true_robot_states[robot_id].heading
+                    robot_battery = obj.true_robot_states[robot_id].battery
+                if robot_battery < 1e-3: # If robot battery is dead, make dark gray
                     if phantom:
                         robot_color = [200, 200, 200]
                     else:
@@ -22,17 +27,17 @@ def displayMap(obj, plt, fig, ax):
                 #    robot_color = [0, 0, 155]  # Dark Blue
                 elif robot_heading in [0, 1]:
                     if phantom:
-                        robot_color = [255, 100, 100]
+                        robot_color = [255, 200, 200]
                     else:
                         robot_color = [255, 0, 0]   # Red
                 elif robot_heading == 3:
                     if phantom:
-                        robot_color = [100, 100, 255]
+                        robot_color = [200, 200, 255]
                     else:
                         robot_color = [0, 0, 255]   # Blue
                 elif robot_heading == 5:
                     if phantom:
-                        robot_color = [255, 100, 255]
+                        robot_color = [255, 200, 255]
                     else:
                         robot_color = [255, 0, 255] # Purple
                 #elif robot_heading == 4:

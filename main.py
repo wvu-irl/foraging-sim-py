@@ -11,7 +11,7 @@ import sys
 import time
 
 config.enable_debug_prints = False
-config.enable_plots = False
+config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
 save_prev_exp = False
