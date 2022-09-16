@@ -641,7 +641,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
             else:
                 if self.states.x == self.approach_goal_x and self.states.y == self.approach_goal_y:
                     debugPrint("at approach location, move to food")
-                    if isRobotAtPos(self.target_food_x - self.states.x, self.target_food_y - self.states.y, self.submap):
+                    if isObstacleAtPos(self.target_food_x - self.states.x, self.target_food_y - self.states.y, self.submap):
                         debugPrint("other robot at food location")
                         self.fsm_failed_food_locations.append({"x" : self.target_food_x, "y" : self.target_food_y})
                         self.fsm_state = FSMState.SEARCH 
@@ -656,7 +656,7 @@ def searchFSMActionPolicy(self, enable_local_influence):
                     self.fsm_approach_target_food_selected = False
                     self.fsm_state = FSMState.CONFIRM_COLLECT
                     keep_executing = False
-                elif isRobotAtPos(self.approach_goal_x - self.states.x, self.approach_goal_y - self.states.y, self.submap):
+                elif isObstacleAtPos(self.approach_goal_x - self.states.x, self.approach_goal_y - self.states.y, self.submap):
                     debugPrint("other robot at approach location")
                     self.fsm_failed_food_locations.append({"x" : self.target_food_x, "y" : self.target_food_y})
                     self.fsm_state = FSMState.SEARCH

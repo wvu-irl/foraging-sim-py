@@ -69,7 +69,7 @@ class ForagingMap:
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
                 # Check obstacle layer
-                if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
+                if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains static obstacle
                     submap_object_list.append(MapLayer.OBSTACLE)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
@@ -79,6 +79,10 @@ class ForagingMap:
                     submap_object_list.append(MapLayer.ROBOT)
                     robot_properties_dict = {**{"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "personality" : constants[robot_id]["personality"]}, **true_states[robot_id].localInfluenceData()}
                     submap_property_list.append(robot_properties_dict)
+                    # Other robot is also an obstacle if not a phantom
+                    if constants[robot_id]["phantom"] == False:
+                        submap_object_list.append(MapLayer.OBSTACLE)
+                        submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)

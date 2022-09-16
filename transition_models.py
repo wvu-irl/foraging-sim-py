@@ -349,7 +349,7 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
         new_y = 0
     
     # Check if robot is attempting to move into an obstacle or another robot
-    if (not isObstacleAtPos(delta_x, delta_y, submap)) and (not isRobotAtPos(delta_x, delta_y, submap)):
+    if not isObstacleAtPos(delta_x, delta_y, submap):
         new_states.x = new_x
         new_states.y = new_y
     # If robot has moved, mark old position in map to be removed and perform food pushing update
@@ -375,7 +375,7 @@ def unknownMapDirectionalFoodTransitionModelTrue(states, submap, action, constan
                 # Check if food would get pushed into other food, robot, obstacle, or edge of map
                 candidate_new_food_delta_x = delta_x * 2
                 candidate_new_food_delta_y = delta_y * 2
-                if (not isFoodAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isRobotAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isObstacleAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isHomeAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isOutsideMap(current_x + candidate_new_food_delta_x, current_y + candidate_new_food_delta_y, map_shape)):
+                if (not isFoodAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isObstacleAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isHomeAtPos(candidate_new_food_delta_x, candidate_new_food_delta_y, submap)) and (not isOutsideMap(current_x + candidate_new_food_delta_x, current_y + candidate_new_food_delta_y, map_shape)):
                     # Record the heading of the food being pushed
                     food_heading = getFoodHeading(delta_x, delta_y, submap)
 

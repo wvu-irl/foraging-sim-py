@@ -11,10 +11,11 @@ import sys
 import time
 
 config.enable_debug_prints = False
-config.enable_plots = True
+config.enable_plots = False
 config.enable_action_policy_plots = False
 save_plots = False
 save_prev_exp = False
+recursive_prev_exp = False
 use_manual_control = False
 slow_mode = False
 
@@ -83,6 +84,14 @@ elif sys.argv[1] == "local":
     from params.local_interactions_1000mc import *
 elif sys.argv[1] == "nonlocal":
     from params.no_local_interactions_1000mc import *
+elif sys.argv[1] == "gd_train_indiv":
+    from params.groundhog_day_indiv_training_test import *
+elif sys.argv[1] == "gd_train_recur":
+    from params.groundhog_day_recur_training_test import *
+elif sys.argv[1] == "gd_eval_indiv":
+    from params.groundhog_day_indiv_eval_test import *
+elif sys.argv[1] == "gd_eval_recur":
+    from params.groundhog_day_recur_eval_test import *
 else:
     raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
@@ -113,7 +122,7 @@ robot_layer = np.array(robot_img)
 # If saving previous experience, initialize data container
 if save_prev_exp:
     prev_exp_data = PrevExpData()
-    prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps)
+    prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
     lock = Lock()
 
 def runWrapper(obj): 
@@ -168,14 +177,20 @@ def poolHandler():
     
     # Run pool of Monte Carlo trials
     print("Beginning Monte Carlo trials...")
-    if num_threads > 1:
+    if num_threads > 1 and not (save_prev_exp and recursive_prev_exp):
         # Initialize multiprocessing pool and map objects' run methods to begin simulation
         p = Pool(num_threads)
         sim_worlds = p.map(runWrapper, sim_worlds)
+        if save_prev_exp:
+            prev_exp_data.last_trial_written[0] = num_monte_carlo_trials - 1
     else:
-        # Run each trial sequentially, for debugging purposes, with no multiprocessing
+        # Run each trial sequentially, for debugging purposes or for groundhog day recursive training, with no multiprocessing
         for i in range(num_monte_carlo_trials):
             runWrapper(sim_worlds[i])
+            if save_prev_exp:
+                prev_exp_data.last_trial_written[0] = i
+                if recursive_prev_exp:
+                    prev_exp_data.save(prev_exp_filepath)
     print("Simulations complete.")
 
     # Save results

@@ -8,17 +8,33 @@ def displayMap(obj, plt, fig, ax):
         for y in range(obj.map.map_shape[1]):
             if obj.map.map[MapLayer.ROBOT, x, y] > 0: # Mark robot locations with color corresponding to personality type
                 robot_id = obj.map.map[MapLayer.ROBOT, x, y] - 1
+                if obj.use_prev_exp:
+                    phantom = robot_id in obj.prev_exp_robot_id
+                else:
+                    phantom = False
                 robot_heading = obj.true_robot_states[robot_id].heading
                 if obj.true_robot_states[robot_id].battery < 1e-3: # If robot battery is dead, make dark gray
-                    robot_color = [100, 100, 100]  # Gray
+                    if phantom:
+                        robot_color = [200, 200, 200]
+                    else:
+                        robot_color = [100, 100, 100]  # Gray
                 #elif robot_heading == 0:
                 #    robot_color = [0, 0, 155]  # Dark Blue
                 elif robot_heading in [0, 1]:
-                    robot_color = [255, 0, 0]   # Red
+                    if phantom:
+                        robot_color = [255, 100, 100]
+                    else:
+                        robot_color = [255, 0, 0]   # Red
                 elif robot_heading == 3:
-                    robot_color = [0, 0, 255]   # Blue
+                    if phantom:
+                        robot_color = [100, 100, 255]
+                    else:
+                        robot_color = [0, 0, 255]   # Blue
                 elif robot_heading == 5:
-                    robot_color = [255, 0, 255] # Purple
+                    if phantom:
+                        robot_color = [255, 100, 255]
+                    else:
+                        robot_color = [255, 0, 255] # Purple
                 #elif robot_heading == 4:
                 #    #robot_color = [255, 128, 0] # Orange
                 #    robot_color = [255, 0, 0]   # Red

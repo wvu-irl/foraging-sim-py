@@ -9,6 +9,7 @@ from reward_functions import *
 from results_metrics import ResultsMetrics
 import matplotlib.pyplot as plt
 from map_viz import displayMap
+from prev_exp import PrevExpData
 
 class World:
     def __init__(self, trial_num, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp = False, manual_control = False):
@@ -67,10 +68,6 @@ class World:
         # Record arbitration type, if mm-mdp
         self.arbitration_type_list = arbitration_type_list
 
-        # Record whether previous experience is to be used and the filepath if so
-        self.use_prev_exp = use_prev_exp
-        self.prev_exp_filepath = prev_exp_filepath
-
         # Record the full state dimensions and number of actions
         self.full_state_dimensions = {"x_size" : self.map_shape[0], "y_size" : self.map_shape[1], "has_food_size" : 2, "battery_size" :self.battery_size, "num_food" : self.num_food, "heading_size" : self.heading_size}
         self.num_full_states =  self.full_state_dimensions["x_size"] * self.full_state_dimensions["y_size"] * self.full_state_dimensions["has_food_size"] * self.full_state_dimensions["battery_size"] * (2 ** self.full_state_dimensions["num_food"]) * self.full_state_dimensions["heading_size"]
@@ -90,6 +87,19 @@ class World:
         self.use_full_map = [False] * self.num_robots
         self.results_metrics = [None] * self.num_robots
         self.total_food_retrieved = 0
+
+        # Record whether previous experience is to be used and the filepath if so
+        self.use_prev_exp = use_prev_exp
+        self.prev_exp_filepath = prev_exp_filepath
+
+        # If previous experience is to be used, load the previous experience data and initialize other data containers
+        if self.use_prev_exp:
+            self.prev_exp_data = PrevExpData()
+            self.prev_exp_data.load(self.prev_exp_filepath)        
+            self.num_prev_exp_robots = self.prev_exp_data.last_trial_written[0] + 1
+            self.prev_exp_robot_id = [self.prev_exp_data.robot_id[0] + i + self.num_robots for i in range(self.num_prev_exp_robots)]
+            self.prev_exp_states = [UnknownMapFullStates() for i in range(self.num_prev_exp_robots)]
+            self.prev_exp_constants = [{"id" : self.prev_exp_robot_id[i], "personality" : self.prev_exp_data.personality[0], "phantom" : True} for i in range(self.num_prev_exp_robots)]
 
         # Record if this is a real world experiment (True) or simulation (False)
         self.real_world_exp = real_world_exp
@@ -113,8 +123,8 @@ class World:
                     robot_states.battery = self.battery_size - 1
                     robot_states.food_state = int((2 ** self.num_food) - 1)
                     self.true_robot_states[robot_id] = copy.deepcopy(robot_states)
-                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "heading_size" : self.heading_size, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
-                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "init_pos": (x, y), "perception_range" : self.perception_range}
+                    self.true_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "heading_size" : self.heading_size, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "food_heading" : self.food_heading, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "phantom" : False, "init_pos": (x, y), "perception_range" : self.perception_range}
+                    self.robot_constants[robot_id] = {"map_shape" : self.map_shape, "battery_size" : self.battery_size, "home_pos" : self.home_pos, "home_region" : self.home_region, "num_food" : self.num_food, "food_pos" : self.food_pos, "num_clusters" : self.num_clusters, "food_cluster" : self.food_cluster, "num_actions" : self.num_actions, "id" : robot_id, "personality" : robot_personality_list[robot_id], "phantom" : False, "init_pos": (x, y), "perception_range" : self.perception_range}
                     self.results_metrics[robot_id] = ResultsMetrics()
                     self.true_observation_model[robot_id] = fullyAccurateAndCertainObservationModel
                     self.true_reward_function[robot_id] = mdpRewardFunction
@@ -247,11 +257,32 @@ class World:
                         else:
                             self.true_transition_model[robot_id] = unknownMapDirectionalFoodTransitionModelTrue
 
-    def updateRobotObservation(self, i):
+    def updateRobotObservation(self, i, t):
         if self.use_full_map[i]:
             food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
             self.true_robot_states[i].food_state = food_state
-        submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
+        if self.use_prev_exp:
+            for j in range(self.num_prev_exp_robots):
+                print("j: {0}, t: {1}".format(j, t))
+                if t == 0:
+                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j]
+                else:
+                    self.map.map[MapLayer.ROBOT, self.prev_exp_states[j].x, self.prev_exp_states[j].y] = 0
+                    self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, t], self.prev_exp_data.y[j, 0, t]] = self.prev_exp_robot_id[j] 
+                self.prev_exp_states[j].x = self.prev_exp_data.x[j, 0, t]
+                self.prev_exp_states[j].y = self.prev_exp_data.y[j, 0, t]
+                self.prev_exp_states[j].has_food = self.prev_exp_data.has_food[j, 0, t]
+                self.prev_exp_states[j].battery = self.prev_exp_data.battery[j, 0, t]
+                self.prev_exp_states[j].last_successful_food_x = self.prev_exp_data.last_successful_food_x[j, 0, t]
+                self.prev_exp_states[j].last_successful_food_y = self.prev_exp_data.last_successful_food_y[j, 0, t]
+                self.prev_exp_states[j].last_failed_food_x = self.prev_exp_data.last_failed_food_x[j, 0, t]
+                self.prev_exp_states[j].last_failed_food_y = self.prev_exp_data.last_failed_food_y[j, 0, t]
+                self.prev_exp_states[j].last_approach_dir = self.prev_exp_data.last_approach_dir[j, 0, t]
+            combined_states = self.true_robot_states + self.prev_exp_states
+            combined_constants = self.true_constants + self.prev_exp_constants
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, combined_states, combined_constants)
+        else:
+            submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, self.perception_range, self.true_robot_states, self.true_constants)
         #print("Observation submap:")
         #for j in range(len(submap[0])):
         #    if submap[0][j] == MapLayer.FOOD:
@@ -346,7 +377,7 @@ class World:
                     self.true_robot_states[i].heading = 1
                 if self.robot[i].states.heading > 8:
                     self.robot[i].states.heading += 2
-            self.updateRobotObservation(i)
+            self.updateRobotObservation(i, t)
             self.executeRobotAction(i)
             if not self.food_respawn:
                 if self.total_food_retrieved >= self.num_food: # Terminal condition: all food retrieved
