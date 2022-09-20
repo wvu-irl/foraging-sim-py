@@ -1,4 +1,4 @@
-food_img_path = "maps/25_25_food_map_clus_head_same.png"
+food_img_path = "maps/25_25_food_map_a.png"
 home_img_path = "maps/25_25_home_map.png"
 obstacle_img_path = "maps/25_25_obstacle_map.png"
 robot_img_path = "maps/25_25_robot_map_1_bot.png"
