@@ -25,9 +25,13 @@ num_parallel_threads = 1
 
 # Load map initialization image files
 food_img = Image.open(food_img_path)
+food_img = food_img.transpose(Image.TRANSPOSE)
 home_img = Image.open(home_img_path)
+home_img = home_img.transpose(Image.TRANSPOSE)
 obstacle_img = Image.open(obstacle_img_path)
+obstacle_img = obstacle_img.transpose(Image.TRANSPOSE)
 robot_img = Image.open(robot_img_path)
+robot_img = robot_img.transpose(Image.TRANSPOSE)
 
 # Convert images to numpy arrays
 food_layer = np.array(food_img)

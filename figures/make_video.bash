@@ -1,3 +1,3 @@
 !/bin/bash
 
-ffmpeg -framerate 8 -i fig%02d.png -r 30 -pix_fmt yuv420p video.mp4
+ffmpeg -framerate 8 -i fig%d.png -r 30 -pix_fmt yuv420p video.mp4

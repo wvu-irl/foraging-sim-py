@@ -163,6 +163,43 @@ def findNearestFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot
 
     return (nearest_delta_x, nearest_delta_y)
 
+def listVisibleFood(submap, exclude_locations = [], robot_x = sys.maxsize, robot_y = sys.maxsize):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    food_delta_x = [] 
+    food_delta_y = [] 
+    other_robot_delta_x = []
+    other_robot_delta_y = []
+    
+    for i in range(len(submap_object_list)):
+        # Check iif entry is a robot entry
+        if submap_object_list[i] == MapLayer.ROBOT:
+            # Record its location
+            other_robot_delta_x.append(submap_property_list[i]["delta_x"])
+            other_robot_delta_y.append(submap_property_list[i]["delta_y"])
+
+    for i in range(len(submap_object_list)):
+        # Check if entry is a food entry
+        if submap_object_list[i] == MapLayer.FOOD:
+            # Exclude locations marked as excluded food or occupied by other robot
+            exclude = False
+            for j in range(len(exclude_locations)):
+                if submap_property_list[i]["delta_x"] == (exclude_locations[j]["x"] - robot_x) and submap_property_list[i]["delta_y"] == (exclude_locations[j]["y"] - robot_y):
+                    debugPrint("listVisibleFood: EXCLUDE FAILED FOOD")
+                    exclude = True
+
+            for k in range(len(other_robot_delta_x)):
+                if submap_property_list[i]["delta_x"] == other_robot_delta_x[k] and submap_property_list[i]["delta_y"] == other_robot_delta_y[k]:
+                    debugPrint("listVisibleFood: EXCLUDE FOOD OCCUPIED BY OTHER ROBOT")
+                    exclude = True
+            
+            if not exclude:
+                food_delta_x.append(submap_property_list[i]["delta_x"])
+                food_delta_y.append(submap_property_list[i]["delta_y"])
+
+    return (food_delta_x, food_delta_y)
+
 def getFoodHeading(delta_x, delta_y, submap):
     # Loop over entries in submap list
     submap_object_list = submap[0]
@@ -251,7 +288,7 @@ def listVisibleRobotProperties(submap, personality = -1):
         if submap_object_list[i] == MapLayer.ROBOT:
             # If a robot personality type is requested, check if it is that personality. Otherwise, any robot is acceptable.
             if submap_property_list[i]["personality"] == personality or personality == -1:
-                robot_properties.append({"has_food" : submap_property_list[i]["has_food"], "food_cluster" : submap_property_list[i]["food_cluster"]})
+                robot_properties.append(submap_property_list[i])
 
     return robot_properties
 
@@ -271,11 +308,30 @@ def findBlockedMoves(submap):
     
     return blocked_moves
 
+def isHomeAtPos(delta_x, delta_y, submap):
+    # Loop over entries in submap list
+    submap_object_list = submap[0]
+    submap_property_list = submap[1]
+    for i in range(len(submap_object_list)):
+        # Check if entry is a food entry
+        if submap_object_list[i] == MapLayer.HOME:
+            # Check if home delta position matches query
+            if delta_x == submap_property_list[i]["delta_x"] and delta_y == submap_property_list[i]["delta_y"]:
+                return True
+    
+    # If code falls through to here, then there is no home at the query position
+    return False
 
 def atEdgeOfMap(x, y, map_shape):
     x_at_edge = (x == map_shape[0] - 1) or (x == 0)
     y_at_edge = (y == map_shape[1] - 1) or (y == 0)
     if x_at_edge or y_at_edge:
+        return True
+    else:
+        return False
+
+def isOutsideMap(x, y, map_shape):
+    if x < 0 or x >= map_shape[0] or y < 0 or y >= map_shape[1]:
         return True
     else:
         return False

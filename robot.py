@@ -99,6 +99,78 @@ class randomSelectLocalInteractionRandomGrabRobot(Robot):
     def rewardFunction(self, state, action, state_prime):
         mdpRewardFunction(state, action, state_prime)
 
+class UnknownMapFSMRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = UnknownMapStates()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.home_region = constants["home_region"]
+        self.init_pos = constants["init_pos"]
+        self.use_local_influence = False
+        self.fsm_state = FSMState.SEARCH
+        self.fsm_search_goal_chosen = False
+        self.fsm_failed_search_attempts = 0
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_food_locations = []
+        self.grab_prob_map = np.ones(self.map_shape, dtype=np.float)
+        self.grab_prob_map /= np.sum(self.grab_prob_map)
+        self.avg_food_distance = 1
+
+    def chooseAction(self):
+        return searchFSMActionPolicy(self, False)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+    
+    def resetOtherRobotLists(self):
+        pass
+
+class UnknownMapFSMLocalInteractionRobot(Robot):
+    def __init__(self, initial_values, constants):
+        super().__init__(initial_values, constants)
+        self.states = UnknownMapStates()
+        self.map_shape = constants["map_shape"]
+        self.home_pos = constants["home_pos"]
+        self.home_region = constants["home_region"]
+        self.init_pos = constants["init_pos"]
+        self.use_local_influence = False
+        self.fsm_state = FSMState.SEARCH
+        self.fsm_search_goal_chosen = False
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_failed_search_attempts = 0
+        self.fsm_failed_grab_attempts = 0
+        self.fsm_other_robot_id = []
+        self.fsm_other_robot_last_successful_food_x = []
+        self.fsm_other_robot_last_successful_food_y = []
+        self.fsm_other_robot_last_failed_food_x = []
+        self.fsm_other_robot_last_failed_food_y = []
+        self.fsm_other_robot_approach_dir = []
+        self.fsm_failed_food_locations = []
+        self.grab_prob_map = np.ones(self.map_shape, dtype=np.float)
+        self.grab_prob_map /= np.sum(self.grab_prob_map)
+        self.avg_food_distance = 1
+
+    def chooseAction(self):
+        return searchFSMActionPolicy(self, True)
+
+    def stateEstimator(self, observation):
+        passthroughStateEstimator(self, observation)
+
+    def rewardFunction(self, state, action, state_prime):
+        mdpRewardFunction(state, action, state_prime)
+
+    def resetOtherRobotLists(self):
+        self.fsm_other_robot_id = []
+        self.fsm_other_robot_last_successful_food_x = []
+        self.fsm_other_robot_last_successful_food_y = []
+        self.fsm_other_robot_last_failed_food_x = []
+        self.fsm_other_robot_last_failed_food_y = []
+        self.fsm_other_robot_approach_dir = []
+
 class SingleMDPRobot(Robot):
     def __init__(self, initial_values, constants):
         super().__init__(initial_values, constants)

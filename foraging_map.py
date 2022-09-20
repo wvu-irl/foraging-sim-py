@@ -52,35 +52,37 @@ class ForagingMap:
         # Iterate over submap and populate lists of neighboring objects
         submap_object_list = []
         submap_property_list = []
-        submap_shape = submap.shape
-        submap_center = ((submap_shape[1] - 1)/2, (submap_shape[2] - 1)/2)
-        for x in range(submap_shape[1]):
-            for y in range(submap_shape[2]):
+        for x in range(x_min, x_max):
+            for y in range(y_min, y_max):
                 # Find relative position of grid cell
-                delta_x = int(x - submap_center[0])
-                delta_y = int(y - submap_center[1])
+                delta_x = int(x - query_x)
+                delta_y = int(y - query_y)
                
-# DEPRACATED: COMMENTED OUT TO MAKE SUBMAP ONLY WORK FOR ROBOT LAYER
-#                # Check food layer
-#                if submap[MapLayer.FOOD, x, y] > 0: # Contains food
-#                    submap_object_list.append(MapLayer.FOOD)
-#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : submap[MapLayer.FOOD, x, y]})
-#
-#                # Check home layer
-#                if submap[MapLayer.HOME, x, y] == 1: # Is a home cell
-#                    submap_object_list.append(MapLayer.HOME)
-#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
-#
-#                # Check obstacle layer
-#                if submap[MapLayer.OBSTACLE, x, y] == 1: # Contains obstacle
-#                    submap_object_list.append(MapLayer.OBSTACLE)
-#                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
-#
+                # Check food layer
+                if self.map[MapLayer.FOOD, x, y] > 0: # Contains food
+                    submap_object_list.append(MapLayer.FOOD)
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : self.map[MapLayer.FOOD, x, y]})
+
+                # Check home layer
+                if self.map[MapLayer.HOME, x, y] == 1: # Is a home cell
+                    submap_object_list.append(MapLayer.HOME)
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+
+                # Check obstacle layer
+                if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains static obstacle
+                    submap_object_list.append(MapLayer.OBSTACLE)
+                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+
                 # Check robot layer
-                if submap[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
-                    robot_id = submap[MapLayer.ROBOT, x, y] - 1
+                if self.map[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
+                    robot_id = self.map[MapLayer.ROBOT, x, y] - 1
                     submap_object_list.append(MapLayer.ROBOT)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "has_food" : true_states[robot_id].has_food, "food_cluster" : constants[robot_id]["food_cluster"], "battery" : true_states[robot_id].battery, "personality" : constants[robot_id]["personality"]}) # TODO: consider making this a function call defined in the file that defines the States class so that it can be changed depending on the definition of States
+                    robot_properties_dict = {**{"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "personality" : constants[robot_id]["personality"]}, **true_states[robot_id].localInfluenceData()}
+                    submap_property_list.append(robot_properties_dict)
+                    # Other robot is also an obstacle if not a phantom
+                    if constants[robot_id]["phantom"] == False:
+                        submap_object_list.append(MapLayer.OBSTACLE)
+                        submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)
@@ -101,14 +103,22 @@ class ForagingMap:
                 self.map[MapLayer.ROBOT, center_x, center_y] = submap_property_list[i]["id"] + 1 # Set new robot position
                 self.map[MapLayer.ROBOT, map_x, map_y] = 0 # Remove old robot position
     
-    def findHomePosition(self, robot_id):
+    def findHome(self):
+        home_x = []
+        home_y = []
         for x in range(self.map_shape[0]):
             for y in range(self.map_shape[1]):
-                if self.map[MapLayer.HOME, x, y] - 1 == robot_id:
-                    return (x, y)
-
-        # If code falls through to here, no home location for given robot id
-        return (sys.maxsize, sys.maxsize)
+                if self.map[MapLayer.HOME, x, y]:
+                    home_x.append(x)
+                    home_y.append(y)
+        if len(home_x) == 1:
+            return (home_x[0], home_y[0]), (home_x, home_y)
+        elif len(home_x) > 1:
+            avg_x = int(sum(home_x) / len(home_x))
+            avg_y = int(sum(home_y) / len(home_y))
+            return (avg_x, avg_y), (home_x, home_y)
+        else:
+            return (sys.maxsize, sys.maxsize), (home_x, home_y)
 
     def findFoodInfo(self):
         food_pos = []
@@ -119,7 +129,7 @@ class ForagingMap:
                 if self.map[MapLayer.FOOD, x, y] > 0:
                     food_pos.append([x, y])
                     food_heading.append(self.map[MapLayer.FOOD, x, y])
-                    if y >= (self.map_shape[1] // 2):
+                    if x >= (self.map_shape[0] // 2):
                         cluster_val = 0
                     else:
                         cluster_val = 1
