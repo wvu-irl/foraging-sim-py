@@ -1,4 +1,5 @@
 from multiprocessing import Pool, Lock
+from importlib.machinery import SourceFileLoader
 from world import World
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -11,89 +12,89 @@ import sys
 import time
 
 config.enable_debug_prints = False
-config.enable_plots = True
+config.enable_plots = False
 config.enable_action_policy_plots = False
 save_plots = False
-save_prev_exp = False
-recursive_prev_exp = False
 use_manual_control = False
 slow_mode = False
 
 # Load simulation parameters
-if sys.argv[1] == "0":
-    from params._0_single_robot_fsm_good_model import *
-elif sys.argv[1] == "1":
-    from params._1_single_robot_fsm_bad_model import *
-elif sys.argv[1] == "2":
-    from params._2_single_robot_fsm_very_bad_model import *
-elif sys.argv[1] == "3":
-    from params._3_single_robot_mdp_good_model import *
-elif sys.argv[1] == "4":
-    from params._4_single_robot_mdp_bad_model import *
-elif sys.argv[1] == "5":
-    from params._5_single_robot_mdp_very_bad_model import *
-elif sys.argv[1] == "6":
-    from params._6_single_robot_mmmdp_mv_model_0 import *
-elif sys.argv[1] == "7":
-    from params._7_single_robot_mmmdp_mv_model_1 import *
-elif sys.argv[1] == "8":
-    from params._8_single_robot_mmmdp_mv_model_2 import *
-elif sys.argv[1] == "9":
-    from params._9_single_robot_mmmdp_wmv_model_0 import *
-elif sys.argv[1] == "10":
-    from params._10_single_robot_mmmdp_wmv_model_1 import *
-elif sys.argv[1] == "11":
-    from params._11_single_robot_mmmdp_wmv_model_2 import *
-elif sys.argv[1] == "12":
-    from params._12_single_robot_mmmdp_hp_model_0 import *
-elif sys.argv[1] == "13":
-    from params._13_single_robot_mmmdp_hp_model_1 import *
-elif sys.argv[1] == "14":
-    from params._14_single_robot_mmmdp_hp_model_2 import *
-elif sys.argv[1] == "15":
-    from params._15_single_robot_mmmdp_whp_model_0 import *
-elif sys.argv[1] == "16":
-    from params._16_single_robot_mmmdp_whp_model_1 import *
-elif sys.argv[1] == "17":
-    from params._17_single_robot_mmmdp_whp_model_2 import *
-elif sys.argv[1] == "18":
-    from params._18_swarm_homo_no_local_model_0 import *
-elif sys.argv[1] == "19":
-    from params._19_swarm_homo_no_local_model_1 import *
-elif sys.argv[1] == "20":
-    from params._20_swarm_homo_no_local_model_2 import *
-elif sys.argv[1] == "21":
-    from params._21_swarm_homo_local_model_0 import *
-elif sys.argv[1] == "22":
-    from params._22_swarm_homo_local_model_1 import *
-elif sys.argv[1] == "23":
-    from params._23_swarm_homo_local_model_2 import *
-elif sys.argv[1] == "24":
-    from params._24_swarm_diverse_no_local_model_0 import *
-elif sys.argv[1] == "25":
-    from params._25_swarm_diverse_no_local_model_1 import *
-elif sys.argv[1] == "26":
-    from params._26_swarm_diverse_no_local_model_2 import *
-elif sys.argv[1] == "27":
-    from params._27_swarm_diverse_local_model_0 import *
-elif sys.argv[1] == "28":
-    from params._28_swarm_diverse_local_model_1 import *
-elif sys.argv[1] == "29":
-    from params._29_swarm_diverse_local_model_2 import *
-elif sys.argv[1] == "local":
-    from params.local_interactions_1000mc import *
-elif sys.argv[1] == "nonlocal":
-    from params.no_local_interactions_1000mc import *
-elif sys.argv[1] == "gd_train_indiv":
-    from params.groundhog_day_indiv_training_test import *
-elif sys.argv[1] == "gd_train_recur":
-    from params.groundhog_day_recur_training_test import *
-elif sys.argv[1] == "gd_eval_indiv":
-    from params.groundhog_day_indiv_eval_test import *
-elif sys.argv[1] == "gd_eval_recur":
-    from params.groundhog_day_recur_eval_test import *
-else:
-    raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
+sim_params = SourceFileLoader("sim_params", sys.argv[1]).load_module()
+from sim_params import *
+#if sys.argv[1] == "0":
+#    from params._0_single_robot_fsm_good_model import *
+#elif sys.argv[1] == "1":
+#    from params._1_single_robot_fsm_bad_model import *
+#elif sys.argv[1] == "2":
+#    from params._2_single_robot_fsm_very_bad_model import *
+#elif sys.argv[1] == "3":
+#    from params._3_single_robot_mdp_good_model import *
+#elif sys.argv[1] == "4":
+#    from params._4_single_robot_mdp_bad_model import *
+#elif sys.argv[1] == "5":
+#    from params._5_single_robot_mdp_very_bad_model import *
+#elif sys.argv[1] == "6":
+#    from params._6_single_robot_mmmdp_mv_model_0 import *
+#elif sys.argv[1] == "7":
+#    from params._7_single_robot_mmmdp_mv_model_1 import *
+#elif sys.argv[1] == "8":
+#    from params._8_single_robot_mmmdp_mv_model_2 import *
+#elif sys.argv[1] == "9":
+#    from params._9_single_robot_mmmdp_wmv_model_0 import *
+#elif sys.argv[1] == "10":
+#    from params._10_single_robot_mmmdp_wmv_model_1 import *
+#elif sys.argv[1] == "11":
+#    from params._11_single_robot_mmmdp_wmv_model_2 import *
+#elif sys.argv[1] == "12":
+#    from params._12_single_robot_mmmdp_hp_model_0 import *
+#elif sys.argv[1] == "13":
+#    from params._13_single_robot_mmmdp_hp_model_1 import *
+#elif sys.argv[1] == "14":
+#    from params._14_single_robot_mmmdp_hp_model_2 import *
+#elif sys.argv[1] == "15":
+#    from params._15_single_robot_mmmdp_whp_model_0 import *
+#elif sys.argv[1] == "16":
+#    from params._16_single_robot_mmmdp_whp_model_1 import *
+#elif sys.argv[1] == "17":
+#    from params._17_single_robot_mmmdp_whp_model_2 import *
+#elif sys.argv[1] == "18":
+#    from params._18_swarm_homo_no_local_model_0 import *
+#elif sys.argv[1] == "19":
+#    from params._19_swarm_homo_no_local_model_1 import *
+#elif sys.argv[1] == "20":
+#    from params._20_swarm_homo_no_local_model_2 import *
+#elif sys.argv[1] == "21":
+#    from params._21_swarm_homo_local_model_0 import *
+#elif sys.argv[1] == "22":
+#    from params._22_swarm_homo_local_model_1 import *
+#elif sys.argv[1] == "23":
+#    from params._23_swarm_homo_local_model_2 import *
+#elif sys.argv[1] == "24":
+#    from params._24_swarm_diverse_no_local_model_0 import *
+#elif sys.argv[1] == "25":
+#    from params._25_swarm_diverse_no_local_model_1 import *
+#elif sys.argv[1] == "26":
+#    from params._26_swarm_diverse_no_local_model_2 import *
+#elif sys.argv[1] == "27":
+#    from params._27_swarm_diverse_local_model_0 import *
+#elif sys.argv[1] == "28":
+#    from params._28_swarm_diverse_local_model_1 import *
+#elif sys.argv[1] == "29":
+#    from params._29_swarm_diverse_local_model_2 import *
+#elif sys.argv[1] == "local":
+#    from params.local_interactions_1000mc import *
+#elif sys.argv[1] == "nonlocal":
+#    from params.no_local_interactions_1000mc import *
+#elif sys.argv[1] == "gd_train_indiv":
+#    from params.groundhog_day_indiv_training_test import *
+#elif sys.argv[1] == "gd_train_recur":
+#    from params.groundhog_day_recur_training_test import *
+#elif sys.argv[1] == "gd_eval_indiv":
+#    from params.groundhog_day_indiv_eval_test import *
+#elif sys.argv[1] == "gd_eval_recur":
+#    from params.groundhog_day_recur_eval_test import *
+#else:
+#    raise RuntimeError("param file argument invalid: {0}".format(sys.argv[1]))
 #from params.single_robot_fsm import *
 
 config.enable_food_pushing = food_pushing

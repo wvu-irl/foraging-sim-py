@@ -1,11 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+from importlib.machinery import SourceFileLoader
 
 def percentChange(x, x_ref):
     return (x - x_ref)/abs(x_ref) * 100.0
 
-split_indices = [0]
+if sys.argv[1] == "-r":
+    use_results_files = True
+    arg_offset = 1
+else:
+    use_results_files = False
+    arg_offset = 0
+
+split_indices = [arg_offset]
 for i in range(len(sys.argv)):
     if sys.argv[i] == "--":
         split_indices.append(i)
@@ -30,11 +38,16 @@ num_times_home_visited_data = [[None] * num_files_per_fig for i in range(num_fig
 total_distance_traversed_data = [[None] * num_files_per_fig for i in range(num_figures)]
 total_reward_data = [[None] * num_files_per_fig for i in range(num_figures)]
 battery_died = [[None] * num_files_per_fig for i in range(num_figures)]
+plot_labels = [[None] * num_files_per_fig for i in range(num_figures)]
 
 for i in range(num_figures):
     for j in range(num_files_per_fig):
-        filename = filenames[i][j]
-        data = np.load(filename)
+        if use_results_files:
+            data = np.load(filenames[i][j])
+        else:
+            sim_params = SourceFileLoader("sim_params", filenames[i][j]).load_module()
+            data = np.load(sim_params.results_filename)
+            plot_labels[i][j] = sim_params.plot_label
         food_data[i][j] = data["num_food_retrieved"] #[k, l] where k = trials, l = robots
         num_times_home_visited_data[i][j] = data["num_times_home_visited"]
         total_distance_traversed_data[i][j] = data["total_distance_traversed"]
@@ -42,9 +55,6 @@ for i in range(num_figures):
         battery_died[i][j] = data["battery_died"]
 
 num_trials = food_data[0][0].shape[0]
-num_robots = food_data[0][0].shape[1]
-
-print("num_trials: {0}, num_robots: {1}\n".format(num_trials, num_robots))
 
 total_food_retrieved = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.int)
 num_times_home_visited = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.int)
@@ -59,7 +69,6 @@ for i in range(num_figures):
     reward_fig[i], reward_ax[i] = plt.subplots()
     reward_box_fig[i], reward_box_ax[i] = plt.subplots()
 total_reward_box_data = [[None] * num_files_per_fig for i in range(num_figures)]
-box_plot_labels = [[None] * num_files_per_fig for i in range(num_figures)]
 
 plt.rcParams.update({"font.size": 12})
 plt.rcParams.update({"font.weight": "bold"})
@@ -75,6 +84,7 @@ std_dev_val = np.zeros((num_figures, num_files_per_fig))
 
 for i in range(num_figures):
     for j in range(num_files_per_fig):
+        num_robots = food_data[i][j].shape[1]
         for k in range(num_trials):
             for l in range(num_robots):
                 total_food_retrieved[i, j, k] += food_data[i][j][k, l]
@@ -150,11 +160,14 @@ for i in range(num_figures):
 
         print("---------------------------------------------------------------\n\n")
 
+        if use_results_files:
+            plot_labels[i][j] = str(j)
+
         #plot_label = "$T_{" + str(j) + "}^{t}$"
-        if j == 0:
-            plot_label = "No Local Int"
-        else:
-            plot_label = "Local Int"
+        #if j == 0:
+        #    plot_label = "No Local Int"
+        #else:
+        #    plot_label = "Local Int"
     #    food_cdf_x, food_cdf_counts = np.unique(total_food_retrieved[i, j, :], return_counts=True)
     #    food_cdf_y = np.cumsum(food_cdf_counts)
     #    food_cdf_y = np.divide(food_cdf_y, food_cdf_y[-1])
@@ -174,9 +187,8 @@ for i in range(num_figures):
         reward_cdf_y = np.insert(reward_cdf_y, 0, 0.0)
 
         print("plot, [i,j] = [{0},{1}]".format(i, j))
-        reward_ax[i].plot(reward_cdf_x, reward_cdf_y, drawstyle="steps-post", label=plot_label)
+        reward_ax[i].plot(reward_cdf_x, reward_cdf_y, drawstyle="steps-post", label=plot_labels[i][j])
         
-        box_plot_labels[i][j] = plot_label
         total_reward_box_data[i][j] = total_reward[i, j, :]
        
         # Percent change, if more than one fig
@@ -212,7 +224,7 @@ for i in range(num_figures):
 
     reward_box_ax[i].boxplot(total_reward_box_data[i], vert = 0, notch=True, patch_artist=True)
     reward_box_ax[i].set_xlabel("Total Reward")
-    reward_box_ax[i].set_yticklabels(box_plot_labels[i])
+    reward_box_ax[i].set_yticklabels(plot_labels[i])
     reward_box_ax[i].grid()
     reward_box_ax[i].set_xlim(min_limit, max_limit)
 
