@@ -1,4 +1,4 @@
-food_img_path = "maps/25_25_food_map_a.png"
+food_img_path = "maps/25_25_food_map_b.png"
 home_img_path = "maps/25_25_home_map.png"
 obstacle_img_path = "maps/25_25_obstacle_map.png"
 robot_img_path = "maps/25_25_robot_map_4_bots.png"
@@ -21,6 +21,6 @@ num_threads = 80
 food_respawn = False
 food_pushing = True
 enable_terminal_condition = False
-results_filename = "results/foraging0.npz"
-plot_label = "Model 0"
-human_description = "25x25, all heading 1 (map a), 4 bots, per range 1, no local"
+results_filename = "results/foraging1.npz"
+plot_label = "Model 1"
+human_description = "25x25, heading 1, heading 3 (map b), 4 bots, per range 1, no local"

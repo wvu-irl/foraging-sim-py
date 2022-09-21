@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#PBS -N foraging
+
+# Where to write stderr:
+#PBS -e $PBS_O_WORKDIR/logs
+ 
+# Where to write stdout: 
+#PBS -o $PBS_O_WORKDIR/logs
+
+# Keep job output and joint output and error
+#PBS -k o
+#PBS -j oe
+
+# Change directory to the directory the job was submitted from
+cd $PBS_O_WORKDIR
+
+# Run the program
+param_path = "params/foraging$PBS_ARRAYID.py"
+python3 main.py $param_path
