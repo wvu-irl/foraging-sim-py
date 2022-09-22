@@ -23,4 +23,4 @@ food_pushing = True
 enable_terminal_condition = False
 results_filename = "results/foraging19.npz"
 plot_label = "Model 1"
-human_description = "25x25, heading 1, heading 3 (map b), 4 bots, per range 2, no local"
+human_description = "25x25, map b, 4 bots, per range 2, no local"

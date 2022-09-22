@@ -1,0 +1,72 @@
+foraging0: 25x25, map a, 4 bots, per range 1, no local
+foraging1: 25x25, map b, 4 bots, per range 1, no local
+foraging2: 25x25, map c, 4 bots, per range 1, no local
+foraging3: 25x25, map a, 4 bots, per range 1, local
+foraging4: 25x25, map b, 4 bots, per range 1, local
+foraging5: 25x25, map c, 4 bots, per range 1, local
+foraging6: 25x25, map a, 8 bots, per range 1, no local
+foraging7: 25x25, map b, 8 bots, per range 1, no local
+foraging8: 25x25, map c, 8 bots, per range 1, no local
+foraging9: 25x25, map a, 8 bots, per range 1, local
+foraging10: 25x25, map b, 8 bots, per range 1, local
+foraging11: 25x25, map c, 8 bots, per range 1, local
+foraging12: 25x25, map a, 12 bots, per range 1, no local
+foraging13: 25x25, map b, 12 bots, per range 1, no local
+foraging14: 25x25, map c, 12 bots, per range 1, no local
+foraging15: 25x25, map a, 12 bots, per range 1, local
+foraging16: 25x25, map b, 12 bots, per range 1, local
+foraging17: 25x25, map c, 12 bots, per range 1, local
+foraging18: 25x25, map a, 4 bots, per range 2, no local
+foraging19: 25x25, map b, 4 bots, per range 2, no local
+foraging20: 25x25, map c, 4 bots, per range 2, no local
+foraging21: 25x25, map a, 4 bots, per range 2, local
+foraging22: 25x25, map b, 4 bots, per range 2, local
+foraging23: 25x25, map c, 4 bots, per range 2, local
+foraging24: 25x25, map a, 8 bots, per range 2, no local
+foraging25: 25x25, map b, 8 bots, per range 2, no local
+foraging26: 25x25, map c, 8 bots, per range 2, no local
+foraging27: 25x25, map a, 8 bots, per range 2, local
+foraging28: 25x25, map b, 8 bots, per range 2, local
+foraging29: 25x25, map c, 8 bots, per range 2, local
+foraging30: 25x25, map a, 12 bots, per range 2, no local
+foraging31: 25x25, map b, 12 bots, per range 2, no local
+foraging32: 25x25, map c, 12 bots, per range 2, no local
+foraging33: 25x25, map a, 12 bots, per range 2, local
+foraging34: 25x25, map b, 12 bots, per range 2, local
+foraging35: 25x25, map c, 12 bots, per range 2, local
+foraging36: 25x25, map a, 4 bots, per range 3, no local
+foraging37: 25x25, map b, 4 bots, per range 3, no local
+foraging38: 25x25, map c, 4 bots, per range 3, no local
+foraging39: 25x25, map a, 4 bots, per range 3, local
+foraging40: 25x25, map b, 4 bots, per range 3, local
+foraging41: 25x25, map c, 4 bots, per range 3, local
+foraging42: 25x25, map a, 8 bots, per range 3, no local
+foraging43: 25x25, map b, 8 bots, per range 3, no local
+foraging44: 25x25, map c, 8 bots, per range 3, no local
+foraging45: 25x25, map a, 8 bots, per range 3, local
+foraging46: 25x25, map b, 8 bots, per range 3, local
+foraging47: 25x25, map c, 8 bots, per range 3, local
+foraging48: 25x25, map a, 12 bots, per range 3, no local
+foraging49: 25x25, map b, 12 bots, per range 3, no local
+foraging50: 25x25, map c, 12 bots, per range 3, no local
+foraging51: 25x25, map a, 12 bots, per range 3, local
+foraging52: 25x25, map b, 12 bots, per range 3, local
+foraging53: 25x25, map c, 12 bots, per range 3, local
+foraging54: 25x25, map d, 4 bots, per range 1, no local
+foraging55: 25x25, map d, 4 bots, per range 1, local
+foraging56: 25x25, map d, 8 bots, per range 1, no local
+foraging57: 25x25, map d, 8 bots, per range 1, local
+foraging58: 25x25, map d, 12 bots, per range 1, no local
+foraging59: 25x25, map d, 12 bots, per range 1, local
+foraging60: 25x25, map d, 4 bots, per range 2, no local
+foraging61: 25x25, map d, 4 bots, per range 2, local
+foraging62: 25x25, map d, 8 bots, per range 2, no local
+foraging63: 25x25, map d, 8 bots, per range 2, local
+foraging64: 25x25, map d, 12 bots, per range 2, no local
+foraging65: 25x25, map d, 12 bots, per range 2, local
+foraging66: 25x25, map d, 4 bots, per range 3, no local
+foraging67: 25x25, map d, 4 bots, per range 3, local
+foraging68: 25x25, map d, 8 bots, per range 3, no local
+foraging69: 25x25, map d, 8 bots, per range 3, local
+foraging70: 25x25, map d, 12 bots, per range 3, no local
+foraging71: 25x25, map d, 12 bots, per range 3, local
