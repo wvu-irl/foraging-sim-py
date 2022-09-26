@@ -70,3 +70,9 @@ foraging68: 25x25, map d, 8 bots, per range 3, no local
 foraging69: 25x25, map d, 8 bots, per range 3, local
 foraging70: 25x25, map d, 12 bots, per range 3, no local
 foraging71: 25x25, map d, 12 bots, per range 3, local
+foraging72: 25x25, map a, 8 bots, per range 2, no local, no food push
+foraging73: 25x25, map b, 8 bots, per range 2, no local, no food push
+foraging74: 25x25, map c, 8 bots, per range 2, no local, no food push
+foraging75: 25x25, map a, 8 bots, per range 2, local, no food push
+foraging76: 25x25, map b, 8 bots, per range 2, local, no food push
+foraging77: 25x25, map c, 8 bots, per range 2, local, no food push
