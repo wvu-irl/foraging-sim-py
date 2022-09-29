@@ -76,3 +76,19 @@ foraging74: 25x25, map c, 8 bots, per range 2, no local, no food push
 foraging75: 25x25, map a, 8 bots, per range 2, local, no food push
 foraging76: 25x25, map b, 8 bots, per range 2, local, no food push
 foraging77: 25x25, map c, 8 bots, per range 2, local, no food push
+foraging78: 25x25, map a, 1 bot, per range 2, gd train indiv
+foraging79: 25x25, map b, 1 bot, per range 2, gd train indiv
+foraging80: 25x25, map c, 1 bot, per range 2, gd train indiv
+foraging81: 25x25, map a, 1 bot, per range 2, gd train recur
+foraging82: 25x25, map b, 1 bot, per range 2, gd train recur
+foraging83: 25x25, map c, 1 bot, per range 2, gd train recur
+foraging84: 25x25, map a, 1 bot, per range 2, gd eval indiv
+foraging85: 25x25, map b, 1 bot, per range 2, gd eval indiv
+foraging86: 25x25, map c, 1 bot, per range 2, gd eval indiv
+foraging87: 25x25, map a, 1 bot, per range 2, gd eval recur
+foraging88: 25x25, map b, 1 bot, per range 2, gd eval recur
+foraging89: 25x25, map c, 1 bot, per range 2, gd eval recur
+foraging90: 25x25, map d, 1 bot, per range 2, gd train indiv
+foraging91: 25x25, map d, 1 bot, per range 2, gd train recur
+foraging92: 25x25, map d, 1 bot, per range 2, gd eval indiv
+foraging93: 25x25, map d, 1 bot, per range 2, gd eval indiv
