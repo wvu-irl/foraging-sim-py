@@ -1,7 +1,7 @@
 food_img_path = "maps/9_4_food_map.png"
 home_img_path = "maps/9_4_home_map.png"
 obstacle_img_path = "maps/9_4_obstacle_map.png"
-robot_img_path = "maps/9_4_robot_map_1_bot.png"
+robot_img_path = "maps/9_4_robot_map.png"
 robot_personality_list = [16]
 perception_range = 1
 battery_size = 20

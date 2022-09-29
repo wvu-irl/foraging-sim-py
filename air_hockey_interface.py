@@ -27,14 +27,14 @@ class AirHockeyInterface:
         grabber_topic = "turtle" + str(robot_id + 1) + "/electromag"
         led_topic = "turtle" + str(robot_id + 1) + "/color"
         pose_topic = "vicon/turtle" + str(robot_id + 1) + "/turtle" + str(robot_id + 1)
-        # TODO: need topic for proximity sensor or somehting
+        force_sensor_topic = "turtle" + str(robot_id + 1) + "/force_sensor"
 
         # Initialize ROS publishers and subscribers
         self.waypoint_pub = rospy.Publisher(waypoint_topic, Twist, queue_size=1, latch=True)
         self.grabber_pub = rospy.Publisher(grabber_topic, Bool, queue_size=1, latch=True)
         self.color_pub = rospy.Publisher(led_topic, ColorRGBA, queue_size=1, latch=True)
         self.pose_sub = rospy.Subscriber(pose_topic, TransformStamped, self.poseCallback)
-        # TODO: need subscriber for proximity sensor or somehting
+        self.force_sensor_sub = rospy.Subscriber(force_sensor_topic, Bool, self.forceSensorCallback)
     
         # Set LED color
         self.color = color
@@ -139,7 +139,7 @@ class AirHockeyInterface:
         new_states = copy.deepcopy(states)
         new_states.x = round(self.true_pos_x)
         new_states.y = round(self.true_pos_y)
-        #new_states.has_food = self.food_sensor # TODO: make food sensor work
+        new_states.has_food = self.food_sensor
 
         # If robot has moved, mark old position in map to be removed and increment distance traversed
         if new_states.x != initial_x or new_states.y != initial_y:
@@ -188,8 +188,8 @@ class AirHockeyInterface:
         self.true_pos_x = msg.transform.translation.x / self.grid_to_vicon_conv_factor
         self.true_pos_y = msg.transform.translation.y / self.grid_to_vicon_conv_factor
 
-    #def foodSensorCallback(self, msg):
-    #    self.food_sensor = msg.data
+    def forceSensorCallback(self, msg):
+        self.food_sensor = msg.data
 
     def isAtHome(self, x, y, home_pos):
         if x == home_pos[0] and y == home_pos[1]:

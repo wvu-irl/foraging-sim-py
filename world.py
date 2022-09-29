@@ -244,7 +244,7 @@ class World:
                         self.robot[robot_id].states.heading = 5
                         self.use_full_map[robot_id] = False
                     if self.real_world_exp:
-                        if robot_personality_list[robot_id] in [0, 1, 4, 7, 10]:
+                        if robot_personality_list[robot_id] in [0, 1, 4, 7, 10, 13, 16]: # TODO: make this smarter. This should be based on heading, not personality. Heading will change in time var scenarios
                             robot_color = [1.0, 0.0, 0.0]   # Red
                         elif robot_personality in [2, 5, 8, 11]:
                             robot_color = [0.0, 0.0, 1.0]   # Blue
