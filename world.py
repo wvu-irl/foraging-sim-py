@@ -251,6 +251,7 @@ class World:
                         elif robot_personality in [3, 6, 9, 12]:
                             robot_color = [1.0, 0.0, 1.0] # Purple
                         self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, robot_color)
+                        self.real_world_interface[robot_id].sendInitCmd(self.robot[robot_id].states.x, self.robot[robot_id].states.y)
                     else:
                         if self.use_full_map[robot_id]:
                             self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
@@ -276,6 +277,7 @@ class World:
         if self.use_full_map[i]:
             food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
             self.true_robot_states[i].food_state = food_state
+        # TODO: if real_world_exp, update food locations from vicon (need special logic for when covered up by robot?)
         if self.use_prev_exp:
             for j in range(self.num_prev_exp_robots):
                 if t == 0:

@@ -24,6 +24,7 @@ class AirHockeyInterface:
         
         # Set topic names based on robot_id
         waypoint_topic = "turtle" + str(robot_id + 1) + "/waypoint"
+        use_waypoint_topic = "turtle" + str(robot_id + 1) + "/use_waypoint"
         grabber_topic = "turtle" + str(robot_id + 1) + "/electromag"
         led_topic = "turtle" + str(robot_id + 1) + "/color"
         pose_topic = "vicon/turtle" + str(robot_id + 1) + "/turtle" + str(robot_id + 1)
@@ -31,6 +32,7 @@ class AirHockeyInterface:
 
         # Initialize ROS publishers and subscribers
         self.waypoint_pub = rospy.Publisher(waypoint_topic, Twist, queue_size=1, latch=True)
+        self.use_waypoint_pub = rospy.Publisher(use_waypoint_topic, Bool, queue_size=1, latch=True)
         self.grabber_pub = rospy.Publisher(grabber_topic, Bool, queue_size=1, latch=True)
         self.color_pub = rospy.Publisher(led_topic, ColorRGBA, queue_size=1, latch=True)
         self.pose_sub = rospy.Subscriber(pose_topic, TransformStamped, self.poseCallback)
@@ -48,6 +50,19 @@ class AirHockeyInterface:
         self.true_pos_x = 0.0
         self.true_pos_y = 0.0
 
+    def sendInitCmd(self, init_x, init_y):
+        goal_msg = Twist()
+        goal_msg.linear.x = float(init_x) * self.grid_to_vicon_conv_factor
+        goal_msg.linear.y = float(init_y) * self.grid_to_vicon_conv_factor
+        self.waypoint_pub.publish(goal_msg)
+        use_waypoint_msg = Bool()
+        use_waypoint_msg.data = True
+        self.use_waypoint_pub.publish(use_waypoint_msg)
+
+    def sendStopCmd(self):
+        use_waypoint_msg = Bool()
+        use_waypoint_msg.data = False
+        self.use_waypoint_pub.publish(use_waypoint_msg)
 
     def executeTransition(self, states, submap, action, constants):
         new_submap_object_list = []
@@ -161,7 +176,7 @@ class AirHockeyInterface:
                 food_heading = getFoodHeading(0, 0, submap)
                 # TEMP!!!!!!!!!!!!!!!!!!!!!
                 new_states.has_food = True # TODO: for testing, remove this when food sensor is implemented
-                new_states.food_heading = food_heading
+                #new_states.food_heading = food_heading
                 new_submap_object_list.append(MapLayer.FOOD)
                 new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
                 # !!!!!!!!!!!!!!!!!!!!!!!!
@@ -169,7 +184,7 @@ class AirHockeyInterface:
             if states.has_food:
                 # TEMP!!!!!!!!!!!!!!!!!!!!!
                 new_states.has_food = False # TODO: for testing, remove this when food sensor is implemented
-                new_states.food_heading = 0
+                #new_states.food_heading = 0
                 # !!!!!!!!!!!!!!!!!!!!!!!!
 
         # Update LED brightness based on battery charge
