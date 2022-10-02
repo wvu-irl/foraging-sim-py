@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+from sensor_msgs.msg import Image
 from importlib.machinery import SourceFileLoader
 from world import World
 from PIL import Image
@@ -103,17 +104,40 @@ food_layer = np.array(food_img)
 home_layer = np.array(home_img)
 obstacle_layer = np.array(obstacle_img)
 robot_layer = np.array(robot_img)
+map_shape = np.shape(food_layer)
+
+# ROS image and publisher for publishing map to image server
+image_msg = Image()
+image_msg.header.seq = 0
+image_msg.width = map_shape[0]
+image_msg.height = map_shape[1]
+image_msg.encoding = "rgb8"
+image_msg.is_bigendian = 0
+image_msg.step = 3 * image_msg.width
+image_msg.data = [0] * image_msg.height * image_msg.step
+image_pub = rospy.Publisher("foraging_map_img", Image, queue_size=1, latch=True)
 
 # If saving previous experience, initialize data container
 if save_prev_exp:
     prev_exp_data = PrevExpData()
     prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
 
+def pubNumpyImage(img):
+    image_msg.header.stamp = rospy.get_rostime()
+    i = 0
+    for y in range(map_shape[1]): # Image height
+        for x in range(map_shape[0]): # Image width
+            for z in range(3): # R, G, B
+                image_msg.data[i] = img[map_shape[0]-1 - x, map_shape[1]-1 - y, z]
+                i += 1
+    image_pub.publish(image_msg)
+    image_msg.header.seq += 1
+
 def runWrapper(obj, map_fig, map_ax):
     plt.ion()
     plt.show()
-    displayMap(obj, plt, map_fig, map_ax)
-
+    np_img = displayMap(obj, plt, map_fig, map_ax)
+    pubNumpyImage(np_img)
     for t in range(num_time_steps):
         if rospy.is_shutdown():
             break
@@ -132,7 +156,8 @@ def runWrapper(obj, map_fig, map_ax):
             if save_prev_exp: prev_exp_data.record(obj, t)
 
             # Display final map if at final time step
-            displayMap(obj, plt, map_fig, map_ax) 
+            np_img = displayMap(obj, plt, map_fig, map_ax) 
+            pubNumpyImage(np_img)
             if save_plots == 1:
                 t = t+1
                 map_fig.savefig("figures/fig%d.png" % t)
@@ -158,7 +183,7 @@ def run():
             prev_exp_data.last_trial_written[0] = i
             if recursive_prev_exp:
                 prev_exp_data.save(prev_exp_filepath)
-        if (i + 1) < (num_monte_carlo_trials - 1):
+        if (i + 1) < (num_monte_carlo_trials - 1): # TODO: test this
             init_pos = worlds[i+1].true_constants[0]["init_pos"]
             goal_msg = Twist()
             goal_msg.linear.x = init_pos[0] * self.grid_to_vicon_conv_factor

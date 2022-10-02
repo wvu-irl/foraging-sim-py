@@ -244,13 +244,7 @@ class World:
                         self.robot[robot_id].states.heading = 5
                         self.use_full_map[robot_id] = False
                     if self.real_world_exp:
-                        if robot_personality_list[robot_id] in [0, 1, 4, 7, 10, 13, 16]: # TODO: make this smarter. This should be based on heading, not personality. Heading will change in time var scenarios
-                            robot_color = [1.0, 0.0, 0.0]   # Red
-                        elif robot_personality in [2, 5, 8, 11]:
-                            robot_color = [0.0, 0.0, 1.0]   # Blue
-                        elif robot_personality in [3, 6, 9, 12]:
-                            robot_color = [1.0, 0.0, 1.0] # Purple
-                        self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, robot_color)
+                        self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, self.num_food)
                         self.real_world_interface[robot_id].sendInitCmd(self.robot[robot_id].states.x, self.robot[robot_id].states.y)
                     else:
                         if self.use_full_map[robot_id]:
@@ -277,7 +271,14 @@ class World:
         if self.use_full_map[i]:
             food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
             self.true_robot_states[i].food_state = food_state
-        # TODO: if real_world_exp, update food locations from vicon (need special logic for when covered up by robot?)
+        if self.real_world_exp:
+            self.map.map[MapLayer.FOOD] = np.zeros_like(self.map.map[MapLayer.FOOD])
+            for k in range(self.num_food):
+                if self.real_world_interface[i].food_visible[k]:
+                    food_x = self.real_world_interface[i].visible_food_pos_x[k]
+                    food_y = self.real_world_interface[i].visible_food_pos_y[k]
+                    if self.map.map[MapLayer.HOME, food_x, food_y] == 0:
+                        self.map.map[MapLayer.FOOD, food_x, food_y] = 1
         if self.use_prev_exp:
             for j in range(self.num_prev_exp_robots):
                 if t == 0:

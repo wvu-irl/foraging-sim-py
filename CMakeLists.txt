@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   rospy
   std_msgs
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -105,7 +106,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES foraging_sim_py
-  CATKIN_DEPENDS geometry_msgs rospy std_msgs
+  CATKIN_DEPENDS geometry_msgs rospy std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -169,6 +170,7 @@ include_directories(
    foraging_map.py
    map_viz.py
    observation_models.py
+   prev_exp.py
    results_metrics.py
    reward_functions.py
    robot.py

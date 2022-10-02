@@ -5,6 +5,7 @@ from debug_print import debugPrint
 import numpy as np
 import copy
 import math
+import re
 import rospy
 from geometry_msgs.msg import TransformStamped
 from std_msgs.msg import Bool
@@ -13,9 +14,9 @@ from geometry_msgs.msg import Twist
 # Find color message type
 
 class AirHockeyInterface:
-    def __init__(self, robot_id, color):
+    def __init__(self, robot_id, num_food):
         self.robot_id = robot_id
-        self.color = color
+        self.num_food = num_food
         
         # Set air hockey interface parameters
         self.min_number_iterations = 5
@@ -29,6 +30,7 @@ class AirHockeyInterface:
         led_topic = "turtle" + str(robot_id + 1) + "/color"
         pose_topic = "vicon/turtle" + str(robot_id + 1) + "/turtle" + str(robot_id + 1)
         force_sensor_topic = "turtle" + str(robot_id + 1) + "/force_sensor"
+        food_topics = ["vicon/food" + str(i) + "/food" + str(i) for i in range(1, num_food+1)]
 
         # Initialize ROS publishers and subscribers
         self.waypoint_pub = rospy.Publisher(waypoint_topic, Twist, queue_size=1, latch=True)
@@ -37,18 +39,13 @@ class AirHockeyInterface:
         self.color_pub = rospy.Publisher(led_topic, ColorRGBA, queue_size=1, latch=True)
         self.pose_sub = rospy.Subscriber(pose_topic, TransformStamped, self.poseCallback)
         self.force_sensor_sub = rospy.Subscriber(force_sensor_topic, Bool, self.forceSensorCallback)
-    
-        # Set LED color
-        self.color = color
-        color_msg = ColorRGBA()
-        color_msg.r = self.color[0]
-        color_msg.g = self.color[1]
-        color_msg.b = self.color[1]
-        #self.color_pub.publish(color_msg) # TODO: fix LEDs on robot and uncomment
-
+        
         self.loop_rate = rospy.Rate(10) # Hz
         self.true_pos_x = 0.0
         self.true_pos_y = 0.0
+        self.food_visible = [False for i in range(self.num_food)]
+        self.visible_food_pos_x = [0 for i in range(self.num_food)]
+        self.visible_food_pos_y = [0 for i in range(self.num_food)]
 
     def sendInitCmd(self, init_x, init_y):
         grabber_msg = Bool()
@@ -66,6 +63,9 @@ class AirHockeyInterface:
         use_waypoint_msg = Bool()
         use_waypoint_msg.data = False
         self.use_waypoint_pub.publish(use_waypoint_msg)
+
+    def resetVisibleFood(self):
+        self.food_visible = [False for i in range(self.num_food)]
 
     def executeTransition(self, states, submap, action, constants):
         new_submap_object_list = []
@@ -190,11 +190,17 @@ class AirHockeyInterface:
                 #new_states.food_heading = 0
                 # !!!!!!!!!!!!!!!!!!!!!!!!
 
-        # Update LED brightness based on battery charge
+        # Update LED color based on heading and brightness based on battery charge
         color_msg = ColorRGBA()
-        color_msg.r = self.color[0] * float(new_states.battery) / float(constants["battery_size"] - 1)
-        color_msg.g = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
-        color_msg.b = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        if new_states.heading in [0, 1]:
+            color = [255, 0, 0]
+        elif new_states.heading == 3:
+            color = [0, 0, 255]
+        elif new_states.heading == 5:
+            color = [255, 0, 255]
+        color_msg.r = color[0] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        color_msg.g = color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
+        color_msg.b = color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
         #self.color_pub.publish(color_msg) # TODO: fix LEDs on robot and uncomment
 
         # Return new states and new submap
@@ -208,6 +214,13 @@ class AirHockeyInterface:
 
     def forceSensorCallback(self, msg):
         self.food_sensor = msg.data
+
+    def foodPosCallback(self, msg):
+        # regex match to extract number from msg.child_frame_id to determine which food it is
+        food_index = int(re.match('.*?(\d+)$', msg.child_frame_id).group(1)) - 1
+        self.food_visible[food_index] = True
+        self.visible_food_pos_x[food_index] = round(msg.transform.translation.x / self.grid_to_vicon_conv_factor)
+        self.visible_food_pos_y[food_index] = round(msg.transform.translation.y / self.grid_to_vicon_conv_factor)
 
     def isAtHome(self, x, y, home_pos):
         if x == home_pos[0] and y == home_pos[1]:

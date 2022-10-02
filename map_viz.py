@@ -6,7 +6,7 @@ def displayMap(obj, plt, fig, ax):
     img = np.ones(img_shape, dtype=np.uint8) * 255
     for x in range(obj.map.map_shape[0]):
         for y in range(obj.map.map_shape[1]):
-            if obj.map.map[MapLayer.ROBOT, x, y] > 0: # Mark robot locations with color corresponding to personality type
+            if obj.map.map[MapLayer.ROBOT, x, y] > 0: # Mark robot locations with color corresponding to heading
                 robot_id = obj.map.map[MapLayer.ROBOT, x, y] - 1
                 if obj.use_prev_exp:
                     phantom = robot_id in obj.prev_exp_robot_id
@@ -76,3 +76,4 @@ def displayMap(obj, plt, fig, ax):
     ax.set_yticks(np.arange(-0.5, img_shape[1], 1), minor=True) 
     #ax.grid(which='minor', color='k', linestyle='-', linewidth=1)
     plt.pause(0.001)
+    return img
