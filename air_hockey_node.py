@@ -128,7 +128,7 @@ def pubNumpyImage(img):
     for y in range(map_shape[1]): # Image height
         for x in range(map_shape[0]): # Image width
             for z in range(3): # R, G, B
-                image_msg.data[i] = img[map_shape[0]-1 - x, map_shape[1]-1 - y, z]
+                image_msg.data[i] = img[x, map_shape[1]-1 - y, z]
                 i += 1
     image_pub.publish(image_msg)
     image_msg.header.seq += 1
