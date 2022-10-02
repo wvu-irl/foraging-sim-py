@@ -44,13 +44,16 @@ class AirHockeyInterface:
         color_msg.r = self.color[0]
         color_msg.g = self.color[1]
         color_msg.b = self.color[1]
-        self.color_pub.publish(color_msg)
+        #self.color_pub.publish(color_msg) # TODO: fix LEDs on robot and uncomment
 
         self.loop_rate = rospy.Rate(10) # Hz
         self.true_pos_x = 0.0
         self.true_pos_y = 0.0
 
     def sendInitCmd(self, init_x, init_y):
+        grabber_msg = Bool()
+        grabber_msg.data = False
+        self.grabber_pub.publish(grabber_msg)
         goal_msg = Twist()
         goal_msg.linear.x = float(init_x) * self.grid_to_vicon_conv_factor
         goal_msg.linear.y = float(init_y) * self.grid_to_vicon_conv_factor
@@ -108,14 +111,14 @@ class AirHockeyInterface:
             move_action = False
             grab_action = True
             grabber_msg = Bool()
-            if states.has_food == False and states.battery > 0: # Cannot grab if already posessing food or if battery is dead
+            if states.battery > 0: # Cannot grab if already posessing food or if battery is dead
                 grabber_msg.data = True
                 self.grabber_pub.publish(grabber_msg)
         elif action == Actions.DROP: # Drop food
             move_action = False
             drop_action = True
             grabber_msg = Bool()
-            if states.has_food and states.battery > 0 and at_home:
+            if states.battery > 0:
                 grabber_msg.data = False
                 self.grabber_pub.publish(grabber_msg)
         else:
@@ -192,7 +195,7 @@ class AirHockeyInterface:
         color_msg.r = self.color[0] * float(new_states.battery) / float(constants["battery_size"] - 1)
         color_msg.g = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
         color_msg.b = self.color[1] * float(new_states.battery) / float(constants["battery_size"] - 1)
-        self.color_pub.publish(color_msg)
+        #self.color_pub.publish(color_msg) # TODO: fix LEDs on robot and uncomment
 
         # Return new states and new submap
         new_submap = (new_submap_object_list, new_submap_property_list)

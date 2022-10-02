@@ -16,7 +16,7 @@ config.enable_debug_prints = False
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
-use_manual_control = False
+use_manual_control = True
 slow_mode = False
 
 # Load simulation parameters
@@ -116,8 +116,6 @@ def runWrapper(obj, map_fig, map_ax):
 
     for t in range(num_time_steps):
         if rospy.is_shutdown():
-            for i in range(num_robots):
-                obj.real_world_interface[i].sendStopCmd()
             break
 
         displayMap(obj, plt, map_fig, map_ax) 
@@ -125,7 +123,7 @@ def runWrapper(obj, map_fig, map_ax):
             map_fig.savefig("figures/fig%d.png" % t)
         print("t = {0}".format(t))
 
-        terminal_condition = obj.simulationStep()
+        terminal_condition = obj.simulationStep(t)
         if slow_mode:
             time.sleep(0.5)
 
@@ -138,7 +136,6 @@ def runWrapper(obj, map_fig, map_ax):
             if save_plots == 1:
                 t = t+1
                 map_fig.savefig("figures/fig%d.png" % t)
-
 
 def run():
     rospy.init_node("foraging_air_hockey_interface")

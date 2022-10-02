@@ -361,7 +361,7 @@ class World:
             else:
                 submap = self.map.getSubMap(self.true_robot_states[i].x, self.true_robot_states[i].y, 2, self.true_robot_states, self.true_constants) # TODO: may need to change getSubMap distance to something other than 2 when code is updated to use grids smaller than robot size
             if self.real_world_exp:
-                (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], action, self.true_constants[i])
+                (new_states, new_submap) = self.real_world_interface[i].executeTransition(self.true_robot_states[i], submap, action, self.true_constants[i])
             else:
                 (new_states, new_submap) = self.true_transition_model[i](self.true_robot_states[i], submap, action, self.true_constants[i])
             # TODO: temporary solution for passing internal robot data out to the true states for local interacion data communication
