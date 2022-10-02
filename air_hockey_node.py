@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image as ImageMsg
 from importlib.machinery import SourceFileLoader
 from world import World
 from PIL import Image
@@ -107,7 +107,7 @@ robot_layer = np.array(robot_img)
 map_shape = np.shape(food_layer)
 
 # ROS image and publisher for publishing map to image server
-image_msg = Image()
+image_msg = ImageMsg()
 image_msg.header.seq = 0
 image_msg.width = map_shape[0]
 image_msg.height = map_shape[1]
@@ -115,7 +115,7 @@ image_msg.encoding = "rgb8"
 image_msg.is_bigendian = 0
 image_msg.step = 3 * image_msg.width
 image_msg.data = [0] * image_msg.height * image_msg.step
-image_pub = rospy.Publisher("foraging_map_img", Image, queue_size=1, latch=True)
+image_pub = rospy.Publisher("foraging_map_img", ImageMsg, queue_size=1, latch=True)
 
 # If saving previous experience, initialize data container
 if save_prev_exp:
