@@ -6,6 +6,9 @@ from world import World
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
+from cv_bridge import CvBridge
+from scipy import interpolate
 from map_viz import displayMap
 from save_results import saveResultsFile
 from prev_exp import PrevExpData
@@ -107,15 +110,15 @@ robot_layer = np.array(robot_img)
 map_shape = np.shape(food_layer)
 
 # ROS image and publisher for publishing map to image server
-image_msg = ImageMsg()
-image_msg.header.seq = 0
-image_msg.width = map_shape[0]
-image_msg.height = map_shape[1]
-image_msg.encoding = "rgb8"
-image_msg.is_bigendian = 0
-image_msg.step = 3 * image_msg.width
-image_msg.data = [0] * image_msg.height * image_msg.step
-image_pub = rospy.Publisher("foraging_map_img", ImageMsg, queue_size=1, latch=True)
+#image_msg = ImageMsg()
+#image_msg.header.seq = 0
+#image_msg.width = 1920
+#image_msg.height = 1080
+#image_msg.encoding = "rgb8"
+#image_msg.is_bigendian = 0
+#image_msg.step = 3 * image_msg.width
+#image_msg.data = [0] * image_msg.height * image_msg.step
+#image_pub = rospy.Publisher("foraging_map_img", ImageMsg, queue_size=1, latch=True)
 
 # If saving previous experience, initialize data container
 if save_prev_exp:
@@ -123,15 +126,35 @@ if save_prev_exp:
     prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
 
 def pubNumpyImage(img):
-    image_msg.header.stamp = rospy.get_rostime()
-    i = 0
-    for y in range(map_shape[1]): # Image height
-        for x in range(map_shape[0]): # Image width
-            for z in range(3): # R, G, B
-                image_msg.data[i] = img[x, map_shape[1]-1 - y, z]
-                i += 1
-    image_pub.publish(image_msg)
-    image_msg.header.seq += 1
+    #img_x = np.linspace(0, 1, img.shape[0])
+    #img_y = np.linspace(0, 1, img.shape[1])
+    #interp_obj_r = interpolate.interp2d(img_x, img_y, img[:, :, 0], kind="cubic")
+    #interp_obj_g = interpolate.interp2d(img_x, img_y, img[:, :, 1], kind="cubic")
+    #interp_obj_b = interpolate.interp2d(img_x, img_y, img[:, :, 2], kind="cubic")
+    #upscaled_x = np.linspace(0, 1, 1920)
+    #upscaled_y = np.linspace(0, 1, 1080)
+    #upscaled_img_r = interp_obj_r(upscaled_x, upscaled_y)
+    #upscaled_img_g = interp_obj_g(upscaled_x, upscaled_y)
+    #upscaled_img_b = interp_obj_b(upscaled_x, upscaled_y)
+    #upscaled_img = np.zeros((1920, 1080, 3), dtype=np.uint8)
+    #upscaled_img[:, :, 0] = upscaled_img_r
+    #upscaled_img[:, :, 1] = upscaled_img_g
+    #upscaled_img[:, :, 2] = upscaled_img_b
+    #upscaled_img = cv2.resize(np.swapaxes(img, 0, 1), dsize=(1920, 1080), interpolation=cv2.INTER_CUBIC)
+    #bridge = CvBridge()
+    #image_msg = bridge.cv2_to_imgmsg(upscaled_img, encoding="passthrough")
+    #image_msg.encoding = "rgb8"
+    #print("upscaled_img shape: [{0}, {1}]".format(upscaled_img.shape[0], upscaled_img.shape[1]))
+    #image_msg.header.stamp = rospy.get_rostime()
+    #i = 0
+    #for y in range(upscaled_img.shape[1]): # Image height
+    #    for x in range(upscaled_img.shape[0]): # Image width
+    #        for z in range(3): # R, G, B
+    #            image_msg.data[i] = upscaled_img[x, map_shape[1]-1 - y, z]
+    #            i += 1
+    #image_pub.publish(image_msg)
+    #image_msg.header.seq += 1
+    print("end of pub image")
 
 def runWrapper(obj, map_fig, map_ax):
     plt.ion()
