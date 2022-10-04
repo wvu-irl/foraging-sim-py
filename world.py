@@ -271,7 +271,9 @@ class World:
         if self.use_full_map[i]:
             food_state = getBinaryFromFoodMap(self.map.map[MapLayer.FOOD, : ,:], self.num_food, self.food_pos)
             self.true_robot_states[i].food_state = food_state
-        if self.real_world_exp:
+        if self.real_world_exp: 
+            self.real_world_interface[i].resetVisibleFood()
+            rospy.sleep(0.5)
             self.map.map[MapLayer.FOOD] = np.zeros_like(self.map.map[MapLayer.FOOD])
             for k in range(self.num_food):
                 if self.real_world_interface[i].food_visible[k]:

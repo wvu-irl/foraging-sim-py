@@ -19,9 +19,9 @@ class AirHockeyInterface:
         self.num_food = num_food
         
         # Set air hockey interface parameters
-        self.min_number_iterations = 5
-        self.pos_error_thresh = 0.07 # m
-        self.grid_to_vicon_conv_factor = 0.2 # m/grid cell
+        self.min_number_iterations = 10
+        self.pos_error_thresh = 0.04 # m
+        self.grid_to_vicon_conv_factor = 0.2 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
         
         # Set topic names based on robot_id
         waypoint_topic = "turtle" + str(robot_id + 1) + "/waypoint"
@@ -174,21 +174,28 @@ class AirHockeyInterface:
                 if new_states.battery < 0:
                     new_states.battery = 0
         if grab_action: 
-            # Check if food was found at the current location
-            if isFoodAtPos(0, 0, submap):
-                food_heading = getFoodHeading(0, 0, submap)
-                # TEMP!!!!!!!!!!!!!!!!!!!!!
-                new_states.has_food = True # TODO: for testing, remove this when food sensor is implemented
-                #new_states.food_heading = food_heading
-                new_submap_object_list.append(MapLayer.FOOD)
-                new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
-                # !!!!!!!!!!!!!!!!!!!!!!!!
+            keep_executing = True
+            i = 0
+            while (not rospy.is_shutdown()) and keep_executing:
+                debugPrint("i: {0}, food_sensor: {1}".format(i, self.food_sensor))
+                i += 1
+                if i >= self.min_number_iterations:
+                    keep_executing = False
+                    new_states.has_food = self.food_sensor
+                    if self.food_sensor:
+                        new_submap_object_list.append(MapLayer.FOOD)
+                        new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
+                self.loop_rate.sleep()
         if drop_action:
-            if states.has_food:
-                # TEMP!!!!!!!!!!!!!!!!!!!!!
-                new_states.has_food = False # TODO: for testing, remove this when food sensor is implemented
-                #new_states.food_heading = 0
-                # !!!!!!!!!!!!!!!!!!!!!!!!
+            keep_executing = True
+            i = 0
+            while (not rospy.is_shutdown()) and keep_executing:
+                debugPrint("i: {0}, food_sensor: {1}".format(i, self.food_sensor))
+                i += 1
+                if i >= self.min_number_iterations:
+                    keep_executing = False
+                    new_states.has_food = self.food_sensor
+                self.loop_rate.sleep()
 
         # Update LED color based on heading and brightness based on battery charge
         color_msg = ColorRGBA()
