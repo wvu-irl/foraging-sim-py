@@ -74,6 +74,6 @@ def displayMap(obj, plt, fig, ax):
     ax.set_yticks(np.arange(0, img_shape[1], 1))
     ax.set_xticks(np.arange(-0.5, img_shape[0], 1), minor=True)
     ax.set_yticks(np.arange(-0.5, img_shape[1], 1), minor=True) 
-    #ax.grid(which='minor', color='k', linestyle='-', linewidth=1)
+    ax.grid(which='minor', color='k', linestyle='-', linewidth=1)
     plt.pause(0.001)
     return img
