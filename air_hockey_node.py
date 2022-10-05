@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Image as ImageMsg
+from geometry_msgs.msg import Twist
 from importlib.machinery import SourceFileLoader
 from world import World
 from PIL import Image
@@ -20,7 +21,7 @@ config.enable_debug_prints = False
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
-use_manual_control = True
+use_manual_control = False
 slow_mode = False
 
 # Load simulation parameters
@@ -157,22 +158,19 @@ def pubNumpyImage(img):
     print("end of pub image")
 
 def runWrapper(obj, map_fig, map_ax):
-    plt.ion()
-    plt.show()
-    np_img = displayMap(obj, plt, map_fig, map_ax)
-    pubNumpyImage(np_img)
     for t in range(num_time_steps):
         if rospy.is_shutdown():
             break
 
-        displayMap(obj, plt, map_fig, map_ax) 
-        if save_plots == 1:
-            map_fig.savefig("figures/fig%d.png" % t)
-        print("t = {0}".format(t))
-
         terminal_condition = obj.simulationStep(t)
         if slow_mode:
             time.sleep(0.5)
+        
+        np_img = displayMap(obj, plt, map_fig, map_ax) 
+        pubNumpyImage(np_img) 
+        if save_plots == 1:
+            map_fig.savefig("figures/fig%d.png" % t)
+        print("t = {0}".format(t))
 
         if ((t == num_time_steps - 1) or (enable_terminal_condition and terminal_condition)):
             # Save final step of prev exp if at final time step
@@ -198,6 +196,13 @@ def run():
     mgr = plt.get_current_fig_manager()
     #mgr.window.move(0, py)
     #mgr.full_screen_toggle()
+    plt.ion()
+    plt.show()
+    init_pos = worlds[0].true_constants[0]["init_pos"]
+    worlds[0].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+    np_img = displayMap(worlds[0], plt, map_fig, map_ax)
+    pubNumpyImage(np_img)
+    input("Please set world as shown and then press enter to begin")
     for i in range(num_monte_carlo_trials):
         runWrapper(worlds[i], map_fig, map_ax)
         if rospy.is_shutdown():
@@ -206,13 +211,11 @@ def run():
             prev_exp_data.last_trial_written[0] = i
             if recursive_prev_exp:
                 prev_exp_data.save(prev_exp_filepath)
-        if (i + 1) < (num_monte_carlo_trials - 1): # TODO: test this
+        if i < (num_monte_carlo_trials - 1): 
             init_pos = worlds[i+1].true_constants[0]["init_pos"]
-            goal_msg = Twist()
-            goal_msg.linear.x = init_pos[0] * self.grid_to_vicon_conv_factor
-            goal_msg.linear.y = init_pos[1] * self.grid_to_vicon_conv_factor
-            worlds[i+1].real_world_interface[0].waypoint_pub.publish(goal_msg) 
-            displayMap(worlds[i+1], plt, map_fig, map_ax)
+            worlds[i+1].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+            np_img = displayMap(worlds[i+1], plt, map_fig, map_ax)
+            pubNumpyImage(np_img)
             input("Please reset world as shown and press enter to begin next trial")
 
     # Save results

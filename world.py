@@ -10,6 +10,7 @@ from results_metrics import ResultsMetrics
 import matplotlib.pyplot as plt
 from map_viz import displayMap
 from prev_exp import PrevExpData
+import rospy # TODO: this is a bad hack. Needs removed so sims do not depend on ROS
 
 class World:
     def __init__(self, trial_num, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp = False, manual_control = False):
@@ -245,7 +246,6 @@ class World:
                         self.use_full_map[robot_id] = False
                     if self.real_world_exp:
                         self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, self.num_food)
-                        self.real_world_interface[robot_id].sendInitCmd(self.robot[robot_id].states.x, self.robot[robot_id].states.y)
                     else:
                         if self.use_full_map[robot_id]:
                             self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue

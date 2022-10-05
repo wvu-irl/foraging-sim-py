@@ -20,8 +20,14 @@ class AirHockeyInterface:
         
         # Set air hockey interface parameters
         self.min_number_iterations = 10
-        self.pos_error_thresh = 0.04 # m
-        self.grid_to_vicon_conv_factor = 0.2 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
+        self.pos_error_thresh = 0.0254 # m
+        self.grid_to_vicon_conv_factor = 0.05 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
+        
+        self.true_pos_x = 0.0
+        self.true_pos_y = 0.0
+        self.food_visible = [False for i in range(self.num_food)]
+        self.visible_food_pos_x = [0 for i in range(self.num_food)]
+        self.visible_food_pos_y = [0 for i in range(self.num_food)]
         
         # Set topic names based on robot_id
         waypoint_topic = "turtle" + str(robot_id + 1) + "/waypoint"
@@ -39,13 +45,9 @@ class AirHockeyInterface:
         self.color_pub = rospy.Publisher(led_topic, ColorRGBA, queue_size=1, latch=True)
         self.pose_sub = rospy.Subscriber(pose_topic, TransformStamped, self.poseCallback)
         self.force_sensor_sub = rospy.Subscriber(force_sensor_topic, Bool, self.forceSensorCallback)
+        self.food_subs = [rospy.Subscriber(food_topics[i], TransformStamped, self.foodPosCallback) for i in range(num_food)]
         
         self.loop_rate = rospy.Rate(10) # Hz
-        self.true_pos_x = 0.0
-        self.true_pos_y = 0.0
-        self.food_visible = [False for i in range(self.num_food)]
-        self.visible_food_pos_x = [0 for i in range(self.num_food)]
-        self.visible_food_pos_y = [0 for i in range(self.num_food)]
 
     def sendInitCmd(self, init_x, init_y):
         grabber_msg = Bool()
@@ -186,6 +188,10 @@ class AirHockeyInterface:
                         new_submap_object_list.append(MapLayer.FOOD)
                         new_submap_property_list.append({"delta_x" : 0, "delta_y" : 0, "val" : 0}) # Remove food from robot's location on map
                 self.loop_rate.sleep()
+            if not new_states.has_food:
+                grabber_msg = Bool()
+                grabber_msg.data = False                
+                self.grabber_pub.publish(grabber_msg)
         if drop_action:
             keep_executing = True
             i = 0

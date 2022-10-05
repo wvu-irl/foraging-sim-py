@@ -688,11 +688,11 @@ def searchFSMActionPolicy(self, enable_local_influence):
             if isAtHome(self.states.x, self.states.y, self.home_region):
                 if self.states.has_food:
                     chosen_action = Actions.DROP
-                    self.fsm_state = FSMState.SEARCH
+                    self.fsm_state = FSMState.GO_TO_INIT
                     keep_executing = False
                 else:
                     chosen_action = Actions.STAY
-                    self.fsm_state = FSMState.SEARCH
+                    self.fsm_state = FSMState.GO_TO_INIT
                     keep_executing = False
             else:
                 chosen_action = moveToGoal(self.home_pos[0], self.home_pos[1], self.states.x, self.states.y)
@@ -730,6 +730,16 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 self.fsm_failed_food_locations.append({"x" : self.states.x, "y" : self.states.y})
                 #self.fsm_failed_grab_attempts = 0
                 self.fsm_state = FSMState.SEARCH
+        
+        elif self.fsm_state == FSMState.GO_TO_INIT:
+            debugPrint("fsm_state: GO_TO_INIT")
+            if self.states.x == self.init_pos[0] and self.states.y == self.init_pos[1]:
+                self.fsm_state = FSMState.SEARCH
+            else:
+                chosen_action = moveToGoal(self.init_pos[0], self.init_pos[1], self.states.x, self.states.y)
+                chosen_action = obstacleAvoidance(chosen_action, self.submap)
+                self.fsm_state = FSMState.GO_TO_INIT
+                keep_executing = False
 
 
     return chosen_action
