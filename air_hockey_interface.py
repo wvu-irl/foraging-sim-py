@@ -19,7 +19,8 @@ class AirHockeyInterface:
         self.num_food = num_food
         
         # Set air hockey interface parameters
-        self.min_number_iterations = 10
+        self.steady_state_convergence_iterations = 10
+        self.drive_goal_give_up_iterations = 50
         self.pos_error_thresh = 0.0254 # m
         self.grid_to_vicon_conv_factor = 0.05 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
         
@@ -150,8 +151,14 @@ class AirHockeyInterface:
             pos_err = math.hypot(x_err, y_err)
             debugPrint("i: {0}, pos_err: {1}".format(i, pos_err * self.grid_to_vicon_conv_factor))
             i += 1
-            if i >= self.min_number_iterations and (pos_err * self.grid_to_vicon_conv_factor) < self.pos_error_thresh:
+            if i >= self.steady_state_convergence_iterations and (pos_err * self.grid_to_vicon_conv_factor) < self.pos_error_thresh:
                 debugPrint("goal reached")
+                keep_executing = False
+            elif i >= self.drive_goal_give_up_iterations: # If taking too long to reach goal (i.e., robot stuck) give up and send goal to current position to stop trying to drive
+                goal_msg = Twist()
+                goal_msg.linear.x = round(self.true_pos_x) * self.grid_to_vicon_conv_factor
+                goal_msg.linear.y = round(self.true_pos_y) * self.grid_to_vicon_conv_factor
+                self.waypoint_pub.publish(goal_msg)
                 keep_executing = False
             self.loop_rate.sleep()
 
@@ -181,7 +188,7 @@ class AirHockeyInterface:
             while (not rospy.is_shutdown()) and keep_executing:
                 debugPrint("i: {0}, food_sensor: {1}".format(i, self.food_sensor))
                 i += 1
-                if i >= self.min_number_iterations:
+                if i >= self.steady_state_convergence_iterations:
                     keep_executing = False
                     new_states.has_food = self.food_sensor
                     if self.food_sensor:
@@ -198,7 +205,7 @@ class AirHockeyInterface:
             while (not rospy.is_shutdown()) and keep_executing:
                 debugPrint("i: {0}, food_sensor: {1}".format(i, self.food_sensor))
                 i += 1
-                if i >= self.min_number_iterations:
+                if i >= self.steady_state_convergence_iterations:
                     keep_executing = False
                     new_states.has_food = self.food_sensor
                 self.loop_rate.sleep()

@@ -17,12 +17,14 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
 use_manual_control = False
 slow_mode = False
+
+config.robot_footprint_radius = 3
 
 # Load simulation parameters
 sim_params = SourceFileLoader("sim_params", sys.argv[1]).load_module()
@@ -145,7 +147,7 @@ def pubMatplotlibImage(fig, ax):
     #upscaled_img[:, :, 1] = upscaled_img_g
     #upscaled_img[:, :, 2] = upscaled_img_b
     #upscaled_img = cv2.resize(np.swapaxes(img, 0, 1), dsize=(1920, 1080), interpolation=cv2.INTER_CUBIC)
-    #fig.canvas.draw()
+    fig.canvas.draw()
     scaled_img = cv2.cvtColor(np.asarray(fig.canvas.buffer_rgba()), cv2.COLOR_RGBA2BGR)
     bridge = CvBridge()
     image_msg = bridge.cv2_to_imgmsg(scaled_img, encoding="passthrough")
@@ -160,7 +162,6 @@ def pubMatplotlibImage(fig, ax):
     #            i += 1
     image_pub.publish(image_msg)
     image_msg.header.seq += 1
-    print("end of pub image")
 
 def runWrapper(obj, map_fig, map_ax):
     for t in range(num_time_steps):
@@ -173,7 +174,7 @@ def runWrapper(obj, map_fig, map_ax):
         
         map_fig.set_figwidth(projector_width / projector_dpi)
         map_fig.set_figheight(projector_height / projector_dpi)
-        map_fig.set_dpi(projector_dpi)
+        #map_fig.set_dpi(projector_dpi)
         np_img = displayMap(obj, plt, map_fig, map_ax) 
         pubMatplotlibImage(map_fig, map_ax) 
         if save_plots == 1:
@@ -187,7 +188,7 @@ def runWrapper(obj, map_fig, map_ax):
             # Display final map if at final time step
             map_fig.set_figwidth(projector_width / projector_dpi)
             map_fig.set_figheight(projector_height / projector_dpi)
-            map_fig.set_dpi(projector_dpi)
+            #map_fig.set_dpi(projector_dpi)
             np_img = displayMap(obj, plt, map_fig, map_ax) 
             pubMatplotlibImage(map_fig, map_ax)
             if save_plots == 1:
@@ -196,13 +197,14 @@ def runWrapper(obj, map_fig, map_ax):
 
 def run():
     rospy.init_node("foraging_air_hockey_interface")
-    worlds = [World(i, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp=True, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
+    worlds = [World(i, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     plt.switch_backend("QT4Agg") # TODO: change this to publish map as img to ROS web_video_server
     #mgr = plt.get_current_fig_manager()
     #mgr.full_screen_toggle()
     #py = mgr.canvas.height()
     #px = mgr.canvas.width()
     #mgr.window.close()
+    plt.ioff()
     map_fig, map_ax = plt.subplots(frameon=False)
     map_ax.margins(0)
     map_ax.set_position([0, 0, 1, 1])
@@ -221,7 +223,7 @@ def run():
     #plt.ion()
     #plt.show()
     init_pos = worlds[0].true_constants[0]["init_pos"]
-    worlds[0].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+    #worlds[0].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
     np_img = displayMap(worlds[0], plt, map_fig, map_ax)
     pubMatplotlibImage(map_fig, map_ax)
     input("Please set world as shown and then press enter to begin")
@@ -235,10 +237,10 @@ def run():
                 prev_exp_data.save(prev_exp_filepath)
         if i < (num_monte_carlo_trials - 1): 
             init_pos = worlds[i+1].true_constants[0]["init_pos"]
-            worlds[i+1].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+            #worlds[i+1].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
             map_fig.set_figwidth(projector_width / projector_dpi)
             map_fig.set_figheight(projector_height / projector_dpi)
-            map_fig.set_dpi(projector_dpi)
+            #map_fig.set_dpi(projector_dpi)
             np_img = displayMap(worlds[i+1], plt, map_fig, map_ax)
             pubMatplotlibImage(map_fig, map_ax)
             input("Please reset world as shown and press enter to begin next trial")

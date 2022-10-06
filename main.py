@@ -18,6 +18,8 @@ save_plots = False
 use_manual_control = False
 slow_mode = False
 
+config.robot_footprint_radius = 1
+
 # Load simulation parameters
 sim_params = SourceFileLoader("sim_params", sys.argv[1]).load_module()
 from sim_params import *

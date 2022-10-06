@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="web_video_server" type="web_video_server" name="web_video_server_node">
-        <param name="width" value="1920"/>
-        <param name="height" value="1080"/>
+    <node pkg="web_video_server" type="web_video_server" name="web_video_server_node" output="screen">
         <param name="quality" value="100"/>
     </node>
+    <node pkg="foraging_sim_py" type="start_browser_viz_stream.bash" name="start_browser_viz_stream" output="screen"/>
 </launch>

@@ -110,6 +110,7 @@ class UnknownMapFSMRobot(Robot):
         self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH
         self.fsm_search_goal_chosen = False
+        self.fsm_reached_approach_location = False
         self.fsm_failed_search_attempts = 0
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_food_locations = []
@@ -140,6 +141,7 @@ class UnknownMapFSMLocalInteractionRobot(Robot):
         self.use_local_influence = False
         self.fsm_state = FSMState.SEARCH
         self.fsm_search_goal_chosen = False
+        self.fsm_reached_approach_location = False
         self.fsm_failed_grab_attempts = 0
         self.fsm_failed_search_attempts = 0
         self.fsm_failed_grab_attempts = 0
