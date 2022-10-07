@@ -617,7 +617,8 @@ def searchFSMActionPolicy(self, enable_local_influence):
                                     pmf[self.fsm_other_robot_approach_dir[k]-1] += 1.0
                         pmf /= np.sum(pmf)
                         rng = np.random.default_rng()
-                        approach_dir = rng.choice(elements, 1, p=pmf)
+                        #approach_dir = rng.choice(elements, 1, p=pmf)
+                        approach_dir = 6 # TODO: for testing
                         self.states.last_approach_dir = approach_dir
                         debugPrint("Random approach dir: {0}".format(approach_dir))
                     (approach_offset_delta_x, approach_offset_delta_y) = getDeltaFromDirection(approach_dir)

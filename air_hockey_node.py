@@ -17,7 +17,7 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = True
+config.enable_debug_prints = False
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
@@ -223,7 +223,7 @@ def run():
     #plt.ion()
     #plt.show()
     init_pos = worlds[0].true_constants[0]["init_pos"]
-    #worlds[0].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+    worlds[0].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
     np_img = displayMap(worlds[0], plt, map_fig, map_ax)
     pubMatplotlibImage(map_fig, map_ax)
     input("Please set world as shown and then press enter to begin")
@@ -237,7 +237,7 @@ def run():
                 prev_exp_data.save(prev_exp_filepath)
         if i < (num_monte_carlo_trials - 1): 
             init_pos = worlds[i+1].true_constants[0]["init_pos"]
-            #worlds[i+1].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
+            worlds[i+1].real_world_interface[0].sendInitCmd(init_pos[0], init_pos[1])
             map_fig.set_figwidth(projector_width / projector_dpi)
             map_fig.set_figheight(projector_height / projector_dpi)
             #map_fig.set_dpi(projector_dpi)
