@@ -835,6 +835,26 @@ def actionToDirection(action):
     else:
         return Direction.NONE
 
+def directionToAction(direction):
+    if direction == Direction.E:
+        return Action.MOVE_E
+    elif direction == Direction.NE:
+        return Action.MOVE_NE
+    elif direction == Direction.N:
+        return Action.MOVE_N
+    elif direction == Direction.NW:
+        return Action.MOVE_NW
+    elif direction == Direction.W:
+        return Action.MOVE_W
+    elif direction == Direction.SW:
+        return Action.MOVE_SW
+    elif direction == Direction.S:
+        return Action.MOVE_S
+    elif direction == Direction.SE:
+        return Action.MOVE_SE
+    else:
+        return Direction.NONE
+
 def removeBlockedMovesFromPMF(pmf, blocked_moves):
     new_pmf = pmf
     num_moves = len(pmf)
@@ -857,9 +877,17 @@ def obstacleAvoidance(chosen_action, submap):
     move_dir = actionToDirection(chosen_action)
     blocked_moves = findBlockedMoves(submap)
     if move_dir in blocked_moves:
-        pmf = np.ones(8) / 8.0
-        pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
-        elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-        rng = np.random.default_rng()
-        chosen_action = rng.choice(elements, 1, p=pmf)
+        #pmf = np.ones(8) / 8.0
+        #pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+        #elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+        #rng = np.random.default_rng()
+        #chosen_action = rng.choice(elements, 1, p=pmf)
+        keep_checking = True
+        candidate_dir = move_dir
+        while keep_checking:
+            candidate_dir -= 1
+            if candidate_dir < 1:
+                candidate_dir = 8
+            if move_dir not in blocked_moves:
+                chosen_action = directionToAction(move_dir)
     return chosen_action

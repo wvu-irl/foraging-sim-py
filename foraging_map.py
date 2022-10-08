@@ -24,27 +24,25 @@ class ForagingMap:
         self.map[MapLayer.ROBOT] = robot_layer
 
     def getSubMap(self, query_x, query_y, distance, true_states, constants):
-        # Check that boundaries of queried submap do not extend outside map boundary
-        # Coerce them into range if they do
-        if query_x - distance < 0:
-            x_min = 0
-        else:
-            x_min = query_x - distance
+        #if query_x - distance < 0:
+        #    x_min = 0
+        #else:
+        x_min = query_x - distance
 
-        if query_x + distance + 1 > self.map_shape[0]:
-            x_max = self.map_shape[0]
-        else:
-            x_max = query_x + distance + 1
+        #if query_x + distance + 1 > self.map_shape[0]:
+        #    x_max = self.map_shape[0]
+        #else:
+        x_max = query_x + distance + 1
 
-        if query_y - distance < 0:
-            y_min = 0
-        else:
-            y_min = query_y - distance
+        #if query_y - distance < 0:
+        #    y_min = 0
+        #else:
+        y_min = query_y - distance
 
-        if query_y + distance + 1 > self.map_shape[1]:
-            y_max = self.map_shape[1]
-        else:
-            y_max = query_y + distance + 1
+        #if query_y + distance + 1 > self.map_shape[1]:
+        #    y_max = self.map_shape[1]
+        #else:
+        y_max = query_y + distance + 1
 
         # Retrieve submap
         submap = self.map[:, x_min:x_max, y_min:y_max]
@@ -57,32 +55,38 @@ class ForagingMap:
                 # Find relative position of grid cell
                 delta_x = int(x - query_x)
                 delta_y = int(y - query_y)
-               
-                # Check food layer
-                if self.map[MapLayer.FOOD, x, y] > 0: # Contains food
-                    submap_object_list.append(MapLayer.FOOD)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : self.map[MapLayer.FOOD, x, y]})
 
-                # Check home layer
-                if self.map[MapLayer.HOME, x, y] == 1: # Is a home cell
-                    submap_object_list.append(MapLayer.HOME)
-                    submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
-
-                # Check obstacle layer
-                if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains static obstacle
+                # If x,y outside map boundary, list it as an obstacle
+                if (x not in range(0, self.map_shape[0])) or (y not in range(0, self.map_shape[1])):
                     submap_object_list.append(MapLayer.OBSTACLE)
                     submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+                else:
+                   
+                    # Check food layer
+                    if self.map[MapLayer.FOOD, x, y] > 0: # Contains food
+                        submap_object_list.append(MapLayer.FOOD)
+                        submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y, "heading" : self.map[MapLayer.FOOD, x, y]})
 
-                # Check robot layer
-                if self.map[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
-                    robot_id = self.map[MapLayer.ROBOT, x, y] - 1
-                    submap_object_list.append(MapLayer.ROBOT)
-                    robot_properties_dict = {**{"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "personality" : constants[robot_id]["personality"]}, **true_states[robot_id].localInfluenceData()}
-                    submap_property_list.append(robot_properties_dict)
-                    # Other robot is also an obstacle if not a phantom
-                    if constants[robot_id]["phantom"] == False:
+                    # Check home layer
+                    if self.map[MapLayer.HOME, x, y] == 1: # Is a home cell
+                        submap_object_list.append(MapLayer.HOME)
+                        submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+
+                    # Check obstacle layer
+                    if self.map[MapLayer.OBSTACLE, x, y] == 1: # Contains static obstacle
                         submap_object_list.append(MapLayer.OBSTACLE)
                         submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
+
+                    # Check robot layer
+                    if self.map[MapLayer.ROBOT, x, y] != 0 and (delta_x != 0 or delta_y != 0): # Contains another robot
+                        robot_id = self.map[MapLayer.ROBOT, x, y] - 1
+                        submap_object_list.append(MapLayer.ROBOT)
+                        robot_properties_dict = {**{"delta_x" : delta_x, "delta_y" : delta_y, "id" : robot_id, "personality" : constants[robot_id]["personality"]}, **true_states[robot_id].localInfluenceData()}
+                        submap_property_list.append(robot_properties_dict)
+                        # Other robot is also an obstacle if not a phantom
+                        if constants[robot_id]["phantom"] == False:
+                            submap_object_list.append(MapLayer.OBSTACLE)
+                            submap_property_list.append({"delta_x" : delta_x, "delta_y" : delta_y})
 
         # Return object type and property lists
         return (submap_object_list, submap_property_list)
