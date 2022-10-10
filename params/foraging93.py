@@ -22,5 +22,5 @@ food_respawn = False
 food_pushing = True
 enable_terminal_condition = False
 results_filename = "results/foraging93.npz"
-plot_label = "Model 3"
+plot_label = "Recursive"
 human_description = "25x25, map d, 1 bot, per range 2, gd eval recur"

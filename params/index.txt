@@ -91,4 +91,4 @@ foraging89: 25x25, map c, 1 bot, per range 2, gd eval recur
 foraging90: 25x25, map d, 1 bot, per range 2, gd train indiv
 foraging91: 25x25, map d, 1 bot, per range 2, gd train recur
 foraging92: 25x25, map d, 1 bot, per range 2, gd eval indiv
-foraging93: 25x25, map d, 1 bot, per range 2, gd eval indiv
+foraging93: 25x25, map d, 1 bot, per range 2, gd eval recur
