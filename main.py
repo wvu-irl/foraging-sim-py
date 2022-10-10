@@ -126,7 +126,6 @@ robot_layer = np.array(robot_img)
 if save_prev_exp:
     prev_exp_data = PrevExpData()
     prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
-    lock = Lock()
 
 def runWrapper(obj): 
     # Initialize plot objects, if only one trial
@@ -145,9 +144,7 @@ def runWrapper(obj):
             print("\nt = {0}".format(t))
 
         if save_prev_exp:
-            lock.acquire()
             prev_exp_data.record(obj, t)
-            lock.release()
 
         terminal_condition = obj.simulationStep(t)
         if slow_mode and num_threads == 1:
@@ -156,9 +153,7 @@ def runWrapper(obj):
         if ((t == num_time_steps - 1) or (enable_terminal_condition and terminal_condition)):
             # Save final step of prev exp if at final time step
             if save_prev_exp:
-                lock.acquire()
                 prev_exp_data.record(obj, t)
-                lock.release()
 
             # Display final map if at final time step
             if config.enable_plots and num_threads == 1:
