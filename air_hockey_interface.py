@@ -22,7 +22,8 @@ class AirHockeyInterface:
         self.steady_state_convergence_iterations = 10
         self.drive_goal_give_up_iterations = 50
         self.pos_error_thresh = 0.0254 # m
-        self.grid_to_vicon_conv_factor = 0.05 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
+        self.grid_to_vicon_conv_factor = 0.0465 # m/grid cell (0.2 for 10x5 map, 0.1 for 20x10 map, 0.05 for 40x20 map)
+        self.y_offset = -0.0254 # m
         
         self.true_pos_x = 0.0
         self.true_pos_y = 0.0
@@ -56,7 +57,7 @@ class AirHockeyInterface:
         self.grabber_pub.publish(grabber_msg)
         goal_msg = Twist()
         goal_msg.linear.x = float(init_x) * self.grid_to_vicon_conv_factor
-        goal_msg.linear.y = float(init_y) * self.grid_to_vicon_conv_factor
+        goal_msg.linear.y = float(init_y) * self.grid_to_vicon_conv_factor + self.y_offset
         self.waypoint_pub.publish(goal_msg)
         use_waypoint_msg = Bool()
         use_waypoint_msg.data = True
@@ -133,7 +134,7 @@ class AirHockeyInterface:
             if (0 <= int(goal_x) < map_shape[0]) and (0 <= int(goal_y) < map_shape[1]) and states.battery > 0: # Only send the drive goal if it is within the map boundaries and battery not dead
                 goal_msg = Twist()
                 goal_msg.linear.x = goal_x * self.grid_to_vicon_conv_factor
-                goal_msg.linear.y = goal_y * self.grid_to_vicon_conv_factor
+                goal_msg.linear.y = goal_y * self.grid_to_vicon_conv_factor + self.y_offset
                 self.waypoint_pub.publish(goal_msg)
             else:
                 goal_x = float(initial_x)
@@ -157,7 +158,7 @@ class AirHockeyInterface:
             elif i >= self.drive_goal_give_up_iterations: # If taking too long to reach goal (i.e., robot stuck) give up and send goal to current position to stop trying to drive
                 goal_msg = Twist()
                 goal_msg.linear.x = round(self.true_pos_x) * self.grid_to_vicon_conv_factor
-                goal_msg.linear.y = round(self.true_pos_y) * self.grid_to_vicon_conv_factor
+                goal_msg.linear.y = round(self.true_pos_y) * self.grid_to_vicon_conv_factor + self.y_offset
                 self.waypoint_pub.publish(goal_msg)
                 keep_executing = False
             self.loop_rate.sleep()
@@ -230,7 +231,7 @@ class AirHockeyInterface:
 
     def poseCallback(self, msg):
         self.true_pos_x = msg.transform.translation.x / self.grid_to_vicon_conv_factor
-        self.true_pos_y = msg.transform.translation.y / self.grid_to_vicon_conv_factor
+        self.true_pos_y = (msg.transform.translation.y - self.y_offset) / self.grid_to_vicon_conv_factor
 
     def forceSensorCallback(self, msg):
         self.food_sensor = msg.data

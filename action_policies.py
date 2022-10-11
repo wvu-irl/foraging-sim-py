@@ -617,8 +617,8 @@ def searchFSMActionPolicy(self, enable_local_influence):
                                     pmf[self.fsm_other_robot_approach_dir[k]-1] += 1.0
                         pmf /= np.sum(pmf)
                         rng = np.random.default_rng()
-                        #approach_dir = rng.choice(elements, 1, p=pmf)
-                        approach_dir = 6 # TODO: for testing
+                        approach_dir = rng.choice(elements, 1, p=pmf)
+                        #approach_dir = 3 # TODO: for testing
                         self.states.last_approach_dir = approach_dir
                         debugPrint("Random approach dir: {0}".format(approach_dir))
                     (approach_offset_delta_x, approach_offset_delta_y) = getDeltaFromDirection(approach_dir)
@@ -837,21 +837,21 @@ def actionToDirection(action):
 
 def directionToAction(direction):
     if direction == Direction.E:
-        return Action.MOVE_E
+        return Actions.MOVE_E
     elif direction == Direction.NE:
-        return Action.MOVE_NE
+        return Actions.MOVE_NE
     elif direction == Direction.N:
-        return Action.MOVE_N
+        return Actions.MOVE_N
     elif direction == Direction.NW:
-        return Action.MOVE_NW
+        return Actions.MOVE_NW
     elif direction == Direction.W:
-        return Action.MOVE_W
+        return Actions.MOVE_W
     elif direction == Direction.SW:
-        return Action.MOVE_SW
+        return Actions.MOVE_SW
     elif direction == Direction.S:
-        return Action.MOVE_S
+        return Actions.MOVE_S
     elif direction == Direction.SE:
-        return Action.MOVE_SE
+        return Actions.MOVE_SE
     else:
         return Direction.NONE
 
@@ -883,11 +883,20 @@ def obstacleAvoidance(chosen_action, submap):
         #rng = np.random.default_rng()
         #chosen_action = rng.choice(elements, 1, p=pmf)
         keep_checking = True
+        initial_dir = move_dir
         candidate_dir = move_dir
         while keep_checking:
             candidate_dir -= 1
             if candidate_dir < 1:
                 candidate_dir = 8
-            if move_dir not in blocked_moves:
+            if not (candidate_dir in blocked_moves):
                 chosen_action = directionToAction(move_dir)
+                keep_checking = False
+            if candidate_dir == initial_dir:
+                elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+                rng = np.random.default_rng()
+                chosen_action = rng.choice(elements, 1)
+                keep_checking = False
+            debugPrint("blocked_moves: {0}".format(blocked_moves))
+            debugPrint("candidate_dir: {0}".format(candidate_dir))
     return chosen_action

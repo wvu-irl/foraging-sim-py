@@ -17,7 +17,7 @@ import config
 import sys
 import time
 
-config.enable_debug_prints = False
+config.enable_debug_prints = True
 config.enable_plots = True
 config.enable_action_policy_plots = False
 save_plots = False
@@ -112,14 +112,14 @@ obstacle_layer = np.array(obstacle_img)
 robot_layer = np.array(robot_img)
 map_shape = np.shape(food_layer)
 projector_dpi = 16 # pixels per inch
-projector_width = 1920
-projector_height = 960
+projector_width = 1650
+projector_height = 825
 
 # ROS image and publisher for publishing map to image server
 image_msg = ImageMsg()
 image_msg.header.seq = 0
-image_msg.width = 1920
-image_msg.height = 960
+image_msg.width = projector_width
+image_msg.height = projector_height
 image_msg.encoding = "bgr8"
 image_msg.is_bigendian = 0
 image_msg.step = 3 * image_msg.width
@@ -197,7 +197,7 @@ def runWrapper(obj, map_fig, map_ax):
 
 def run():
     rospy.init_node("foraging_air_hockey_interface")
-    worlds = [World(i, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp=False, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
+    worlds = [World(i, food_layer, home_layer, obstacle_layer, robot_layer, robot_personality_list, perception_range, battery_size, heading_size, policy_filepath_list, v_filepath_list, q_filepath_list, arbitration_type_list, use_prev_exp, prev_exp_filepath, num_time_steps, heading_change_times, food_respawn, real_world_exp=True, manual_control=use_manual_control) for i in range(num_monte_carlo_trials)]
     plt.switch_backend("QT4Agg") # TODO: change this to publish map as img to ROS web_video_server
     #mgr = plt.get_current_fig_manager()
     #mgr.full_screen_toggle()
