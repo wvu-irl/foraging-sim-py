@@ -168,11 +168,13 @@ class AirHockeyInterface:
         new_states.x = round(self.true_pos_x)
         new_states.y = round(self.true_pos_y)
         new_states.has_food = self.food_sensor
+        actual_delta_x = new_states.x - initial_x
+        actual_delta_y = new_states.y - initial_y
 
         # If robot has moved, mark old position in map to be removed and increment distance traversed
         if new_states.x != initial_x or new_states.y != initial_y:
             new_submap_object_list.append(MapLayer.ROBOT)
-            new_submap_property_list.append({"delta_x" : -delta_x, "delta_y" : -delta_y, "id" : constants["id"]})
+            new_submap_property_list.append({"delta_x" : -actual_delta_x, "delta_y" : -actual_delta_y, "id" : constants["id"]})
 
         # If at home, battery receives charge
         new_at_home = self.isAtHome(new_states.x, new_states.y, home_pos)
