@@ -9,7 +9,7 @@ from scipy.stats import chi2
 from scipy.stats import norm as norm_dist
 import matplotlib.pyplot as plt
 
-if True:
+if False:
     search_goal_fig, search_goal_ax = plt.subplots()
     grab_prob_fig, grab_prob_ax = plt.subplots()
     temp_arr = np.array([[0.0, 0.04], [0.04, 0.0]])
