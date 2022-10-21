@@ -9,14 +9,16 @@ from scipy.stats import chi2
 from scipy.stats import norm as norm_dist
 import matplotlib.pyplot as plt
 
-if config.enable_action_policy_plots:
+if True:
     search_goal_fig, search_goal_ax = plt.subplots()
     grab_prob_fig, grab_prob_ax = plt.subplots()
-    temp_arr = np.array([[0.0, 0.05], [0.05, 0.0]])
+    temp_arr = np.array([[0.0, 0.04], [0.04, 0.0]])
     c_map = search_goal_ax.imshow(temp_arr)
     search_goal_fig.colorbar(c_map)
     c_map = grab_prob_ax.imshow(temp_arr)
     grab_prob_fig.colorbar(c_map)
+    search_goal_fig.tight_layout()
+    grab_prob_fig.tight_layout()
     plt.ion()
 
 @unique
@@ -544,7 +546,16 @@ def searchFSMActionPolicy(self, enable_local_influence):
                 search_goal_ax.cla()
                 grab_prob_img = grab_prob_ax.imshow(np.swapaxes(self.grab_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
                 search_goal_img = search_goal_ax.imshow(np.swapaxes(self.search_goal_prob_map, 0, 1), origin='lower', vmin=0.0, vmax=0.05)
+                grab_prob_ax.set_xticks([])
+                grab_prob_ax.set_xticks([], minor=True)
+                grab_prob_ax.set_yticks([])
+                grab_prob_ax.set_yticks([], minor=True)
+                search_goal_ax.set_xticks([])
+                search_goal_ax.set_xticks([], minor=True)
+                search_goal_ax.set_yticks([])
+                search_goal_ax.set_yticks([], minor=True)
                 plt.show()
+                plt.waitforbuttonpress()
 
             self.fsm_approach_target_food_selected = False
             if self.states.battery < battery_go_home_threshold: # If battery is below threshold, go home

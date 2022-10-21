@@ -1,8 +1,8 @@
-food_img_path = "maps/25_25_food_map_d.png"
-home_img_path = "maps/25_25_home_map_d.png"
+food_img_path = "maps/25_25_food_map_c.png"
+home_img_path = "maps/25_25_home_map.png"
 obstacle_img_path = "maps/25_25_obstacle_map.png"
-robot_img_path = "maps/25_25_robot_map_d_4_bots.png"
-robot_personality_list = [16, 16, 16, 16]
+robot_img_path = "maps/25_25_robot_map_8_bots.png"
+robot_personality_list = [16, 16, 16, 16, 16, 16, 16, 16]
 perception_range = 3
 battery_size = 50
 heading_size = 8
