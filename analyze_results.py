@@ -56,9 +56,9 @@ for i in range(num_figures):
 
 num_trials = food_data[0][0].shape[0]
 
-total_food_retrieved = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.int)
-num_times_home_visited = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.int)
-total_distance_traversed = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.int)
+total_food_retrieved = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.float)
+num_times_home_visited = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.float)
+total_distance_traversed = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.float)
 total_reward = np.zeros((num_figures, num_files_per_fig, num_trials), dtype=np.float)
 
 reward_fig = [None] * num_figures
@@ -91,6 +91,13 @@ for i in range(num_figures):
                 num_times_home_visited[i, j, k] += num_times_home_visited_data[i][j][k, l]
                 total_distance_traversed[i, j, k] += total_distance_traversed_data[i][j][k, l]
                 total_reward[i, j, k] += total_reward_data[i][j][k, l]
+
+        # If number of robots > 1, normalize results by number of robots
+        if num_robots > 1:
+            total_food_retrieved[i, j] = np.divide(total_food_retrieved[i, j], float(num_robots))
+            num_times_home_visited[i, j] = np.divide(num_times_home_visited[i, j], float(num_robots))
+            total_distance_traversed[i, j] = np.divide(total_distance_traversed[i, j], float(num_robots))
+            total_reward[i, j] = np.divide(total_reward[i, j], float(num_robots))
 
         food_mean = np.mean(total_food_retrieved[i, j, :])
         food_median = np.median(total_food_retrieved[i, j, :])

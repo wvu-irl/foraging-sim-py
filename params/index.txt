@@ -136,3 +136,19 @@ foraging134: 25x25, map b, 8 bots, per range 2, local, time var
 foraging135: 25x25, map c, 8 bots, per range 2, local, time var
 foraging136: 25x25, map d, 8 bots, per range 2, no local, time var
 foraging137: 25x25, map d, 8 bots, per range 2, local, time var
+foraging138: 25x25, map a, 12 bots, per range 2, no local, diverse
+foraging139: 25x25, map b, 12 bots, per range 2, no local, diverse
+foraging140: 25x25, map c, 12 bots, per range 2, no local, diverse
+foraging141: 25x25, map a, 12 bots, per range 2, local, diverse
+foraging142: 25x25, map b, 12 bots, per range 2, local, diverse
+foraging143: 25x25, map c, 12 bots, per range 2, local, diverse
+foraging144: 25x25, map d, 12 bots, per range 2, no local, diverse
+foraging145: 25x25, map d, 12 bots, per range 2, local, diverse
+foraging146: 25x25, map a, 12 bots, per range 2, no local, diverse, time var
+foraging147: 25x25, map b, 12 bots, per range 2, no local, diverse, time var
+foraging148: 25x25, map c, 12 bots, per range 2, no local, diverse, time var
+foraging149: 25x25, map a, 12 bots, per range 2, local, diverse, time var
+foraging150: 25x25, map b, 12 bots, per range 2, local, diverse, time var
+foraging151: 25x25, map c, 12 bots, per range 2, local, diverse, time var
+foraging152: 25x25, map d, 12 bots, per range 2, no local, diverse, time var
+foraging153: 25x25, map d, 12 bots, per range 2, local, diverse, time var

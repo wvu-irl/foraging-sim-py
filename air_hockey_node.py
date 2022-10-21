@@ -20,6 +20,7 @@ import time
 config.enable_debug_prints = True
 config.enable_plots = True
 config.enable_action_policy_plots = False
+config.use_bug_avoidance = True
 save_plots = False
 use_manual_control = False
 slow_mode = False

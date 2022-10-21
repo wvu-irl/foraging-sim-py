@@ -393,12 +393,12 @@ class World:
     def simulationStep(self, t):
         for i in range(self.num_robots):
             if t in self.heading_change_times:
-                self.true_robot_states[i].heading += 4
-                self.robot[i].states.heading += 4
+                self.true_robot_states[i].heading += 2
+                self.robot[i].states.heading += 2
                 if self.true_robot_states[i].heading > 8:
-                    self.true_robot_states[i].heading = 1
+                    self.true_robot_states[i].heading -= 8
                 if self.robot[i].states.heading > 8:
-                    self.robot[i].states.heading += 2
+                    self.robot[i].states.heading -= 8
             self.updateRobotObservation(i, t)
             self.executeRobotAction(i)
             if not self.food_respawn:

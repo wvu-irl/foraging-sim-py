@@ -888,26 +888,28 @@ def obstacleAvoidance(chosen_action, submap):
     move_dir = actionToDirection(chosen_action)
     blocked_moves = findBlockedMoves(submap)
     if move_dir in blocked_moves:
-        #pmf = np.ones(8) / 8.0
-        #pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
-        #elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-        #rng = np.random.default_rng()
-        #chosen_action = rng.choice(elements, 1, p=pmf)
-        keep_checking = True
-        initial_dir = move_dir
-        candidate_dir = move_dir
-        while keep_checking:
-            candidate_dir -= 1
-            if candidate_dir < 1:
-                candidate_dir = 8
-            if not (candidate_dir in blocked_moves):
-                chosen_action = directionToAction(move_dir)
-                keep_checking = False
-            if candidate_dir == initial_dir:
-                elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
-                rng = np.random.default_rng()
-                chosen_action = rng.choice(elements, 1)
-                keep_checking = False
-            debugPrint("blocked_moves: {0}".format(blocked_moves))
-            debugPrint("candidate_dir: {0}".format(candidate_dir))
+        if config.use_bug_avoidance:
+            keep_checking = True
+            initial_dir = move_dir
+            candidate_dir = move_dir
+            while keep_checking:
+                candidate_dir -= 1
+                if candidate_dir < 1:
+                    candidate_dir = 8
+                if not (candidate_dir in blocked_moves):
+                    chosen_action = directionToAction(move_dir)
+                    keep_checking = False
+                if candidate_dir == initial_dir:
+                    elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+                    rng = np.random.default_rng()
+                    chosen_action = rng.choice(elements, 1)
+                    keep_checking = False
+                debugPrint("blocked_moves: {0}".format(blocked_moves))
+                debugPrint("candidate_dir: {0}".format(candidate_dir))
+        else:
+            pmf = np.ones(8) / 8.0
+            pmf = removeBlockedMovesFromPMF(pmf, blocked_moves)
+            elements = [Actions.MOVE_E, Actions.MOVE_NE, Actions.MOVE_N, Actions.MOVE_NW, Actions.MOVE_W, Actions.MOVE_SW, Actions.MOVE_S, Actions.MOVE_SE]
+            rng = np.random.default_rng()
+            chosen_action = rng.choice(elements, 1, p=pmf)
     return chosen_action
