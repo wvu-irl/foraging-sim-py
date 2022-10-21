@@ -70,11 +70,12 @@ def displayMap(obj, plt, fig, ax):
     ax.cla()
     ax.imshow(np.swapaxes(img, 0, 1), origin='lower')
     #ax.imshow(img, origin='lower')
-    #ax.set_xticks(np.arange(0, img_shape[0], 1))
-    #ax.set_yticks(np.arange(0, img_shape[1], 1))
-    #ax.set_xticks(np.arange(-0.5, img_shape[0], 1), minor=True)
-    #ax.set_yticks(np.arange(-0.5, img_shape[1], 1), minor=True) 
     if obj.real_world_exp:
+        print("displayMap real_world_exp")
+        ax.set_xticks(np.arange(0, img_shape[0], 1))
+        ax.set_yticks(np.arange(0, img_shape[1], 1))
+        ax.set_xticks(np.arange(-0.5, img_shape[0], 1), minor=True)
+        ax.set_yticks(np.arange(-0.5, img_shape[1], 1), minor=True) 
         ax.grid(which='minor', color='k', linestyle='-', linewidth=5)
     else:
         fig.tight_layout()
