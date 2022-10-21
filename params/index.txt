@@ -76,19 +76,63 @@ foraging74: 25x25, map c, 8 bots, per range 2, no local, no food push
 foraging75: 25x25, map a, 8 bots, per range 2, local, no food push
 foraging76: 25x25, map b, 8 bots, per range 2, local, no food push
 foraging77: 25x25, map c, 8 bots, per range 2, local, no food push
-foraging78: 25x25, map a, 1 bot, per range 2, gd train indiv
-foraging79: 25x25, map b, 1 bot, per range 2, gd train indiv
-foraging80: 25x25, map c, 1 bot, per range 2, gd train indiv
-foraging81: 25x25, map a, 1 bot, per range 2, gd train recur
-foraging82: 25x25, map b, 1 bot, per range 2, gd train recur
-foraging83: 25x25, map c, 1 bot, per range 2, gd train recur
-foraging84: 25x25, map a, 1 bot, per range 2, gd eval indiv
-foraging85: 25x25, map b, 1 bot, per range 2, gd eval indiv
-foraging86: 25x25, map c, 1 bot, per range 2, gd eval indiv
-foraging87: 25x25, map a, 1 bot, per range 2, gd eval recur
-foraging88: 25x25, map b, 1 bot, per range 2, gd eval recur
-foraging89: 25x25, map c, 1 bot, per range 2, gd eval recur
-foraging90: 25x25, map d, 1 bot, per range 2, gd train indiv
-foraging91: 25x25, map d, 1 bot, per range 2, gd train recur
-foraging92: 25x25, map d, 1 bot, per range 2, gd eval indiv
-foraging93: 25x25, map d, 1 bot, per range 2, gd eval recur
+foraging78: 25x25, map a, 1 bot, per range 2, 4 prev trials, gd train indiv
+foraging79: 25x25, map b, 1 bot, per range 2, 4 prev trials, gd train indiv
+foraging80: 25x25, map c, 1 bot, per range 2, 4 prev trials, gd train indiv
+foraging81: 25x25, map a, 1 bot, per range 2, 8 prev trials, gd train indiv
+foraging82: 25x25, map b, 1 bot, per range 2, 8 prev trials, gd train indiv
+foraging83: 25x25, map c, 1 bot, per range 2, 8 prev trials, gd train indiv
+foraging84: 25x25, map a, 1 bot, per range 2, 12 prev trials, gd train indiv
+foraging85: 25x25, map b, 1 bot, per range 2, 12 prev trials, gd train indiv
+foraging86: 25x25, map c, 1 bot, per range 2, 12 prev trials, gd train indiv
+foraging87: 25x25, map a, 1 bot, per range 2, 4 prev trials, gd train recur
+foraging88: 25x25, map b, 1 bot, per range 2, 4 prev trials, gd train recur
+foraging89: 25x25, map c, 1 bot, per range 2, 4 prev trials, gd train recur
+foraging90: 25x25, map a, 1 bot, per range 2, 8 prev trials, gd train recur
+foraging91: 25x25, map b, 1 bot, per range 2, 8 prev trials, gd train recur
+foraging92: 25x25, map c, 1 bot, per range 2, 8 prev trials, gd train recur
+foraging93: 25x25, map a, 1 bot, per range 2, 12 prev trials, gd train recur
+foraging94: 25x25, map b, 1 bot, per range 2, 12 prev trials, gd train recur
+foraging95: 25x25, map c, 1 bot, per range 2, 12 prev trials, gd train recur
+foraging96: 25x25, map a, 1 bot, per range 2, 4 prev trials, gd eval indiv
+foraging97: 25x25, map b, 1 bot, per range 2, 4 prev trials, gd eval indiv
+foraging98: 25x25, map c, 1 bot, per range 2, 4 prev trials, gd eval indiv
+foraging99: 25x25, map a, 1 bot, per range 2, 8 prev trials, gd eval indiv
+foraging100: 25x25, map b, 1 bot, per range 2, 8 prev trials, gd eval indiv
+foraging101: 25x25, map c, 1 bot, per range 2, 8 prev trials, gd eval indiv
+foraging102: 25x25, map a, 1 bot, per range 2, 12 prev trials, gd eval indiv
+foraging103: 25x25, map b, 1 bot, per range 2, 12 prev trials, gd eval indiv
+foraging104: 25x25, map c, 1 bot, per range 2, 12 prev trials, gd eval indiv
+foraging105: 25x25, map a, 1 bot, per range 2, 4 prev trials, gd eval recur
+foraging106: 25x25, map b, 1 bot, per range 2, 4 prev trials, gd eval recur
+foraging107: 25x25, map c, 1 bot, per range 2, 4 prev trials, gd eval recur
+foraging108: 25x25, map a, 1 bot, per range 2, 8 prev trials, gd eval recur
+foraging109: 25x25, map b, 1 bot, per range 2, 8 prev trials, gd eval recur
+foraging110: 25x25, map c, 1 bot, per range 2, 8 prev trials, gd eval recur
+foraging111: 25x25, map a, 1 bot, per range 2, 12 prev trials, gd eval recur
+foraging112: 25x25, map b, 1 bot, per range 2, 12 prev trials, gd eval recur
+foraging113: 25x25, map c, 1 bot, per range 2, 12 prev trials, gd eval recur
+foraging114: 25x25, map d, 1 bot, per range 2, 4 prev trials, gd train indiv
+foraging115: 25x25, map d, 1 bot, per range 2, 8 prev trials, gd train indiv
+foraging116: 25x25, map d, 1 bot, per range 2, 12 prev trials, gd train indiv
+foraging117: 25x25, map d, 1 bot, per range 2, 4 prev trials, gd train recur
+foraging118: 25x25, map d, 1 bot, per range 2, 8 prev trials, gd train recur
+foraging119: 25x25, map d, 1 bot, per range 2, 12 prev trials, gd train recur
+foraging120: 25x25, map d, 1 bot, per range 2, 4 prev trials, gd eval indiv
+foraging121: 25x25, map d, 1 bot, per range 2, 8 prev trials, gd eval indiv
+foraging122: 25x25, map d, 1 bot, per range 2, 12 prev trials, gd eval indiv
+foraging123: 25x25, map d, 1 bot, per range 2, 4 prev trials, gd eval recur
+foraging124: 25x25, map d, 1 bot, per range 2, 8 prev trials, gd eval recur
+foraging125: 25x25, map d, 1 bot, per range 2, 12 prev trials, gd eval recur
+foraging126: 25x25, map a, 1 bot, per range 2, single robot
+foraging127: 25x25, map b, 1 bot, per range 2, single robot
+foraging128: 25x25, map c, 1 bot, per range 2, single robot
+foraging129: 25x25, map d, 1 bot, per range 2, single robot
+foraging130: 25x25, map a, 8 bots, per range 2, no local, time var
+foraging131: 25x25, map b, 8 bots, per range 2, no local, time var
+foraging132: 25x25, map c, 8 bots, per range 2, no local, time var
+foraging133: 25x25, map a, 8 bots, per range 2, local, time var
+foraging134: 25x25, map b, 8 bots, per range 2, local, time var
+foraging135: 25x25, map c, 8 bots, per range 2, local, time var
+foraging136: 25x25, map d, 8 bots, per range 2, no local, time var
+foraging137: 25x25, map d, 8 bots, per range 2, local, time var
