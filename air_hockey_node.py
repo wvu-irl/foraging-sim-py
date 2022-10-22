@@ -169,6 +169,9 @@ def runWrapper(obj, map_fig, map_ax):
         if rospy.is_shutdown():
             break
 
+        if save_prev_exp:
+             prev_exp_data.record(obj, t)
+
         terminal_condition = obj.simulationStep(t)
         if slow_mode:
             time.sleep(0.5)
@@ -184,7 +187,8 @@ def runWrapper(obj, map_fig, map_ax):
 
         if ((t == num_time_steps - 1) or (enable_terminal_condition and terminal_condition)):
             # Save final step of prev exp if at final time step
-            if save_prev_exp: prev_exp_data.record(obj, t)
+            if save_prev_exp:
+                 prev_exp_data.record(obj, t)
 
             # Display final map if at final time step
             map_fig.set_figwidth(projector_width / projector_dpi)
