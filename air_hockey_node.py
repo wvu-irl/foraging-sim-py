@@ -131,6 +131,8 @@ image_pub = rospy.Publisher("foraging_map_img", ImageMsg, queue_size=1, latch=Tr
 if save_prev_exp:
     prev_exp_data = PrevExpData()
     prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
+    if recursive_prev_exp:
+        prev_exp_data.save(prev_exp_filepath)
 
 def pubMatplotlibImage(fig, ax):
     #img_x = np.linspace(0, 1, img.shape[0])
@@ -233,6 +235,8 @@ def run():
     pubMatplotlibImage(map_fig, map_ax)
     input("Please set world as shown and then press enter to begin")
     for i in range(num_monte_carlo_trials):
+        if recursive_prev_exp:
+            worlds[i].initPrevExp()
         runWrapper(worlds[i], map_fig, map_ax)
         if rospy.is_shutdown():
             break

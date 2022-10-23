@@ -93,15 +93,6 @@ class World:
         self.use_prev_exp = use_prev_exp
         self.prev_exp_filepath = prev_exp_filepath
 
-        # If previous experience is to be used, load the previous experience data and initialize other data containers
-        if self.use_prev_exp:
-            self.prev_exp_data = PrevExpData()
-            self.prev_exp_data.load(self.prev_exp_filepath)        
-            self.num_prev_exp_robots = self.prev_exp_data.last_trial_written[0] + 1
-            self.prev_exp_robot_id = [self.prev_exp_data.robot_id[0] + i + self.num_robots for i in range(self.num_prev_exp_robots)]
-            self.prev_exp_states = [UnknownMapFullStates() for i in range(self.num_prev_exp_robots)]
-            self.prev_exp_constants = [{"id" : self.prev_exp_robot_id[i], "personality" : self.prev_exp_data.personality[0], "phantom" : True} for i in range(self.num_prev_exp_robots)]
-
         # Record if this is a real world experiment (True) or simulation (False)
         self.real_world_exp = real_world_exp
 
@@ -251,8 +242,20 @@ class World:
                             self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
                         else:
                             self.true_transition_model[robot_id] = unknownMapDirectionalFoodTransitionModelTrue
-        # Initialize combined states and constants for first time step, if using previous experience
+
         if self.use_prev_exp:
+            self.initPrevExp()
+
+    def initPrevExp(self):
+        # If previous experience is to be used, load the previous experience data and initialize other data containers
+        if self.use_prev_exp:
+            self.prev_exp_data = PrevExpData()
+            self.prev_exp_data.load(self.prev_exp_filepath)        
+            self.num_prev_exp_robots = self.prev_exp_data.last_trial_written[0] + 1
+            self.prev_exp_robot_id = [self.prev_exp_data.robot_id[0] + i + self.num_robots for i in range(self.num_prev_exp_robots)]
+            self.prev_exp_states = [UnknownMapFullStates() for i in range(self.num_prev_exp_robots)]
+            self.prev_exp_constants = [{"id" : self.prev_exp_robot_id[i], "personality" : self.prev_exp_data.personality[0], "phantom" : True} for i in range(self.num_prev_exp_robots)]
+            # Initialize combined states and constants for first time step, if using previous experience
             for j in range(self.num_prev_exp_robots):
                 self.map.map[MapLayer.ROBOT, self.prev_exp_data.x[j, 0, 0], self.prev_exp_data.y[j, 0, 0]] = self.prev_exp_robot_id[j] + 1
                 self.prev_exp_states[j].x = self.prev_exp_data.x[j, 0, 0]

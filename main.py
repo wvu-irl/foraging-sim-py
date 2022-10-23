@@ -127,6 +127,8 @@ robot_layer = np.array(robot_img)
 if save_prev_exp:
     prev_exp_data = PrevExpData()
     prev_exp_data.allocate(num_monte_carlo_trials, num_robots, num_time_steps, list(range(num_robots)), robot_personality_list)
+    if recursive_prev_exp:
+        prev_exp_data.save(prev_exp_filepath)
 
 def runWrapper(obj): 
     # Initialize plot objects, if only one trial
@@ -185,6 +187,8 @@ def poolHandler():
     else:
         # Run each trial sequentially, for debugging purposes or for groundhog day recursive training, with no multiprocessing
         for i in range(num_monte_carlo_trials):
+            if recursive_prev_exp:
+                sim_worlds[i].initPrevExp()
             runWrapper(sim_worlds[i])
             if save_prev_exp:
                 prev_exp_data.last_trial_written[0] = i
