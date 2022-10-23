@@ -27,7 +27,7 @@ def displayMap(obj, plt, fig, ax):
                 #    robot_color = [0, 0, 155]  # Dark Blue
                 elif robot_heading in [0, 1]:
                     if phantom:
-                        robot_color = [255, 200, 200]
+                        robot_color = [255, 150, 150]
                     else:
                         robot_color = [255, 0, 0]   # Red
                 elif robot_heading == 3:

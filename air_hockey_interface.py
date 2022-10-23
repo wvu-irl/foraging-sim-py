@@ -14,9 +14,10 @@ from geometry_msgs.msg import Twist
 # Find color message type
 
 class AirHockeyInterface:
-    def __init__(self, robot_id, num_food):
+    def __init__(self, robot_id, num_food, map_shape):
         self.robot_id = robot_id
         self.num_food = num_food
+        self.map_shape = map_shape
         
         # Set air hockey interface parameters
         self.steady_state_convergence_iterations = 10
@@ -244,6 +245,8 @@ class AirHockeyInterface:
         self.food_visible[food_index] = True
         self.visible_food_pos_x[food_index] = round(msg.transform.translation.x / self.grid_to_vicon_conv_factor)
         self.visible_food_pos_y[food_index] = round(msg.transform.translation.y / self.grid_to_vicon_conv_factor)
+        if self.visible_food_pos_x[food_index] < 0 or self.visible_food_pos_x[food_index] >= self.map_shape[0] or self.visible_food_pos_y[food_index] < 0 or self.visible_food_pos_y[food_index] >= self.map_shape[1]:
+            self.food_visible[food_index] = False
 
     def isAtHome(self, x, y, home_pos):
         if x == home_pos[0] and y == home_pos[1]:

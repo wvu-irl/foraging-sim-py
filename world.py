@@ -245,7 +245,7 @@ class World:
                         self.robot[robot_id].states.heading = 5
                         self.use_full_map[robot_id] = False
                     if self.real_world_exp:
-                        self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, self.num_food)
+                        self.real_world_interface[robot_id] = AirHockeyInterface(robot_id, self.num_food, self.map_shape)
                     else:
                         if self.use_full_map[robot_id]:
                             self.true_transition_model[robot_id] = mdpDirectionalFoodTransitionModelTrue
