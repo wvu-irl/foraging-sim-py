@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import sys
 from importlib.machinery import SourceFileLoader
 
+enable_reward_bar = False
+enable_food_bar = False
+enable_distance_bar = False
+
 def percentChange(x, x_ref):
     return (x - x_ref)/abs(x_ref) * 100.0
 
@@ -65,9 +69,24 @@ reward_fig = [None] * num_figures
 reward_ax = [None] * num_figures
 reward_box_fig = [None] * num_figures
 reward_box_ax = [None] * num_figures
+if enable_reward_bar and num_files_per_fig == 1:
+    reward_bar_fig = [None] * num_figures
+    reward_bar_ax = [None] * num_figures
+if enable_food_bar and num_files_per_fig == 1:
+    food_bar_fig = [None] * num_figures
+    food_bar_ax = [None] * num_figures
+if enable_distance_bar and num_files_per_fig == 1:
+    distance_bar_fig = [None] * num_figures
+    distance_bar_ax = [None] * num_figures
 for i in range(num_figures):
     reward_fig[i], reward_ax[i] = plt.subplots()
     reward_box_fig[i], reward_box_ax[i] = plt.subplots()
+    if enable_reward_bar and num_files_per_fig == 1:
+        reward_bar_fig[i], reward_bar_ax[i] = plt.subplots()
+    if enable_food_bar and num_files_per_fig == 1:
+        food_bar_fig[i], food_bar_ax[i] = plt.subplots()
+    if enable_distance_bar and num_files_per_fig == 1:
+        distance_bar_fig[i], distance_bar_ax[i] = plt.subplots()
 total_reward_box_data = [[None] * num_files_per_fig for i in range(num_figures)]
 
 plt.rcParams.update({"font.size": 12})
@@ -99,6 +118,13 @@ for i in range(num_figures):
             total_distance_traversed[i, j] = np.divide(total_distance_traversed[i, j], float(num_robots))
             total_reward[i, j] = np.divide(total_reward[i, j], float(num_robots))
 
+        if enable_reward_bar:
+            print("total_reward[{0}, {1}] = {2}".format(i, j, total_reward[i, j]))
+        if enable_food_bar:
+            print("total_food_retrieved[{0}, {1}] = {2}".format(i, j, total_food_retrieved[i, j]))
+        if enable_distance_bar:
+            print("total_distance_traversed[{0}, {1}] = {2}".format(i, j, total_distance_traversed[i, j]))
+        
         food_mean = np.mean(total_food_retrieved[i, j, :])
         food_median = np.median(total_food_retrieved[i, j, :])
         food_max = np.max(total_food_retrieved[i, j, :])
@@ -226,6 +252,18 @@ for i in range(num_figures):
 min_limit = np.amin(total_reward) - 50
 max_limit = np.amax(total_reward) + 50
 
+if enable_reward_bar and num_files_per_fig == 1:
+    reward_bar_min = np.amin(total_reward)
+    reward_bar_max = np.amax(total_reward)
+
+if enable_food_bar and num_files_per_fig == 1:
+    food_bar_min = 0
+    food_bar_max = np.amax(total_food_retrieved)
+
+if enable_distance_bar and num_files_per_fig == 1:
+    distance_bar_min = 0
+    distance_bar_max = np.amax(total_distance_traversed)
+
 for i in range(num_figures):
     reward_ax[i].set_xlim(min_limit, max_limit)
 
@@ -234,6 +272,27 @@ for i in range(num_figures):
     reward_box_ax[i].set_yticklabels(plot_labels[i])
     reward_box_ax[i].grid()
     reward_box_ax[i].set_xlim(min_limit, max_limit)
+
+    if enable_reward_bar and num_files_per_fig == 1:
+        reward_bar_ax[i].bar(list(range(num_trials)), total_reward[i, 0], width=0.5, zorder=3)
+        reward_bar_ax[i].set_xlabel("Trial")
+        reward_bar_ax[i].set_ylabel("Total Reward")
+        reward_bar_ax[i].grid(zorder=0)
+        reward_bar_ax[i].set_ylim(reward_bar_min, reward_bar_max)
+
+    if enable_food_bar and num_files_per_fig == 1:
+        food_bar_ax[i].bar(list(range(num_trials)), total_food_retrieved[i, 0], width=0.5, zorder=3)
+        food_bar_ax[i].set_xlabel("Trial")
+        food_bar_ax[i].set_ylabel("Num Food Retrieved")
+        food_bar_ax[i].grid(zorder=0)
+        food_bar_ax[i].set_ylim(food_bar_min, food_bar_max)
+
+    if enable_distance_bar and num_files_per_fig == 1:
+        distance_bar_ax[i].bar(list(range(num_trials)), total_distance_traversed[i, 0], width=0.5, zorder=3)
+        distance_bar_ax[i].set_xlabel("Trial")
+        distance_bar_ax[i].set_ylabel("Total Distance Traversed")
+        distance_bar_ax[i].grid(zorder=0)
+        distance_bar_ax[i].set_ylim(distance_bar_min, distance_bar_max)
 
     cdf_filename_base = "figures/" + prefix[i] + "_accumulated_reward_cdf"
     box_filename_base = "figures/" + prefix[i] + "_accumulated_reward_box_plot"
