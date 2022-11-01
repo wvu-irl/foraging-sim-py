@@ -143,7 +143,7 @@ def runWrapper(obj):
         if config.enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
-                map_fig.savefig("figures/fig%d.png" % t)
+                map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight")
             print("\nt = {0}".format(t))
 
         if save_prev_exp:
@@ -163,7 +163,7 @@ def runWrapper(obj):
                 displayMap(obj, plt, map_fig, map_ax)
                 if save_plots == 1:
                     t = t+1
-                    map_fig.savefig("figures/fig%d.png" % t)
+                    map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight")
 
         # End simulation early if terminal condition reached
         if enable_terminal_condition and terminal_condition:
