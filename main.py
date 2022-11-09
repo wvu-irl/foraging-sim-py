@@ -15,7 +15,7 @@ config.enable_debug_prints = False
 config.enable_plots = True
 config.enable_action_policy_plots = False
 config.use_bug_avoidance = False
-save_plots = False
+save_plots = True
 use_manual_control = False
 slow_mode = False
 
@@ -143,7 +143,7 @@ def runWrapper(obj):
         if config.enable_plots and num_threads == 1:
             displayMap(obj, plt, map_fig, map_ax)
             if save_plots == 1:
-                map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight")
+                map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight", dpi=200)
             print("\nt = {0}".format(t))
 
         if save_prev_exp:
@@ -163,7 +163,7 @@ def runWrapper(obj):
                 displayMap(obj, plt, map_fig, map_ax)
                 if save_plots == 1:
                     t = t+1
-                    map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight")
+                    map_fig.savefig("figures/fig%d.png" % t, bbox_inches="tight", dpi=200)
 
         # End simulation early if terminal condition reached
         if enable_terminal_condition and terminal_condition:
